@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Kesco.Lib.Entities.Documents.EF.Directions.Direction" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="3.25" Width="4.75" />
+    <InheritanceLine Type="Kesco.Lib.Entities.Documents.Document" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.75" Y="2.441" />
+        <Point X="1.75" Y="2.875" />
+        <Point X="3.438" Y="2.875" />
+        <Point X="3.438" Y="3.25" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>CJQEIIEoCAgRJWgAoKCgQwCKKUQhEAABikoQABVABFA=</HashCode>
+      <FileName>Documents\EF\Directions\Direction.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="1.075" />
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.EF.Directions.PositionAdvancedGrant">
+    <Position X="10" Y="10.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAACAAgAAAAAAAAAAAAAAAAAgACAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Documents\EF\Directions\PositionAdvancedGrant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.EF.Directions.PositionCommonFolder">
+    <Position X="6.25" Y="10.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAgAAAAAAAAAAAAAAAAAAACAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>Documents\EF\Directions\PositionCommonFolder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.EF.DocumentPosition&lt;T&gt;">
+    <Position X="8.75" Y="1.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAQAgqgAAARAAAEgAIAEAAAAAAGAAAAIBAACAACgABE=</HashCode>
+      <FileName>Documents\EF\DocumentPosition.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.Document" Collapsed="true">
+    <Position X="1" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>oBECoYUYHultEGQGUEegYIBAeCARKHIryUwYABAgghk=</HashCode>
+      <FileName>Documents\Document.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.EF.Directions.PositionRole">
+    <Position X="13.75" Y="10.25" Width="2.5" />
+    <Members>
+      <Field Name="_role" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAoAAAAAAAAEABAIAAAAAACAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>Documents\EF\Directions\PositionRole.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Documents.EF.Directions.PositionType">
+    <Position X="17" Y="10.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAABAAAAAABAAAAAAACAAAAAAAAAABAAAAg=</HashCode>
+      <FileName>Documents\EF\Directions\PositionType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Kesco.Lib.Entities.Entity" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAACgaAQAAAAAAAAAAACAARAACEAQAAAAAACAAAAAAA=</HashCode>
+      <FileName>Entity.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="Kesco.Lib.Entities.Documents.IDocumentWithPositions">
+    <Position X="5.5" Y="2.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAIAAAAAAAA=</HashCode>
+      <FileName>Documents\IDocumentWithPositions.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

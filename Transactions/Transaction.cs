@@ -1,0 +1,447 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using Kesco.Lib.BaseExtention;
+using Kesco.Lib.DALC;
+using Kesco.Lib.Log;
+using Kesco.Lib.Web.Settings;
+
+namespace Kesco.Lib.Entities.Transactions
+{
+    /// <summary>
+    /// Бизнес-объект - транзакции
+    /// Не путать с транзакциями в БД
+    /// </summary>
+    [DebuggerDisplay("ID = {Id}")]
+    public class Transaction : Entity
+    {
+        #region Поля сущности
+        /// <summary>
+        ///  Поле Код транзакции
+        /// </summary>
+        /// <value>
+        /// КодТранзакции (int, not null)
+        /// </value>
+        /// <remarks>
+        ///  Типизированный псевданим для ID
+        /// </remarks>
+        public int Code { get { return Id.ToInt(); } }
+        /// <summary>
+        ///  Поле КодТипаТранзакции
+        /// </summary>
+        /// <value>
+        /// КодТипаТранзакции (int, not null)
+        /// </value>
+        public int CodeType { get; set; }
+        /// <summary>
+        ///  Поле КодГруппыТиповТранзакций
+        /// </summary>
+        /// <value>
+        /// КодГруппыТиповТранзакций (int, not null)
+        /// </value>
+        public int CodeTypeGroup { get; set; }
+        /// <summary>
+        ///  Поле Дата
+        /// </summary>
+        /// <value>
+        /// Дата (datetime, not null)
+        /// </value>
+        public DateTime Date { get; set; }
+        /// <summary>
+        ///  Поле КодДокументаОснования
+        /// </summary>
+        /// <value>
+        /// КодДокументаОснования (int, null)
+        /// </value>
+        public int CodeDocBase { get; set; }
+        /// <summary>
+        ///  Поле КодДокументаПодтверждения
+        /// </summary>
+        /// <value>
+        /// КодДокументаПодтверждения (int, null)
+        /// </value>
+        public int CodeDocConfirm { get; set; }
+        /// <summary>
+        /// Поле КодДокументаДоговора
+        /// </summary>
+        /// <value>
+        /// КодДокументаДоговора (int, null)
+        /// </value>
+        public int CodeDocContract { get; set; }
+        /// <summary>
+        /// Поле КодДокументаПриложения
+        /// </summary>
+        /// <value>
+        /// КодДокументаПриложения (int, null)
+        /// </value>
+        public int CodeDocAttachment { get; set; }
+        /// <summary>
+        /// Поле КодДокументаСФ
+        /// </summary>
+        /// <value>
+        /// КодДокументаСФ (int, null)
+        /// </value>
+        public int CodeDocSF { get; set; }
+        /// <summary>
+        /// Поле КодЛицаДО
+        /// </summary>
+        /// <value>
+        /// КодЛицаДО (int, not null)
+        /// </value>
+        public int CodePersonBefore { get; set; }
+        /// <summary>
+        /// Поле КодЛицаПОСЛЕ
+        /// </summary>
+        /// <value>
+        /// КодЛицаПОСЛЕ (int, not null)
+        /// </value>
+        public int CodePersonAfter { get; set; }
+        /// <summary>
+        /// Поле КодСкладаДО
+        /// </summary>
+        /// <value>
+        /// КодСкладаДО (int, null)
+        /// </value>
+        public int CodeStoreBefore { get; set; }
+        /// <summary>
+        /// Поле КодСкладаПОСЛЕ
+        /// </summary>
+        /// <value>
+        /// КодСкладаПОСЛЕ (int, null)
+        /// </value>
+        public int CodeStoreAfter { get; set; }
+        /// <summary>
+        /// Поле КодХранителяДо
+        /// </summary>
+        /// <value>
+        /// КодХранителяДо (int, null)
+        /// </value>
+        public int CodeKeeperBefore { get; set; }
+        /// <summary>
+        /// Поле КодХранителяПосле
+        /// </summary>
+        /// <value>
+        /// КодХранителяПосле (int, null)
+        /// </value>
+        public int CodeKeeperAfter { get; set; }
+        /// <summary>
+        /// Поле КодБизнесПроектаДО
+        /// </summary>
+        /// <value>
+        /// КодБизнесПроектаДО (int, null)
+        /// </value>
+        public int CodeProjectBefore { get; set; }
+        /// <summary>
+        /// Поле КодБизнесПроектаПОСЛЕ
+        /// </summary>
+        /// <value>
+        /// КодБизнесПроектаПОСЛЕ (int, null)
+        /// </value>
+        public int CodeProjectAfter { get; set; }
+        /// <summary>
+        /// Поле СуммаРуб
+        /// </summary>
+        /// <value>
+        /// СуммаРуб (money, not null)
+        /// </value>
+        public decimal SumRub { get; set; }
+        /// <summary>
+        /// Поле КодВалюты
+        /// </summary>
+        /// <value>
+        /// КодВалюты (int, not null)
+        /// </value>
+        public int CodeCurrency { get; set; }
+        /// <summary>
+        /// Поле Сумма
+        /// </summary>
+        /// <value>
+        /// Сумма (money, not null)
+        /// </value>
+        public decimal Sum { get; set; }
+        /// <summary>
+        /// Поле КодРесурса
+        /// </summary>
+        /// <value>
+        /// КодРесурса (int, not null)
+        /// </value>
+        public int CodeResource { get; set; }
+        /// <summary>
+        /// Поле Количество
+        /// </summary>
+        /// <value>
+        /// Количество (money, not null)
+        /// </value>
+        public decimal Amount { get; set; }
+        /// <summary>
+        /// Поле Примечание
+        /// </summary>
+        /// <value>
+        /// Примечание (varchar(1000), not null)
+        /// </value>
+        public string Description { get; set; }
+        /// <summary>
+        /// Поле Изменил
+        /// </summary>
+        /// <value>
+        /// Изменил (int, not null)
+        /// </value>
+        public int ChangeBy { get; set; }
+        /// <summary>
+        /// Поле  Изменено
+        /// </summary>
+        /// <value>
+        /// Изменено (datetime, not null)
+        /// </value>
+        public DateTime ChangeDate { get; set; }
+        #endregion
+
+        /// <summary>
+        ///  Получение типа транзакции
+        /// </summary>
+        public TransactionType TranType
+        {
+            get
+            {
+                if (_tranType == null && CodeType > 0)
+                    _tranType = new TransactionType(Convert.ToString(CodeType));
+
+                return _tranType;
+            }
+        }
+
+        /// <summary>
+        ///  Backing field для свойства TranType
+        /// </summary>
+        private TransactionType _tranType;
+
+        /// <summary>
+        /// Строка подключения к БД.
+        /// </summary>
+        public sealed override string CN
+        {
+            get { return ConnString; }
+        }
+
+        /// <summary>
+        ///  Статическое поле для получения строки подключения
+        /// </summary>
+        public static string ConnString
+        {
+           get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
+        }
+
+        /// <summary>
+        ///  Инкапсулирует и сохраняет в себе строку подключения
+        /// </summary>
+        private static string _connectionString;
+
+        /// <summary>
+        ///  Конструктор с праметором
+        /// </summary>
+        /// <param name="id">КодТранзакции</param>
+        public Transaction(string id) : base(id)
+        {
+            Load();
+        }
+
+        /// <summary>
+        /// Инициализация объекта "Транзакции"
+        /// </summary>
+        public Transaction()
+        {
+        }
+
+        /// <summary>
+        /// Метод загрузки данных сущности "Транзакции"
+        /// </summary>
+        public sealed override void Load()
+        {
+            FillData(Code);
+        }
+
+        /// <summary>
+        ///  Удаляет все связанные транзакции по коду документа
+        /// </summary>
+        /// <param name="id">КодДокумента</param>
+        public static void RemoveTrans(string id)
+        {
+            try
+            {
+                var sqlParms = new Dictionary<string, object> {{"@CodeDoc", id.ToInt()}};
+                DBManager.ExecuteNonQuery(SQLQueries.DELETE_Транзакции_ПоДокументуПодтверждения, CommandType.Text, ConnString, sqlParms);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEx(e);
+                throw e;
+            }
+        }
+
+        /// <summary>
+        ///  Получить данные о транзакции по КодуТранзакции
+        /// </summary>
+        /// <param name="id">КодТранзакции</param>
+        public void FillData(int id)
+        {
+            if(id == 0) return;
+
+            using (var dbReader = new DBReader(SQLQueries.SELECT_ID_Транзакция, id, CommandType.Text, CN))
+            {
+                if (dbReader.HasRows)
+                {
+                    #region Получение порядкового номера столбца
+
+                    int colКодТранзакции = dbReader.GetOrdinal("КодТранзакции");
+                    int colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
+                    int colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
+                    int colДата = dbReader.GetOrdinal("Дата");
+                    int colКодДокументаОснования = dbReader.GetOrdinal("КодДокументаОснования");
+                    int colКодДокументаПодтверждения = dbReader.GetOrdinal("КодДокументаПодтверждения");
+                    int colКодДокументаДоговора = dbReader.GetOrdinal("КодДокументаДоговора");
+                    int colКодДокументаПриложения = dbReader.GetOrdinal("КодДокументаПриложения");
+                    int colКодДокументаСФ = dbReader.GetOrdinal("КодДокументаСФ");
+                    int colКодЛицаДО = dbReader.GetOrdinal("КодЛицаДО");
+                    int colКодЛицаПОСЛЕ = dbReader.GetOrdinal("КодЛицаПОСЛЕ");
+                    int colКодСкладаДО = dbReader.GetOrdinal("КодСкладаДО");
+                    int colКодСкладаПОСЛЕ = dbReader.GetOrdinal("КодСкладаПОСЛЕ");
+                    int colКодХранителяДо = dbReader.GetOrdinal("КодХранителяДо");
+                    int colКодХранителяПосле = dbReader.GetOrdinal("КодХранителяПосле");
+                    int colКодБизнесПроектаДО = dbReader.GetOrdinal("КодБизнесПроектаДО");
+                    int colКодБизнесПроектаПОСЛЕ = dbReader.GetOrdinal("КодБизнесПроектаПОСЛЕ");
+                    int colСуммаРуб = dbReader.GetOrdinal("СуммаРуб");
+                    int colКодВалюты = dbReader.GetOrdinal("КодВалюты");
+                    int colСумма = dbReader.GetOrdinal("Сумма");
+                    int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
+                    int colКоличество = dbReader.GetOrdinal("Количество");
+                    int colПримечание = dbReader.GetOrdinal("Примечание");
+                    int colИзменил = dbReader.GetOrdinal("Изменил");
+                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    #endregion
+
+                    Unavailable = false;
+                    if(dbReader.Read())
+                     {
+                      Id = dbReader.GetInt32(colКодТранзакции).ToString();
+                      CodeType = dbReader.GetInt32(colКодТипаТранзакции);
+                      CodeTypeGroup = dbReader.GetInt32(colКодГруппыТиповТранзакций);
+                      Date = dbReader.GetDateTime(colДата);
+                      if (!dbReader.IsDBNull(colКодДокументаОснования)) { CodeDocBase = dbReader.GetInt32(colКодДокументаОснования); }
+                      if (!dbReader.IsDBNull(colКодДокументаПодтверждения)) { CodeDocConfirm = dbReader.GetInt32(colКодДокументаПодтверждения); }
+                      if (!dbReader.IsDBNull(colКодДокументаДоговора)) { CodeDocContract = dbReader.GetInt32(colКодДокументаДоговора); }
+                      if (!dbReader.IsDBNull(colКодДокументаПриложения)) { CodeDocAttachment = dbReader.GetInt32(colКодДокументаПриложения); }
+                      if (!dbReader.IsDBNull(colКодДокументаСФ)) { CodeDocSF = dbReader.GetInt32(colКодДокументаСФ); }
+                      CodePersonBefore = dbReader.GetInt32(colКодЛицаДО);
+                      CodePersonAfter = dbReader.GetInt32(colКодЛицаПОСЛЕ);
+                      if (!dbReader.IsDBNull(colКодСкладаДО)) { CodeStoreBefore = dbReader.GetInt32(colКодСкладаДО); }
+                      if (!dbReader.IsDBNull(colКодСкладаПОСЛЕ)) { CodeStoreAfter = dbReader.GetInt32(colКодСкладаПОСЛЕ); }
+                      if (!dbReader.IsDBNull(colКодХранителяДо)) { CodeKeeperBefore = dbReader.GetInt32(colКодХранителяДо); }
+                      if (!dbReader.IsDBNull(colКодХранителяПосле)) { CodeKeeperAfter = dbReader.GetInt32(colКодХранителяПосле); }
+                      if (!dbReader.IsDBNull(colКодБизнесПроектаДО)) { CodeProjectBefore = dbReader.GetInt32(colКодБизнесПроектаДО); }
+                      if (!dbReader.IsDBNull(colКодБизнесПроектаПОСЛЕ)) { CodeProjectAfter = dbReader.GetInt32(colКодБизнесПроектаПОСЛЕ); }
+                      SumRub = dbReader.GetDecimal(colСуммаРуб);
+                      CodeCurrency = dbReader.GetInt32(colКодВалюты);
+                      Sum = dbReader.GetDecimal(colСумма);
+                      CodeResource = dbReader.GetInt32(colКодРесурса);
+                      Amount = dbReader.GetDecimal(colКоличество);
+                      Description = dbReader.GetString(colПримечание);
+                      ChangeBy = dbReader.GetInt32(colИзменил);
+                      ChangeDate = dbReader.GetDateTime(colИзменено);
+                   }
+                    else { Unavailable = true; }
+                }
+            }
+        }
+
+        /// <summary>
+        ///  Получить список транзакций по коду документа
+        /// </summary>
+        /// <param name="id">КодДокумента</param>
+        public static List<Transaction> GetTransactionsByDocId(int id)
+        {
+            var sqlParams = new Dictionary<string, object> {{"@CodeDoc", id}};
+            return GetTransactionList(SQLQueries.SELECT_Транзакции_ПоДокументуПодтверждения, sqlParams);
+        }
+
+        /// <summary>
+        /// Получить список транзакций
+        /// </summary>
+        /// <param name="query">Строка запроса</param>
+        /// <param name="sqlParams">Параметры запроса</param>
+        public static List<Transaction> GetTransactionList(string query, Dictionary<string, object> sqlParams = null)
+        {
+            var list = new List<Transaction>(); 
+
+            using (var dbReader = new DBReader(query, CommandType.Text, ConnString, sqlParams))
+            {
+                if (dbReader.HasRows)
+                {
+                    #region Получение порядкового номера столбца
+
+                    int colКодТранзакции = dbReader.GetOrdinal("КодТранзакции");
+                    int colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
+                    int colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
+                    int colДата = dbReader.GetOrdinal("Дата");
+                    int colКодДокументаОснования = dbReader.GetOrdinal("КодДокументаОснования");
+                    int colКодДокументаПодтверждения = dbReader.GetOrdinal("КодДокументаПодтверждения");
+                    int colКодДокументаДоговора = dbReader.GetOrdinal("КодДокументаДоговора");
+                    int colКодДокументаПриложения = dbReader.GetOrdinal("КодДокументаПриложения");
+                    int colКодДокументаСФ = dbReader.GetOrdinal("КодДокументаСФ");
+                    int colКодЛицаДО = dbReader.GetOrdinal("КодЛицаДО");
+                    int colКодЛицаПОСЛЕ = dbReader.GetOrdinal("КодЛицаПОСЛЕ");
+                    int colКодСкладаДО = dbReader.GetOrdinal("КодСкладаДО");
+                    int colКодСкладаПОСЛЕ = dbReader.GetOrdinal("КодСкладаПОСЛЕ");
+                    int colКодХранителяДо = dbReader.GetOrdinal("КодХранителяДо");
+                    int colКодХранителяПосле = dbReader.GetOrdinal("КодХранителяПосле");
+                    int colКодБизнесПроектаДО = dbReader.GetOrdinal("КодБизнесПроектаДО");
+                    int colКодБизнесПроектаПОСЛЕ = dbReader.GetOrdinal("КодБизнесПроектаПОСЛЕ");
+                    int colСуммаРуб = dbReader.GetOrdinal("СуммаРуб");
+                    int colКодВалюты = dbReader.GetOrdinal("КодВалюты");
+                    int colСумма = dbReader.GetOrdinal("Сумма");
+                    int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
+                    int colКоличество = dbReader.GetOrdinal("Количество");
+                    int colПримечание = dbReader.GetOrdinal("Примечание");
+                    int colИзменил = dbReader.GetOrdinal("Изменил");
+                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    #endregion
+
+                    while (dbReader.Read())
+                    {
+                        var row = new Transaction(); 
+                        row.Unavailable = false; 
+                        row.Id = dbReader.GetInt32(colКодТранзакции).ToString();
+                        row.CodeType = dbReader.GetInt32(colКодТипаТранзакции);
+                        row.CodeTypeGroup = dbReader.GetInt32(colКодГруппыТиповТранзакций);
+                        row.Date = dbReader.GetDateTime(colДата);
+                        if (!dbReader.IsDBNull(colКодДокументаОснования)) { row.CodeDocConfirm = dbReader.GetInt32(colКодДокументаОснования); }
+                        if (!dbReader.IsDBNull(colКодДокументаПодтверждения)) { row.CodeDocConfirm = dbReader.GetInt32(colКодДокументаПодтверждения); }
+                        if (!dbReader.IsDBNull(colКодДокументаДоговора)) { row.CodeDocContract = dbReader.GetInt32(colКодДокументаДоговора); }
+                        if (!dbReader.IsDBNull(colКодДокументаПриложения)) { row.CodeDocAttachment = dbReader.GetInt32(colКодДокументаПриложения); }
+                        if (!dbReader.IsDBNull(colКодДокументаСФ)) { row.CodeDocSF = dbReader.GetInt32(colКодДокументаСФ); }
+                        row.CodePersonBefore = dbReader.GetInt32(colКодЛицаДО);
+                        row.CodePersonAfter = dbReader.GetInt32(colКодЛицаПОСЛЕ);
+                        if (!dbReader.IsDBNull(colКодСкладаДО)) { row.CodeStoreBefore = dbReader.GetInt32(colКодСкладаДО); }
+                        if (!dbReader.IsDBNull(colКодСкладаПОСЛЕ)) { row.CodeStoreAfter = dbReader.GetInt32(colКодСкладаПОСЛЕ); }
+                        if (!dbReader.IsDBNull(colКодХранителяДо)) { row.CodeKeeperBefore = dbReader.GetInt32(colКодХранителяДо); }
+                        if (!dbReader.IsDBNull(colКодХранителяПосле)) { row.CodeKeeperAfter = dbReader.GetInt32(colКодХранителяПосле); }
+                        if (!dbReader.IsDBNull(colКодБизнесПроектаДО)) { row.CodeProjectBefore = dbReader.GetInt32(colКодБизнесПроектаДО); }
+                        if (!dbReader.IsDBNull(colКодБизнесПроектаПОСЛЕ)) { row.CodeProjectAfter = dbReader.GetInt32(colКодБизнесПроектаПОСЛЕ); }
+                        row.SumRub = dbReader.GetDecimal(colСуммаРуб);
+                        row.CodeCurrency = dbReader.GetInt32(colКодВалюты);
+                        row.Sum = dbReader.GetDecimal(colСумма);
+                        row.CodeResource = dbReader.GetInt32(colКодРесурса);
+                        row.Amount = dbReader.GetDecimal(colКоличество);
+                        row.Description = dbReader.GetString(colПримечание);
+                        row.ChangeBy = dbReader.GetInt32(colИзменил);
+                        row.ChangeDate = dbReader.GetDateTime(colИзменено);
+                        list.Add(row);
+                    }
+                }
+            }
+            return list;
+        }
+
+    }
+
+}

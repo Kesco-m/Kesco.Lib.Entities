@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
+using Kesco.Lib.Entities.Persons;
 
 namespace Kesco.Lib.Entities.Corporate
 {
@@ -13,6 +14,8 @@ namespace Kesco.Lib.Entities.Corporate
     [Serializable]
     public class EmployeeRole : Entity
     {
+        private Persons.Person _person;
+
         /// <summary>
         /// КодСотрудника
         /// </summary>
@@ -27,6 +30,21 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public string PersonName { get; set; }
 
+        /// <summary>
+        ///     Возвращает объект типа Person в зависимости от значения PersonId
+        /// </summary>
+        public Person PersonObject
+        {
+            get
+            {
+                if (PersonId == 0)
+                    _person = null;
+                else if (_person == null || _person.Id != PersonId.ToString())
+                    _person = new Person(PersonId.ToString());
+
+                return _person;
+            }
+        }
 
         /// <summary>
         /// КодРоли

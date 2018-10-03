@@ -156,7 +156,7 @@ public class Unit : Entity
         }
 
         /// <summary>
-        /// Получить списко запросом
+        /// Получить список запросом
         /// </summary>
         public List<Unit> GetUnitList(string query)
         {
@@ -196,5 +196,7 @@ public class Unit : Entity
             }
             return list;
         }
+
+
 }
 }

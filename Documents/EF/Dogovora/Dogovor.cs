@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Data;
 using System.Linq;
 using System.Text;
+using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
+using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Corporate;
 
 namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 {
-   
-
     /// <summary>
     /// Договор (класс также является базовым для приложения к договору)
     /// </summary>
-    public class Dogovor : Document
+    public class Dogovor : Document, IDocumentWithPositions
     {
         /// <summary>
         ///  Конструктор по умолчанию
@@ -650,6 +652,54 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             }
             else
                 return f;
+        }
+
+        public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
+        {
+            var documentPosition = DocumentPosition<DogovorPosition>.LoadByDocId(int.Parse(Id));
+
+            documentPosition.ForEach(delegate(DogovorPosition p0)
+            {
+                var p = DogovorPositionList.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
+                if (p == null)
+                    p0.Delete(false);
+            });
+
+            DogovorPositionList.ForEach(delegate(DogovorPosition p)
+            {
+                if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                {
+                    p.DocumentId = int.Parse(Id);
+                    p.Save(reloadPostions, cmds);
+                    return;
+                }
+                var p0 =
+                    documentPosition.FirstOrDefault(
+                        x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                if (p0 != null) p.Save(reloadPostions, cmds);
+            });
+
+        }
+
+        public void LoadDocumentPositions()
+        {
+            LoadDogovorPosition();
+        }
+
+        /// <summary>
+        ///     Позиции документа
+        /// </summary>
+        public List<DogovorPosition> DogovorPositionList { get; set; }
+
+        /// <summary>
+        ///    Загрузка позиций документа
+        /// </summary>
+        private void LoadDogovorPosition()
+        {
+            if (Id.IsNullEmptyOrZero())
+                DogovorPositionList = new List<DogovorPosition>();
+            else
+                DogovorPositionList = DocumentPosition<DogovorPosition>.LoadByDocId(int.Parse(Id));
         }
     }
 }

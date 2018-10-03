@@ -1,6 +1,7 @@
 ﻿using System;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
+using Kesco.Lib.Entities.Persons;
 
 namespace Kesco.Lib.Entities.Corporate
 {
@@ -10,6 +11,9 @@ namespace Kesco.Lib.Entities.Corporate
     [Serializable]
     public class EmployeePersonType : Entity
     {
+        private PersonCatalog _catalog;
+        private PersonTheme _theme;
+
         /// <summary>
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
@@ -31,7 +35,23 @@ namespace Kesco.Lib.Entities.Corporate
         public string CatalogName { get; set; }
 
         /// <summary>
-        ///     КодКаталога
+        ///     Возвращает объект типа PersonCatalog в зависимости от значения CatalogId
+        /// </summary>
+        public PersonCatalog CatalogObject
+        {
+            get
+            {
+                if (!CatalogId.HasValue)
+                    _catalog = null;
+                else if (_catalog == null || _catalog.Id != CatalogId.ToString())
+                    _catalog = new PersonCatalog(CatalogId.ToString());
+
+                return _catalog;
+            }
+        }
+
+        /// <summary>
+        ///     КодТемы
         /// </summary>
         public int? ThemeId { get; set; }
 
@@ -39,6 +59,22 @@ namespace Kesco.Lib.Entities.Corporate
         ///     Нзвание темы
         /// </summary>
         public string ThemeName { get; set; }
+
+        /// <summary>
+        ///     Возвращает объект типа PersonTheme в зависимости от значения ThemeId
+        /// </summary>
+        public PersonTheme ThemeObject
+        {
+            get
+            {
+                if (!ThemeId.HasValue)
+                    _theme = null;
+                else if (_theme == null || _theme.Id != ThemeId.ToString())
+                    _theme = new PersonTheme(ThemeId.ToString());
+
+                return _theme;
+            }
+        }
 
         /// <summary>
         ///     Может давать права

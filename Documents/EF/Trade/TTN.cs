@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
+using Kesco.Lib.Entities.Documents.EF.Dogovora;
 using Kesco.Lib.Entities.Resources;
 
 namespace Kesco.Lib.Entities.Documents.EF.Trade
@@ -12,7 +17,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
     /// <summary>
     /// Документ Товарно-транспортная накладная
     /// </summary>
-    public class TTN : Document
+    public class TTN : Document, IDocumentWithPositions
     {
         /// <summary>
         ///  Конструктор
@@ -100,8 +105,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
 
             DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);
             PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);
-            CorrectingDocBind = new BaseDocFacade(this, CorrectingDocField);
-            BillOfLadingBind = new BaseDocFacade(this, BillOfLadingField);
+            CorrectingDocBind = new BaseDocFacade(this, CorrectingDocField, BaseSetBehavior.RemoveAllAndAddDoc);
+            BillOfLadingBind = new BaseDocFacade(this, BillOfLadingField, BaseSetBehavior.RemoveAllAndAddDoc);
             SchetPredBind = new BaseDocFacade(this, SchetPredField);
             PlatezhkiBind = new BaseDocFacade(this, PlatezhkiField);
         }
@@ -186,15 +191,64 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// </summary>
         public DocField PlatelschikBSDataField { get; set; }
 
+
+        /// <summary>
+        /// Id документов "Платежные документы"
+        /// </summary>
+        public string _Platezhki
+        {
+            get { return PlatezhkiBind.Value; }
+            set { PlatezhkiBind.Value = value; }
+        }
+
+        /// <summary>
+        ///  Получить id договора
+        /// </summary>
+        public string _Dogovor
+        {
+            get { return DogovorBind.Value; }
+            set { DogovorBind.Value = value; }
+        }
+
         /// <summary>
         ///  Договор
         /// </summary>
         public DocField DogovorField { get; set; }
 
+        public Dogovor Dog { get; set; }
+        public Dogovor Dogovor
+        {
+            get
+            {
+                if (Dog != null && _Dogovor == Dog.Id)
+                {
+                    return Dog;
+                }
+
+                Dog = new Dogovor(_Dogovor);
+                return Dog;
+            }
+        }
+
         /// <summary>
         ///  Приложение
         /// </summary>
         public DocField PrilozhenieField { get; set; }
+
+        public Prilozhenie Pril { get; set; }
+        public Prilozhenie Prilozhenie
+        {
+            get
+            {
+                if (Pril != null && _Prilozhenie == Pril.Id)
+                {
+                    return Pril;
+                }
+
+                Pril = new Prilozhenie(_Prilozhenie);
+                return Pril;
+            }
+        }
 
         /// <summary>
         ///  Основание накладной
@@ -441,7 +495,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// </summary>
         public override Currency Currency
         {
-            get { return Currency.GetCurrency((int) CurrencyField.Value); }
+            get
+            {
+                if (CurrencyField.Value == null)
+                    return null;
+                return Currency.GetCurrency((int) CurrencyField.Value);
+            }
         }
 
         /// <summary>
@@ -481,31 +540,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Id документов "Платежные документы"
-        /// </summary>
-        public string _Platezhki
-        {
-            get { return PlatezhkiBind.Value; }
-            set { PlatezhkiBind.Value = value; }
-        }
-
-        /// <summary>
-        ///  Получить id договора
-        /// </summary>
-        public string _Dogovor
-        {
-            get { return DogovorBind.Value; }
-            set { DogovorBind.Value = value; }
-        }
-
-        public static DataTable GetMrisSales(string id)
-        {
-            var dt = DBManager.GetData(string.Format(sqlGetMrisSales, id), ConnString);
-
-            return dt;
-        }
-
-        /// <summary>
         /// Документ откорректирован
         /// </summary>
         public bool IsCorrected
@@ -523,22 +557,35 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Получить движения на складах
+        ///     Позиции документа: ДвиженияНаСкладах
         /// </summary>
-        public List<Sale> GetLoadMrisSales()
+        public List<Mris> PositionMris { get; set; }
+        
+        /// <summary>
+        ///    ДвиженияНаСкладах
+        /// </summary>
+        public void LoadPositionMris()
         {
-            if(Id.IsNullEmptyOrZero()) return new List<Sale>();
-            return Sale.GetSalesByDocId(Id);
+            if (Id.IsNullEmptyOrZero())
+                PositionMris = new List<Mris>();
+            else
+                PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
         }
 
-        private List<Sale> _mrisSales;
+        /// <summary>
+        ///     Позиции документа: ОказанныеУслуги
+        /// </summary>
+        public List<FactUsl> PositionFactUsl { get; set; }
 
         /// <summary>
-        ///  Движения на складах
+        ///    ОказанныеУслуги
         /// </summary>
-        public List<Sale> MrisSales
+        public void LoadPositionFactUsl()
         {
-            get { return _mrisSales ?? (_mrisSales = GetLoadMrisSales()); }
+            if (Id.IsNullEmptyOrZero())
+                PositionFactUsl = new List<FactUsl>();
+            else
+                PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
         }
 
         /// <summary>
@@ -548,8 +595,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             get
             {
-                var sales = MrisSales;
-                return sales.Sum(sl => sl.SummaOutNDS);
+                return PositionMris.Sum(sl => sl.SummaOutNDS);
             }
         }
 
@@ -557,8 +603,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             get
             {
-                var sales = MrisSales;
-                return sales.Sum(sl => sl.SummaNDS);
+                return PositionMris.Sum(sl => sl.SummaNDS);
             }
         }
 
@@ -566,11 +611,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             get
             {
-                var sales = MrisSales;
-                return sales.Sum(sl => sl.Vsego);
+                return PositionMris.Sum(sl => sl.Vsego);
             }
         }
-
+        /*
         private List<FactUsl> _usls;
 
         public List<FactUsl> Usls
@@ -619,28 +663,130 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             get { return VsegoAll_Mris + VsegoAll_USL; }
         }
+        */
 
-        static string sqlGetMrisSales = @"
-SELECT X.*, Ед.ЕдиницаРус, НДС.СтавкаНдс,
-CONVERT(varchar, {0}) + '_' + CONVERT(varchar, X.КодРесурса) + '_' + CONVERT(varchar, X.КодСтавкиНДС) + '_' + REPLACE(REPLACE(CONVERT(varchar,ЦенаБезНДС), '.','_'),',','_') УникальныйКлюч  
-FROM(
-	SELECT
-		КодРесурса
-		,РесурсРус
-		,РесурсЛат
-		,SUM(ROUND(Количество,3)) Количество
-		,КодЕдиницыИзмерения
-		,ЦенаБезНдс
-		,КодСтавкиНдс
-		,SUM(ROUND(Всего/ISNULL(NULLIF(Количество,0),1),2)) ЦенаНдс
-		,SUM(СуммаБезНдс) СуммаБезНдс
-		,SUM(СуммаНдс) СуммаНдс
-		,SUM(Всего) Всего
-	FROM vwДвиженияНаСкладах (nolock)
-	WHERE КодДокумента = {0}
-	GROUP BY КодРесурса, РесурсРус, РесурсЛат, КодЕдиницыИзмерения, КодСтавкиНдс, ЦенаБезНдс
-) X
-	LEFT JOIN Справочники.dbo.ЕдиницыИзмерения Ед ON Ед.КодЕдиницыИзмерения = X.КодЕдиницыИзмерения
-	LEFT JOIN Справочники.dbo.СтавкиНДС НДС ON НДС.КодСтавкиНДС = X.КодСтавкиНдс";
+        public void LoadDocumentPositions()
+        {
+            LoadPositionMris();
+        }
+
+        public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
+        {
+            var positionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+
+            positionMris.ForEach(delegate(Mris p0)
+            {
+                var p = PositionMris.FirstOrDefault(x => x.Id == p0.MrisId.ToString());
+                if (p == null)
+                    p0.Delete(false);
+            });
+
+            PositionMris.ForEach(delegate(Mris p)
+            {
+                if (string.IsNullOrEmpty(p.MrisId.ToString()))
+                {
+                    p.DocumentId = int.Parse(Id);
+                    p.Save(reloadPostions, cmds);
+                    return;
+                }
+                var p0 =
+                    positionMris.FirstOrDefault(
+                        x => x.Id == p.Id && (x.MrisId != p.MrisId));
+                if (p0 != null) p.Save(reloadPostions, cmds);
+            });
+        }
+
+        /// <summary>
+        /// Заполнение позиций ТТН на основании выгружаемых отправок
+        /// Вызываетяс из диалога "AddSumm" - после выбора ставки НДС, стоимости и цены.
+        /// </summary>
+        /// <param name="guid">GUID, используемый при выгрузке</param>
+        /// <param name="stavkaId">Код ставки НДС</param>
+        /// <param name="price">стоимость</param>
+        /// <param name="stavka">сумма НДС</param>
+        public void FillPositionsByGuid(Guid guid, int stavkaId, decimal price, decimal stavka, string sf, string pf)
+        {
+            // Отправку нельзя выгрузить дважды в одну и ту же табличную часть
+            var dt = new DataTable();
+            var sql = string.Format(@"
+                SELECT v.*,res.РесурсРус,res.РесурсЛат FROM ОтправкаВагоновВыгрузка v (nolock)
+	            INNER JOIN Справочники.dbo.Ресурсы res on v.КодРесурса = res.КодРесурса
+                WHERE guid='{0}'
+	            AND NOT EXISTS(SELECT * FROM vwДвиженияНаСкладах WHERE vwДвиженияНаСкладах.КодДокумента = {1}
+				AND vwДвиженияНаСкладах.КодОтправкиВагона = v.КодОтправкиВагона )", guid, this.Id);
+
+            var da = new SqlDataAdapter(sql, Kesco.Lib.Web.Settings.Config.DS_document);
+            da.Fill(dt);
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                DataRow row = dt.Rows[i];
+
+                decimal kol = Convert.ToDecimal(row["Количество"]);
+                decimal summaOutNDS = kol * price;
+                decimal vsego = summaOutNDS * (1 + stavka);
+                decimal summaNDS = vsego - summaOutNDS;
+
+                var mris = new Mris();
+                mris.DocumentId = int.Parse(Id);
+                mris.DeliveryId = int.Parse(row["КодОтправкиВагона"].ToString());
+                mris.ResourceId = int.Parse(row["КодРесурса"].ToString());
+                mris.ResourceRus = row["РесурсРус"].ToString();
+                mris.ResourceLat = row["РесурсЛат"].ToString();
+                mris.Count = ConvertExtention.Convert.Str2Double(row["Количество"].ToString());
+                mris.UnitId = int.Parse(row["КодЕдиницыИзмерения"].ToString());
+
+                mris.ShipperStoreId = int.Parse(sf);
+                mris.PayerStoreId = int.Parse(pf);
+
+                mris.SummaNDS = Math.Round(summaNDS, CurrencyScale);
+                mris.SummaOutNDS = Math.Round(summaOutNDS, CurrencyScale);
+                mris.Vsego = Math.Round(vsego, CurrencyScale);
+                mris.CostOutNDS = Math.Round(price, CurrencyScale);
+                mris.TransactionType = 12; // реализация;
+                mris.StavkaNDSId = int.Parse(stavkaId.ToString());
+                mris.DateMove = DateTime.Today;
+                mris.Save(false);
+            }
+
+            ClearDeliveryTemporary(guid.ToString());
+        }
+
+        public void FillGPersonsDictionary(DataTable dt, ref StringDictionary values)
+        {
+            StringCollection GOs = new StringCollection();
+            StringCollection GPs = new StringCollection();
+            StringCollection GOWesels = new StringCollection();
+            StringCollection GPWesels = new StringCollection();
+            string GONotes = "", GPNotes = "", GOData = "", GPData = "";
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["кодго"].ToString() != "" && !GOs.Contains(row["кодго"].ToString())) GOs.Add(row["кодго"].ToString());
+                if (row["кодгп"].ToString() != "" && !GPs.Contains(row["кодгп"].ToString())) GPs.Add(row["кодгп"].ToString());
+
+                if (row["узелотправления"].ToString() != "" && !GOWesels.Contains(row["узелотправления"].ToString())) GOWesels.Add(row["узелотправления"].ToString());
+                if (row["узелназначения"].ToString() != "" && !GPWesels.Contains(row["узелназначения"].ToString())) GPWesels.Add(row["узелназначения"].ToString());
+
+                if (GONotes == "" && row["отметкиго"].ToString() != "") GONotes = row["отметкиго"].ToString();
+                if (GPNotes == "" && row["отметкигп"].ToString() != "") GPNotes = row["отметкигп"].ToString();
+
+                if (GOData == "" && row["реквизитыго"].ToString() != "") GOData = row["реквизитыго"].ToString();
+                if (GPData == "" && row["реквизитыгп"].ToString() != "") GPData = row["реквизитыгп"].ToString();
+            }
+
+            if (values == null) values = new StringDictionary();
+            values.Add("кодго", ConvertExtention.Convert.Collection2Str(GOs));
+            values.Add("кодгп", ConvertExtention.Convert.Collection2Str(GPs));
+
+            values.Add("узелотправления", ConvertExtention.Convert.Collection2Str(GOWesels));
+            values.Add("узелназначения", ConvertExtention.Convert.Collection2Str(GPWesels));
+
+            values.Add("отметкиго", GONotes);
+            values.Add("отметкигп", GPNotes);
+
+            values.Add("реквизитыго", GOData);
+            values.Add("реквизитыгп", GPData);
+        }
     }
 }

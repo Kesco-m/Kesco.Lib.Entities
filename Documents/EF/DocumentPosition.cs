@@ -218,20 +218,23 @@ namespace Kesco.Lib.Entities.Documents.EF
             else
             {
                 sqlSave = GetSqlUpdate(dbProps, param);
-                if (cmds != null)
+                if (sqlSave != string.Empty)
                 {
-                    cmds.Add(new DBCommand
+                    if (cmds != null)
                     {
-                        Appointment = "Изменение позиции документа",
-                        Text = sqlSave,
-                        Type = CommandType.Text,
-                        ConnectionString = ConnString,
-                        ParamsIn = param,
-                        ParamsOut = null
-                    });
-                    return;
+                        cmds.Add(new DBCommand
+                                     {
+                                         Appointment = "Изменение позиции документа",
+                                         Text = sqlSave,
+                                         Type = CommandType.Text,
+                                         ConnectionString = ConnString,
+                                         ParamsIn = param,
+                                         ParamsOut = null
+                                     });
+                        return;
+                    }
+                    DBManager.ExecuteNonQuery(sqlSave, CommandType.Text, ConnString, param);
                 }
-                DBManager.ExecuteNonQuery(sqlSave, CommandType.Text, ConnString, param);
             }
             if (evalLoad) Load();
         }
@@ -394,7 +397,11 @@ namespace Kesco.Lib.Entities.Documents.EF
                     param.Add(pkParamName, int.Parse(pValue.ToString()));
                 }
 
-                if (!fInfo.IsUpdateble || pValue.Equals(pOriginalValue)) continue;
+                if (!fInfo.IsUpdateble 
+                    || (pValue == null && pOriginalValue == null) 
+                    || (pValue != null && pValue.Equals(pOriginalValue)) 
+                    || (pOriginalValue != null && pOriginalValue.Equals(pValue)))
+                    continue;
 
                 if (w.ToString().Length > 0) w.Write(", ");
                 param.Add(paramName, pValue);

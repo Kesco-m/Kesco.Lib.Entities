@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
+using System.Text;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
@@ -39,6 +41,13 @@ namespace Kesco.Lib.Entities.Resources
         public int UnitCode { get; set; }
 
         /// <summary>
+        ///  Единица Измерения
+        /// </summary>
+        public Unit Unit {
+            get { return new Unit(UnitCode.ToString()); }
+        }
+
+        /// <summary>
         /// КодВидаПодакцизногоТовара
         /// </summary>
         public int ExciseProductTypeCode { get; set; }
@@ -46,7 +55,7 @@ namespace Kesco.Lib.Entities.Resources
         /// <summary>
         /// Точность
         /// </summary>
-        public int Accuracy { get; set; }
+        public int Scale { get; set; }
 
         /// <summary>
         /// СпецНДС
@@ -68,6 +77,21 @@ namespace Kesco.Lib.Entities.Resources
         /// </summary>
         public int R { get; set; }
 
+        public string OwnerPersonID { get; set; }
+        
+        public string UnitScale
+        {
+            get
+            {
+			    var sqlParams = new Dictionary<string, object> { { "@КодРесурса", ResourceId.ToString() }
+                                                                , { "@КодЛица", OwnerPersonID.ToString()} };
+                var dt = DBManager.GetData(SQLQueries.SELECT_РесурсыЛица, CN, CommandType.Text, sqlParams);
+                if (dt.Rows.Count != 0) return (dt.Rows[0]["Точность"].ToString());
+
+                return Scale.ToString();
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -85,7 +109,7 @@ namespace Kesco.Lib.Entities.Resources
                 ResourceRL = dt.Rows[0]["РесурсRL"].ToString();
                 UnitCode = dt.Rows[0]["КодЕдиницыИзмерения"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["КодЕдиницыИзмерения"]);
                 ExciseProductTypeCode = dt.Rows[0]["КодВидаПодакцизногоТовара"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["КодВидаПодакцизногоТовара"]);
-                Accuracy = dt.Rows[0]["Точность"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[0]["Точность"]);
+                Scale = dt.Rows[0]["Точность"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[0]["Точность"]);
                 NDS = dt.Rows[0]["СпецНДС"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[0]["СпецНДС"]);
                 Parent = dt.Rows[0]["Parent"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["Parent"]);
                 L = dt.Rows[0]["L"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["L"]);
@@ -116,7 +140,7 @@ namespace Kesco.Lib.Entities.Resources
                         ResourceRL = dt.Rows[i]["РесурсRL"].ToString(),
                         UnitCode = dt.Rows[i]["КодЕдиницыИзмерения"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["КодЕдиницыИзмерения"]),
                         ExciseProductTypeCode = dt.Rows[i]["КодВидаПодакцизногоТовара"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["КодВидаПодакцизногоТовара"]),
-                        Accuracy = dt.Rows[i]["Точность"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[i]["Точность"]),
+                        Scale = dt.Rows[i]["Точность"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[i]["Точность"]),
                         NDS = dt.Rows[i]["СпецНДС"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[i]["СпецНДС"]),
                         Parent = dt.Rows[i]["Parent"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["Parent"]),
                         L = dt.Rows[i]["L"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["L"]),
@@ -204,10 +228,136 @@ namespace Kesco.Lib.Entities.Resources
             get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_resource) : _connectionString; }
         }
 
+        public double ConvertionCoefficient(Unit oldUnit, Unit newUnit)
+        {
+            if (oldUnit == null)
+                throw new ArgumentNullException("oldUnit", "Необходимо указать");
+            if (newUnit == null)
+                throw new ArgumentNullException("newUnit", "Необходимо указать");
+
+            double oldCoef = double.MinValue;
+            double newCoef = double.MinValue;
+
+            if (Unit == null) throw new Exception("Ресурс не имеет единиц измерения");
+
+            if (oldUnit.КодЕдиницыИзмерения.Equals(Unit.КодЕдиницыИзмерения))
+                oldCoef = 1;
+            if (newUnit.КодЕдиницыИзмерения.Equals(Unit.КодЕдиницыИзмерения))
+                newCoef = 1;
+
+            var resourceList = UnitAdvList;
+            if (resourceList != null)
+            {
+                foreach (UnitAdv unitAdv in resourceList)
+                {
+                    if (oldUnit.КодЕдиницыИзмерения.Equals(unitAdv.Unit.КодЕдиницыИзмерения))
+                        oldCoef = ConvertExtention.Convert.Str2Double(unitAdv.Коэффициент.ToString());
+                    if (newUnit.КодЕдиницыИзмерения.Equals(unitAdv.Unit.КодЕдиницыИзмерения))
+                        newCoef = ConvertExtention.Convert.Str2Double(unitAdv.Коэффициент.ToString());
+                }
+            }
+
+            //if (oldCoef == double.MinValue || newCoef == double.MinValue)
+            //    throw new LogicalException("Ресурс " + this.Name + " не имеет единицы измерения - " + oldUnit._Name, "", System.Reflection.Assembly.GetExecutingAssembly().GetName(), Priority.Info);
+
+            return newCoef / oldCoef;
+        }
+
+        private List<UnitAdv> unitAdvList { get; set; }
+
+        public List<UnitAdv> UnitAdvList
+        {
+            get { return unitAdvList ?? (unitAdvList = GetUnitAdvList(ResourceId)); }
+            set { unitAdvList = value; }
+        }
+        
+        /// <summary>
+        /// Получить список запросом
+        /// </summary>
+        public List<UnitAdv> GetUnitAdvList(Int32 resourceId)
+        {
+            List<UnitAdv> list = null;
+            var sqlParams = new Dictionary<string, object>
+            {
+                {"@КодРесурса", resourceId}
+            };
+            using (var dbReader = new DBReader(SQLQueries.SELECT_ЕдиницыИзмеренияДоп, CommandType.Text, CN, sqlParams))
+            {
+                if (dbReader.HasRows)
+                {
+                    list = new List<UnitAdv>();
+
+                    #region Получение порядкового номера столбца
+
+                    int colКодЕдиницыИзмеренияДополнительной = dbReader.GetOrdinal("КодЕдиницыИзмеренияДополнительной");
+                    int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
+                    int colКодЕдиницыИзмерения = dbReader.GetOrdinal("КодЕдиницыИзмерения");
+                    int colТочность = dbReader.GetOrdinal("Точность");
+                    int colКоличествоЕдиниц = dbReader.GetOrdinal("КоличествоЕдиниц");
+                    int colКоличествоЕдиницОсновных = dbReader.GetOrdinal("КоличествоЕдиницОсновных");
+                    int colКоэффициент = dbReader.GetOrdinal("Коэффициент");
+                    int colМассаБрутто = dbReader.GetOrdinal("МассаБрутто");
+
+                    #endregion
+
+                    while (dbReader.Read())
+                    {
+                        var row = new UnitAdv();
+                        row.Unavailable = false;
+                        row.КодЕдиницыИзмеренияДополнительной = dbReader.GetInt32(colКодЕдиницыИзмеренияДополнительной);
+                        row.КодРесурса = dbReader.GetInt32(colКодРесурса);
+                        row.КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);
+                        row.Точность = dbReader.GetByte(colТочность);
+                        row.КоличествоЕдиниц = dbReader.GetDecimal(colКоличествоЕдиниц);
+                        row.КоличествоЕдиницОсновных = dbReader.GetDecimal(colКоличествоЕдиницОсновных);
+                        row.Коэффициент = dbReader.GetDouble(colКоэффициент);
+                        if (!dbReader.IsDBNull(colМассаБрутто)) { row.МассаБрутто = dbReader.GetDecimal(colМассаБрутто); }
+                        list.Add(row);
+                    }
+                }
+            }
+            return list;
+        }
+
+        public int GetScale4Unit(string _unit, int @default, string _ownerId)
+        {
+            OwnerPersonID = _ownerId;
+            if (UnitCode.ToString().Equals(_unit) || (_unit == string.Empty && UnitCode == 0))
+                return int.Parse(UnitScale);
+
+            var resourceList = UnitAdvList;
+            if (resourceList != null)
+            {
+                foreach (UnitAdv unitAdv in resourceList)
+                    if (unitAdv.Unit.Equals(_unit))
+                        return unitAdv.Точность == 0 ? @default : unitAdv.Точность;
+            }
+            return @default;
+        }
+
+        public int GetScale4Unit(string _unit, int @default)
+        {
+            if (UnitCode.ToString().Equals(_unit))
+                return int.Parse(UnitScale);
+
+            var resourceList = UnitAdvList;
+            if (resourceList != null)
+            {
+                foreach (UnitAdv unitAdv in resourceList)
+                    if (unitAdv.Unit.Equals(_unit))
+                        return unitAdv.Точность == 0 ? @default : unitAdv.Точность;
+            }
+            return @default;
+        }
+
+
         /// <summary>
         ///  Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         public static string _connectionString;
+
     }
+
+
 }
 

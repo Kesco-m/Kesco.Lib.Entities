@@ -175,6 +175,14 @@ namespace Kesco.Lib.Entities.Persons
             }
         }
 
+        public bool HasBProject
+        {
+            get
+            {
+                return BusinessProjectID != 0;
+            }
+        }
+
         /// <summary>
         /// Получение списка лиц из таблицы данных
         /// </summary>

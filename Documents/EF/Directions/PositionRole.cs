@@ -1,13 +1,13 @@
 ﻿using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Corporate;
+using Kesco.Lib.Entities.Persons;
 
 namespace Kesco.Lib.Entities.Documents.EF.Directions
 {
     /// <summary>
     ///     Класс позиций документа УказанияИТ: ПозицииУказанийИТРоли
     /// </summary>
-    [DBSource("vwПозицииУказанийИТРоли", SQLQueries.SUBQUERY_ID_ПозицииУказанийИТРоли,
-        SQLQueries.SUBQUERY_ID_DOC_ПозицииУказанийИТРоли)]
+    [DBSource("vwПозицииУказанийИТРоли", SQLQueries.SUBQUERY_ID_ПозицииУказанийИТРоли, SQLQueries.SUBQUERY_ID_DOC_ПозицииУказанийИТРоли)]
     public class PositionRole : DocumentPosition<PositionRole>
     {
         /// <summary>
@@ -52,6 +52,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
 
 
         private Role _role;
+        private Persons.Person _person;
 
         /// <summary>
         ///     Используем объект, т.к. vwРоли не реплицируются
@@ -81,6 +82,22 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         [DBField("НазваниеЛица","" , false)]
         public string PersonName { get; set; }
+
+        /// <summary>
+        ///     Возвращает объект типа Person в зависимости от значения PersonId
+        /// </summary>
+        public Person PersonObject
+        {
+            get
+            {
+                if (PersonId == 0)
+                    _person = null;
+                else if (_person == null || _person.Id != PersonId.ToString())
+                    _person = new Person(PersonId.ToString());
+
+                return _person;
+            }
+        }
 
         #endregion
     }

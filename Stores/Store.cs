@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Resources;
 using Kesco.Lib.Entities.Persons;
@@ -346,5 +347,53 @@ namespace Kesco.Lib.Entities.Stores
         }
 
         #endregion
+
+        public static string GetOstatokResource(string _Sklad, string _Resource, string _Unit, DateTime _DateTo, bool IncludeSubRes, string _VidOstatkov)
+        {
+            if (string.IsNullOrEmpty(_Sklad)) return "";
+            string rez = "";
+            SqlCommand cm = new SqlCommand("sp_ОстатокНаСкладе");
+            cm.Parameters.Add("@КодСклада", int.Parse(_Sklad));
+            cm.Parameters.Add("@КодРесурса", int.Parse(_Resource));
+            if (_Unit.Length > 0)
+                cm.Parameters.Add("@КодЕдиницыИзмерения", int.Parse(_Unit));
+            else
+                cm.Parameters.Add("@КодЕдиницыИзмерения", DBNull.Value);
+
+            if (_DateTo != DateTime.MinValue)
+                cm.Parameters.Add("@ДатаДо", _DateTo);
+            else
+                cm.Parameters.Add("@ДатаДо", DBNull.Value);
+
+            SqlParameter vid_ost = cm.Parameters.Add("@ВидОстатка", SqlDbType.Int);
+            if (_VidOstatkov.Equals("0"))
+                vid_ost.Value = 0;
+            else if (_VidOstatkov.Equals("1"))
+                vid_ost.Value = 1;
+            else
+                vid_ost.Value = DBNull.Value;
+
+            cm.Parameters.Add("@ВключатьПодчиенныеРесурсы", IncludeSubRes);
+            SqlParameter ost = cm.Parameters.Add("@Остаток", SqlDbType.Float);
+            ost.Direction = ParameterDirection.Output;
+
+            cm.CommandType = CommandType.StoredProcedure;
+            cm.Connection = new SqlConnection(Config.DS_document);
+            try
+            {
+                cm.Connection.Open();
+                cm.ExecuteNonQuery();
+                rez = Kesco.Lib.ConvertExtention.Convert.Object2Str(ost.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new Log.DetailedException(ex.Message, ex, cm);
+            }
+            finally
+            {
+                cm.Connection.Close();
+            }
+            return rez;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -808,6 +809,11 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
             LoadDocument(id, extendedLoad);
         }
 
+        public Document(string id) : base(id)
+        {
+            LoadDocument(id, true);
+        }
+
         /// <summary>
         ///  Загрузить документ
         /// </summary>
@@ -1432,6 +1438,15 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
 
             // если дошло до конца, значит документ не менялся
             return false;
+        }
+
+        public void ClearDeliveryTemporary(string guid)
+        {
+            var sqlParams = new Dictionary<string, object>
+            {
+                {"@guid", guid}
+            };
+            DBManager.ExecuteNonQuery(SQLQueries.DELETE_ОтправкаВагоновВыгрузка, CommandType.Text, CN, sqlParams);
         }
     }
 }

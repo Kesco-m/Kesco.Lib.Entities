@@ -65,9 +65,14 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             PersonZakazchikField = GetDocField("1788");
             PersonEmployerField = GetDocField("1789");
             PersonEmployerHeadField = GetDocField("1790");
-
-
+            
             OsnovanieLinks = new List<DocLink>();
+
+            PositionCommonFoldersField = GetDocField("1404");
+            PositionAdvancedGrantsField = GetDocField("1808");
+            PositionRolesField = GetDocField("1405");
+            PositionTypesField = GetDocField("1406");
+            
         }
 
         public DocField SotrudnikField { get; private set; }
@@ -94,9 +99,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         public DocField PersonEmployerField { get; private set; }
         public DocField PersonEmployerHeadField { get; private set; }
         public DocField OsnovanieField { get; private set; }
+
+        public DocField PositionCommonFoldersField { get; private set; }
+        public DocField PositionAdvancedGrantsField { get; private set; }
+        public DocField PositionRolesField { get; private set; }
+        public DocField PositionTypesField { get; private set; }
+
         public BaseDocFacade OsnovanieBind { get; private set; }
         public List<DocLink> OsnovanieLinks { get; set; }
 
+       
         /// <summary>
         ///     Возвращает объект User по значению поля SotrudnikField
         /// </summary>
@@ -454,11 +466,19 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             positionForClear.ForEach(
                 delegate(PositionCommonFolder p) { PositionCommonFolders.RemoveAll(x => x.GuidId == p.GuidId); });
 
+            //получаем сохраненные позиции
+            var cfSaved = DocumentPosition<PositionCommonFolder>.LoadByDocId(int.Parse(Id));
+
 
             //сохраняем те выбранные элементы, для которых уже были созданы объекты PositionCommonFolders
             PositionCommonFolders.Where(x => string.IsNullOrEmpty(x.Id)).ToList().ForEach(
                 delegate(PositionCommonFolder p)
                 {
+                    if (cfSaved.Count > 0)
+                    {
+                        var cf = cfSaved.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
+                        if (cf != null) return;
+                    }
                     p.DocumentId = int.Parse(Id);
                     p.Save(false);
                 });
@@ -474,8 +494,22 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     CommonFolderName = f.Value
                 })
             {
+                if (cfSaved.Count > 0)
+                {
+                    var cf = cfSaved.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
+                    if (cf != null) continue;
+                }
                 p.Save(false);
+                PositionCommonFolders.Add(p);
             }
+
+            //удаляем те позиции, которых нет в PositionCommonFolders
+            cfSaved.ForEach(delegate(PositionCommonFolder p)
+            {
+                var delP = PositionCommonFolders.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
+                if (delP==null)
+                    p.Delete(false);
+            });
 
             if (reloadPostions) LoadPositionCommonFolders();
         }

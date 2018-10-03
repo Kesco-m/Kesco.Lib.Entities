@@ -38,6 +38,10 @@ namespace Kesco.Lib.Entities.Corporate
         private List<EmployeePersonType> _types;
         private List<EmployeeWorkPlace> _workPlaces;
         private DataTable supervisorsData;
+        private bool? _simRequired;
+        private bool? _simGprsPackage;
+        private string _simPost="";
+        
 
         /// <summary>
         ///     Конструктор
@@ -51,10 +55,11 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        ///     Конструктор, возвращающий пустой экземпляр класса
+        ///     Конструктор, возвращающий экземпляр класса текущего сотрудника
         /// </summary>
         public Employee()
         {
+            GetCurrentUser();
         }
 
         /// <summary>
@@ -321,6 +326,64 @@ namespace Kesco.Lib.Entities.Corporate
                 return FullName;
             }
         }
+
+        /// <summary>
+        /// Сотруднику по должности положена Sim-карта
+        /// </summary>
+        public bool SimRequired {
+            get
+            {
+                SetSimInfo();
+                return _simRequired != null && _simRequired.Value;
+            } 
+          }
+        /// <summary>
+        /// К Sim-карте сотрудника подключен GPRS-пакет
+        /// </summary>
+        public bool SimGprsPackage {
+            get
+            {
+                SetSimInfo();
+                return _simGprsPackage != null && _simGprsPackage.Value;
+            }
+        }
+
+        /// <summary>
+        /// По какой должности сотруднику положена Sim-карта
+        /// </summary>
+        public string SimPost
+        {
+            get
+            {
+                SetSimInfo();
+                return _simPost;
+            }
+        }
+
+        /// <summary>
+        /// Получение информации из должностей, о наличии у должности Sim-карты
+        /// </summary>
+        private void SetSimInfo()
+        {
+            if (RequiredRefreshInfo || !_simGprsPackage.HasValue || !_simRequired.HasValue)
+            {
+                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", Id}};
+                var dt = DBManager.GetData(SQLQueries.SELECT_СотрудникуПоДолжностиПоложенаSIM, ConnString,
+                    CommandType.Text, sqlParams);
+
+                _simGprsPackage = false;
+                _simRequired = false;
+                _simPost = "";
+                if (dt.Rows.Count == 1)
+                {
+                    _simRequired = (dt.Rows[0]["НеобходимаSIMКарта"].ToString() != "0");
+                    _simGprsPackage = (dt.Rows[0]["ПодключитьGPRSПакет"].ToString() != "0");
+                    _simPost = dt.Rows[0]["Должность"].ToString();
+                }
+
+            }
+        }
+
 
         /// <summary>
         ///     Доступ к сети через VPN -- ЗНАЧЕНИЕ УСТАНАВЛИВАЕТСЯ ЧЕРЕЗ вызов CommonFolders

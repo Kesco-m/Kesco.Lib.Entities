@@ -1,28 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using Kesco.Lib.BaseExtention;
+using System.Globalization;
 using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Resources;
-using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Documents.EF.Trade
 {
     /// <summary>
-    /// ОказанныеУслуги
+    /// Движения на cкладах
     /// </summary>
-    [DBSource("vwОказанныеУслуги", SQLQueries.SUBQUERY_ID_ОказанныеУслуги, SQLQueries.SUBQUERY_ID_DOC_ОказанныеУслуги)]
-    public class FactUsl : DocumentPosition<FactUsl>
+    [DBSource("vwДвиженияНаСкладах", SQLQueries.SUBQUERY_ID_ДвиженияНаСкладах, SQLQueries.SUBQUERY_ID_DOC_ДвиженияНаСкладах)]
+    public class Mris : DocumentPosition<Mris>
     {
         #region Поля сущности
 
         /// <summary>
-        /// 
+        ///     КодДокумента
         /// </summary>
-        /// <value>
-        /// КодДокумента (int, not null)
-        /// </value>
         [DBField("КодДокумента", "", true, true)]
         public override int DocumentId { get; set; }
 
@@ -48,60 +42,70 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// КодОказаннойУслуги (int, not null)
+        /// КодДвиженияНаСкладе (int, not null)
         /// </value>
-        [DBField("КодОказаннойУслуги", 0)]
-        public int UslId { get; set; }
+        [DBField("КодДвиженияНаСкладе",0)] 
+        public int MrisId { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <value>
-        /// GuidОказаннойУслуги (uniqueidentifier, not null)
+        /// ТипТранзакции (int, not null)
         /// </value>
-        [DBField("GuidОказаннойУслуги")]
-        public Guid UslGuid { get; set; }
+        [DBField("ТипТранзакции")]
+        public int TransactionType { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <value>
-        /// Агент1 (tinyint, not null)
+        /// ДатаДвижения (datetime, not null)
         /// </value>
-        [DBField("Агент1")]
-        public byte Agent1
+        [DBField("ДатаДвижения")]
+        public DateTime DateMove { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// КодСкладаОтправителя (int, null)
+        /// </value>
+        [DBField("КодСкладаОтправителя")]
+        public int? ShipperStoreId
         {
-            get { return string.IsNullOrEmpty(Agent1Bind.Value) ? (byte) 0 : byte.Parse(Agent1Bind.Value); }
-            set { Agent1Bind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
+            get { return string.IsNullOrEmpty(ShipperStoreIdBind.Value) ? 0 : int.Parse(ShipperStoreIdBind.Value); }
+            set { ShipperStoreIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
-        public BinderValue Agent1Bind = new BinderValue();
+        public BinderValue ShipperStoreIdBind = new BinderValue();
 
         /// <summary>
         /// 
         /// </summary>
         /// <value>
-        /// Агент2 (tinyint, not null)
+        /// КодСкладаПолучателя (int, null)
         /// </value>
-        [DBField("Агент2")]
-        public byte Agent2
+        [DBField("КодСкладаПолучателя")]
+        public int? PayerStoreId
         {
-            get { return string.IsNullOrEmpty(Agent2Bind.Value) ? (byte)0 : byte.Parse(Agent2Bind.Value); }
-            set { Agent2Bind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
+            get { return string.IsNullOrEmpty(PayerStoreIdBind.Value) ? 0 : int.Parse(PayerStoreIdBind.Value); }
+            set { PayerStoreIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
-        public BinderValue Agent2Bind = new BinderValue();
+        public BinderValue PayerStoreIdBind = new BinderValue();
 
         /// <summary>
         /// 
         /// </summary>
         /// <value>
-        /// КодДвиженияНаСкладе (int, null)
+        /// КодОтправкиВагона (int, null)
         /// </value>
-        [DBField("КодДвиженияНаСкладе")]
-        public int? MrisId { get; set; }
+        [DBField("КодОтправкиВагона")]
+        public int? DeliveryId { get; set; }
 
-        /// <summary>
+		
+		 /// <summary>
         /// 
         /// </summary>
         /// <value>
@@ -113,15 +117,17 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             get { return string.IsNullOrEmpty(ResourceIdBind.Value) ? 0 : int.Parse(ResourceIdBind.Value); }
             set { ResourceIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
-
+       
         public BinderValue ResourceIdBind = new BinderValue();
+
+        public string Resourcename = "";
 
         /// <summary>
         /// Ресурс
         /// </summary>
         private Resource resource { get; set; }
         public Resource Resource
-        {
+        { 
             get
             {
                 if (resource != null && ResourceId.ToString() == resource.Id)
@@ -168,15 +174,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// КодУчасткаОтправкиВагона (int, null)
-        /// </value>
-        [DBField("КодУчасткаОтправкиВагона")]
-        public int? UchastokId { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <value>
         /// Количество (float, not null
         /// </value>
         [DBField("Количество")]
@@ -187,12 +184,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         public BinderValue CountBind = new BinderValue();
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <value>
-        /// КодЕдиницыИзмерения (int, null)
+        /// КодЕдиницыИзмерения (int, not null)
         /// </value>
         [DBField("КодЕдиницыИзмерения")]
         public int? UnitId
@@ -240,7 +237,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// ЦенаБезНДС (money, not null)
+        /// КодУпаковки (int, null)
+        /// </value>
+        [DBField("КодУпаковки")] 
+        public int? UpkId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// ЦенаБезНДС (money, null)
         /// </value>
         [DBField("ЦенаБезНДС")]
         public decimal CostOutNDS
@@ -255,7 +261,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// СуммаБезНДС (money, not null)
+        /// СуммаБезНДС (money, null)
         /// </value>
         [DBField("СуммаБезНДС")]
         public decimal SummaOutNDS
@@ -270,7 +276,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// КодСтавкиНДС (int, not null)
+        /// КодСтавкиНДС (int, null)
         /// </value>
         [DBField("КодСтавкиНДС")]
         public int? StavkaNDSId
@@ -284,7 +290,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <summary>
         /// СтавкаНДС
         /// </summary>
-        public StavkaNDS stavkaNDS { get; set; }
+        private StavkaNDS stavkaNDS { get; set; }
         public StavkaNDS StavkaNDS
         {
             get
@@ -303,7 +309,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// СуммаНДС (money, not null)
+        /// СуммаНДС (money, null)
         /// </value>
         [DBField("СуммаНДС")]
         public decimal SummaNDS
@@ -318,7 +324,22 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
-        /// Всего (money, not null)
+        /// Акциз (money, null)
+        /// </value>
+        [DBField("Акциз")]
+        public decimal Aktsiz
+        {
+            get { return string.IsNullOrEmpty(AktsizBind.Value) ? 0 : decimal.Parse(AktsizBind.Value); }
+            set { AktsizBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
+        }
+
+        public BinderValue AktsizBind = new BinderValue();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// Всего (money, null)
         /// </value>
         [DBField("Всего")]
         public decimal Vsego
@@ -333,28 +354,56 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// 
         /// </summary>
         /// <value>
+        /// КодСтраныПроисхождения (int, null)
+        /// </value>
+        [DBField("КодСтраныПроисхождения")]
+        public int? CountryId
+        {
+            get { return string.IsNullOrEmpty(CountryIdBind.Value) ? (int?)null : int.Parse(CountryIdBind.Value); }
+            set { CountryIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }        
+        }
+
+        public BinderValue CountryIdBind = new BinderValue();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// КодТаможеннойДекларации (int, null)
+        /// </value>
+        [DBField("КодТаможеннойДекларации")]
+        public int? GTDId
+        {
+            get { return string.IsNullOrEmpty(GTDIdBind.Value) ? (int?)null : int.Parse(GTDIdBind.Value); }
+            set { GTDIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
+        }
+
+        public BinderValue GTDIdBind = new BinderValue();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
         /// Порядок (int, not null)
         /// </value>
-        [DBField("Порядок")]
+        [DBField("Порядок")] 
         public int Order { get; set; }
 
         #endregion
 
         /// <summary>
-        ///  Конструктор c параметром
+        ///  Конструктор по умолчанию
         /// </summary>
-        public FactUsl(string id)
+        public Mris() {}
+
+        /// <summary>
+        ///  Конструктор с параметром
+        /// </summary>
+        public Mris(string id)
         {
             Id = id;
             Load();
             //FillData(id);
-        }
-
-        /// <summary>
-        ///  Конструктор
-        /// </summary>
-        public FactUsl()
-        {
         }
 
         /// <summary>
@@ -518,38 +567,43 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             return message;
         }
 
+
         /*
         /// <summary>
-        /// Получить данные по id
+        ///  Получить данные по Id
         /// </summary>
         public void FillData(string id)
         {
             if(id.IsNullEmptyOrZero()) return;
 
-            using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ОказаннаяУслуга, id.ToInt(), CommandType.Text, CN))
+            using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ДвижениеНаСкладе, id.ToInt(), CommandType.Text, CN))
             {
                 if (dbReader.HasRows)
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодОказаннойУслуги = dbReader.GetOrdinal("КодОказаннойУслуги");
-                    int colGuidОказаннойУслуги = dbReader.GetOrdinal("GuidОказаннойУслуги");
-                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
-                    int colАгент1 = dbReader.GetOrdinal("Агент1");
-                    int colАгент2 = dbReader.GetOrdinal("Агент2");
                     int colКодДвиженияНаСкладе = dbReader.GetOrdinal("КодДвиженияНаСкладе");
+                    int colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
+                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
+                    int colДатаДвижения = dbReader.GetOrdinal("ДатаДвижения");
+                    int colКодСкладаОтправителя = dbReader.GetOrdinal("КодСкладаОтправителя");
+                    int colКодСкладаПолучателя = dbReader.GetOrdinal("КодСкладаПолучателя");
+                    int colКодОтправкиВагона = dbReader.GetOrdinal("КодОтправкиВагона");
                     int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
                     int colРесурсРус = dbReader.GetOrdinal("РесурсРус");
                     int colРесурсЛат = dbReader.GetOrdinal("РесурсЛат");
-                    int colКодУчасткаОтправкиВагона = dbReader.GetOrdinal("КодУчасткаОтправкиВагона");
                     int colКоличество = dbReader.GetOrdinal("Количество");
                     int colКодЕдиницыИзмерения = dbReader.GetOrdinal("КодЕдиницыИзмерения");
                     int colКоэффициент = dbReader.GetOrdinal("Коэффициент");
+                    int colКодУпаковки = dbReader.GetOrdinal("КодУпаковки");
                     int colЦенаБезНДС = dbReader.GetOrdinal("ЦенаБезНДС");
                     int colСуммаБезНДС = dbReader.GetOrdinal("СуммаБезНДС");
                     int colКодСтавкиНДС = dbReader.GetOrdinal("КодСтавкиНДС");
                     int colСуммаНДС = dbReader.GetOrdinal("СуммаНДС");
+                    int colАкциз = dbReader.GetOrdinal("Акциз");
                     int colВсего = dbReader.GetOrdinal("Всего");
+                    int colКодСтраныПроисхождения = dbReader.GetOrdinal("КодСтраныПроисхождения");
+                    int colКодТаможеннойДекларации = dbReader.GetOrdinal("КодТаможеннойДекларации");
                     int colПорядок = dbReader.GetOrdinal("Порядок");
                     int colИзменил = dbReader.GetOrdinal("Изменил");
                     int colИзменено = dbReader.GetOrdinal("Изменено");
@@ -559,25 +613,28 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                     if (dbReader.Read())
                     {
                         Unavailable = false;
-                        КодОказаннойУслуги = dbReader.GetInt32(colКодОказаннойУслуги);
-                        GuidОказаннойУслуги = dbReader.GetGuid(colGuidОказаннойУслуги);
+                        КодДвиженияНаСкладе = dbReader.GetInt32(colКодДвиженияНаСкладе);
+                        ТипТранзакции = dbReader.GetInt32(colТипТранзакции);
                         КодДокумента = dbReader.GetInt32(colКодДокумента);
-                        Агент1 = dbReader.GetByte(colАгент1);
-                        Агент2 = dbReader.GetByte(colАгент2);
-                        if (!dbReader.IsDBNull(colКодДвиженияНаСкладе)){КодДвиженияНаСкладе = dbReader.GetInt32(colКодДвиженияНаСкладе);}
+                        ДатаДвижения = dbReader.GetDateTime(colДатаДвижения);
+                        if (!dbReader.IsDBNull(colКодСкладаОтправителя)){КодСкладаОтправителя = dbReader.GetInt32(colКодСкладаОтправителя);}
+                        if (!dbReader.IsDBNull(colКодСкладаПолучателя)){КодСкладаПолучателя = dbReader.GetInt32(colКодСкладаПолучателя);}
+                        if (!dbReader.IsDBNull(colКодОтправкиВагона)){КодОтправкиВагона = dbReader.GetInt32(colКодОтправкиВагона);}
                         КодРесурса = dbReader.GetInt32(colКодРесурса);
                         РесурсРус = dbReader.GetString(colРесурсРус);
                         РесурсЛат = dbReader.GetString(colРесурсЛат);
-                        if (!dbReader.IsDBNull(colКодУчасткаОтправкиВагона)){КодУчасткаОтправкиВагона = dbReader.GetInt32(colКодУчасткаОтправкиВагона);}
                         Количество = dbReader.GetDouble(colКоличество);
-                        if (!dbReader.IsDBNull(colКодЕдиницыИзмерения)){КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);}
-                        if (!dbReader.IsDBNull(colКоэффициент))
-                        {Коэффициент = dbReader.GetDouble(colКоэффициент);}
-                        ЦенаБезНДС = dbReader.GetDecimal(colЦенаБезНДС);
-                        SummaOutNDS = dbReader.GetDecimal(colСуммаБезНДС);
-                        КодСтавкиНДС = dbReader.GetInt32(colКодСтавкиНДС);
-                        SummaNDS = dbReader.GetDecimal(colСуммаНДС);
-                        Vsego = dbReader.GetDecimal(colВсего);
+                        КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);
+                        if (!dbReader.IsDBNull(colКоэффициент)){Коэффициент = dbReader.GetDouble(colКоэффициент);}
+                        if (!dbReader.IsDBNull(colКодУпаковки)){КодУпаковки = dbReader.GetInt32(colКодУпаковки);}
+                        if (!dbReader.IsDBNull(colЦенаБезНДС)){ЦенаБезНДС = dbReader.GetDecimal(colЦенаБезНДС);}
+                        if (!dbReader.IsDBNull(colСуммаБезНДС)) { SummaOutNDS = dbReader.GetDecimal(colСуммаБезНДС); }
+                        if (!dbReader.IsDBNull(colКодСтавкиНДС)){КодСтавкиНДС = dbReader.GetInt32(colКодСтавкиНДС);}
+                        if (!dbReader.IsDBNull(colСуммаНДС)){SummaNDS = dbReader.GetDecimal(colСуммаНДС);}
+                        if (!dbReader.IsDBNull(colАкциз)){Акциз = dbReader.GetDecimal(colАкциз);}
+                        if (!dbReader.IsDBNull(colВсего)){Vsego = dbReader.GetDecimal(colВсего);}
+                        if (!dbReader.IsDBNull(colКодСтраныПроисхождения)){КодСтраныПроисхождения = dbReader.GetInt32(colКодСтраныПроисхождения);}
+                        if (!dbReader.IsDBNull(colКодТаможеннойДекларации)){КодТаможеннойДекларации = dbReader.GetInt32(colКодТаможеннойДекларации);}
                         Порядок = dbReader.GetInt32(colПорядок);
                         Изменил = dbReader.GetInt32(colИзменил);
                         Изменено = dbReader.GetDateTime(colИзменено);
@@ -588,6 +645,15 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                     Unavailable = true;
                 }
             }
+        }
+
+        /// <summary>
+        ///  Получить ДвиженияНаСкладах до id документа
+        /// </summary>
+        public static List<Sale> GetSalesByDocId(string id)
+        {
+            var query = string.Format("SELECT * FROM vwДвиженияНаСкладах (nolock) WHERE КодДокумента={0} ORDER BY Порядок", id);
+            return GetSaleList(query);
         }
 
 
@@ -613,48 +679,41 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Получить список ОказанныеУслуги по Id
+        ///  Получить список на основании запроса
         /// </summary>
-        /// <returns></returns>
-        public static List<FactUsl> GetFactUslByDocId(string Id)
+        public static List<Sale> GetSaleList(string query)
         {
-            if(Id.IsNullEmptyOrZero()) return new List<FactUsl>();
-            var query = string.Format("SELECT * FROM vwОказанныеУслуги (nolock) WHERE КодДокумента={0} ORDER BY Порядок", Id);
-            return GetFactUslList(query);
-        }
-
-        /// <summary>
-        /// Получить списко по строке запроса
-        /// </summary>
-        public static List<FactUsl> GetFactUslList(string query)
-        {
-            List<FactUsl> list = new List<FactUsl>();
+            List<Sale> list = null;
             using (var dbReader = new DBReader(query, CommandType.Text, ConnString))
             {
                 if (dbReader.HasRows)
                 {
-                    list = new List<FactUsl>();
+                    list = new List<Sale>();
 
                     #region Получение порядкового номера столбца
 
-                    int colКодОказаннойУслуги = dbReader.GetOrdinal("КодОказаннойУслуги");
-                    int colGuidОказаннойУслуги = dbReader.GetOrdinal("GuidОказаннойУслуги");
-                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
-                    int colАгент1 = dbReader.GetOrdinal("Агент1");
-                    int colАгент2 = dbReader.GetOrdinal("Агент2");
                     int colКодДвиженияНаСкладе = dbReader.GetOrdinal("КодДвиженияНаСкладе");
+                    int colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
+                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
+                    int colДатаДвижения = dbReader.GetOrdinal("ДатаДвижения");
+                    int colКодСкладаОтправителя = dbReader.GetOrdinal("КодСкладаОтправителя");
+                    int colКодСкладаПолучателя = dbReader.GetOrdinal("КодСкладаПолучателя");
+                    int colКодОтправкиВагона = dbReader.GetOrdinal("КодОтправкиВагона");
                     int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
                     int colРесурсРус = dbReader.GetOrdinal("РесурсРус");
                     int colРесурсЛат = dbReader.GetOrdinal("РесурсЛат");
-                    int colКодУчасткаОтправкиВагона = dbReader.GetOrdinal("КодУчасткаОтправкиВагона");
                     int colКоличество = dbReader.GetOrdinal("Количество");
                     int colКодЕдиницыИзмерения = dbReader.GetOrdinal("КодЕдиницыИзмерения");
                     int colКоэффициент = dbReader.GetOrdinal("Коэффициент");
+                    int colКодУпаковки = dbReader.GetOrdinal("КодУпаковки");
                     int colЦенаБезНДС = dbReader.GetOrdinal("ЦенаБезНДС");
                     int colСуммаБезНДС = dbReader.GetOrdinal("СуммаБезНДС");
                     int colКодСтавкиНДС = dbReader.GetOrdinal("КодСтавкиНДС");
                     int colСуммаНДС = dbReader.GetOrdinal("СуммаНДС");
+                    int colАкциз = dbReader.GetOrdinal("Акциз");
                     int colВсего = dbReader.GetOrdinal("Всего");
+                    int colКодСтраныПроисхождения = dbReader.GetOrdinal("КодСтраныПроисхождения");
+                    int colКодТаможеннойДекларации = dbReader.GetOrdinal("КодТаможеннойДекларации");
                     int colПорядок = dbReader.GetOrdinal("Порядок");
                     int colИзменил = dbReader.GetOrdinal("Изменил");
                     int colИзменено = dbReader.GetOrdinal("Изменено");
@@ -663,26 +722,30 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
 
                     while (dbReader.Read())
                     {
-                        var row = new FactUsl();
+                        var row = new Sale();
                         row.Unavailable = false;
-                        row.КодОказаннойУслуги = dbReader.GetInt32(colКодОказаннойУслуги);
-                        row.GuidОказаннойУслуги = dbReader.GetGuid(colGuidОказаннойУслуги);
+                        row.КодДвиженияНаСкладе = dbReader.GetInt32(colКодДвиженияНаСкладе);
+                        row.ТипТранзакции = dbReader.GetInt32(colТипТранзакции);
                         row.КодДокумента = dbReader.GetInt32(colКодДокумента);
-                        row.Агент1 = dbReader.GetByte(colАгент1);
-                        row.Агент2 = dbReader.GetByte(colАгент2);
-                        if (!dbReader.IsDBNull(colКодДвиженияНаСкладе)){row.КодДвиженияНаСкладе = dbReader.GetInt32(colКодДвиженияНаСкладе);}
+                        row.ДатаДвижения = dbReader.GetDateTime(colДатаДвижения);
+                        if (!dbReader.IsDBNull(colКодСкладаОтправителя)){row.КодСкладаОтправителя = dbReader.GetInt32(colКодСкладаОтправителя);}
+                        if (!dbReader.IsDBNull(colКодСкладаПолучателя)){row.КодСкладаПолучателя = dbReader.GetInt32(colКодСкладаПолучателя);}
+                        if (!dbReader.IsDBNull(colКодОтправкиВагона)){row.КодОтправкиВагона = dbReader.GetInt32(colКодОтправкиВагона);}
                         row.КодРесурса = dbReader.GetInt32(colКодРесурса);
                         row.РесурсРус = dbReader.GetString(colРесурсРус);
                         row.РесурсЛат = dbReader.GetString(colРесурсЛат);
-                        if (!dbReader.IsDBNull(colКодУчасткаОтправкиВагона)){row.КодУчасткаОтправкиВагона = dbReader.GetInt32(colКодУчасткаОтправкиВагона);}
                         row.Количество = dbReader.GetDouble(colКоличество);
-                        if (!dbReader.IsDBNull(colКодЕдиницыИзмерения)){row.КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);}
+                        row.КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);
                         if (!dbReader.IsDBNull(colКоэффициент)){row.Коэффициент = dbReader.GetDouble(colКоэффициент);}
-                        row.ЦенаБезНДС = dbReader.GetDecimal(colЦенаБезНДС);
-                        row.SummaOutNDS = dbReader.GetDecimal(colСуммаБезНДС);
-                        row.КодСтавкиНДС = dbReader.GetInt32(colКодСтавкиНДС);
-                        row.SummaNDS = dbReader.GetDecimal(colСуммаНДС);
-                        row.Vsego = dbReader.GetDecimal(colВсего);
+                        if (!dbReader.IsDBNull(colКодУпаковки)){row.КодУпаковки = dbReader.GetInt32(colКодУпаковки);}
+                        if (!dbReader.IsDBNull(colЦенаБезНДС)){row.ЦенаБезНДС = dbReader.GetDecimal(colЦенаБезНДС);}
+                        if (!dbReader.IsDBNull(colСуммаБезНДС)) { row.SummaOutNDS = dbReader.GetDecimal(colСуммаБезНДС); }
+                        if (!dbReader.IsDBNull(colКодСтавкиНДС)){row.КодСтавкиНДС = dbReader.GetInt32(colКодСтавкиНДС);}
+                        if (!dbReader.IsDBNull(colСуммаНДС)){row.SummaNDS = dbReader.GetDecimal(colСуммаНДС);}
+                        if (!dbReader.IsDBNull(colАкциз)){row.Акциз = dbReader.GetDecimal(colАкциз);}
+                        if (!dbReader.IsDBNull(colВсего)){row.Vsego = dbReader.GetDecimal(colВсего);}
+                        if (!dbReader.IsDBNull(colКодСтраныПроисхождения)){row.КодСтраныПроисхождения = dbReader.GetInt32(colКодСтраныПроисхождения);}
+                        if (!dbReader.IsDBNull(colКодТаможеннойДекларации)){row.КодТаможеннойДекларации = dbReader.GetInt32(colКодТаможеннойДекларации);}
                         row.Порядок = dbReader.GetInt32(colПорядок);
                         row.Изменил = dbReader.GetInt32(colИзменил);
                         row.Изменено = dbReader.GetDateTime(colИзменено);
@@ -693,6 +756,5 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             return list;
         }
         */
-
     }
 }

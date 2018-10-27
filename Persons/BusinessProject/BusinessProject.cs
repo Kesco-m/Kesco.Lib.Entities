@@ -67,6 +67,10 @@ namespace Kesco.Lib.Entities.Persons.BusinessProject
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_БизнесПроект, CN, CommandType.Text, sqlParams));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dt"></param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

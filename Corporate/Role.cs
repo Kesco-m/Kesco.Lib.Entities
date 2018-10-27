@@ -46,6 +46,10 @@ namespace Kesco.Lib.Entities.Corporate
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_Роль, CN, CommandType.Text, sqlParams));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dt"></param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

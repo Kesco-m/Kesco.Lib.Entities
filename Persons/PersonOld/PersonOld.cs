@@ -150,6 +150,9 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
         /// </summary>
         private static string _connectionString;
 
+        /// <summary>
+        /// Проверка наличия ФорматНомеровРегистрацииЛиц по Коду Территории
+        /// </summary>
         public bool CheckTemplateData
         {
             get
@@ -358,8 +361,14 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
         /// </summary>
         public abstract class Card : Entity
         {
+            /// <summary>
+            /// Регулярное выражение для удаления пробелов
+            /// </summary>
             protected static Regex spaceRemover = new Regex("^[ ]+|[ ]+$");
 
+            /// <summary>
+            /// Карточка клиента
+            /// </summary>
             public PersonOld Person { get { return КодЛица == 0 ? null : new PersonOld(КодЛица.ToString()); } }
 
             /// <summary>
@@ -960,6 +969,12 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
             }
         }
 
+        /// <summary>
+        /// ФИО в дательном падеже
+        /// </summary>
+        /// <param name="d">Дата</param>
+        /// <param name="prefix">пол (м/ж)</param>
+        /// <returns>ФИО</returns>
         public string PersonNP_GetFIODadelPareg(DateTime d, bool prefix=false)
         {
             CardN crd = (CardN)GetCard(d);
@@ -988,6 +1003,12 @@ SELECT @ФамилияДательный Фамилия", Config.DS_person);
             return pref + ret;
         }
 
+        /// <summary>
+        /// Описание cвязиЛиц
+        /// </summary>
+        /// <param name="_parent">КодЛицаРодителя</param>
+        /// <param name="_date">Дата</param>
+        /// <returns></returns>
         public string PersonNP_GetPostDatelPadegHead( string _parent, string _date)
         {
             string ret = "";
@@ -997,7 +1018,7 @@ SELECT Описание
 FROM vwСвязиЛиц
 WHERE Параметр=1 AND КодЛицаРодителя=@Parent
 	AND КодЛицаПотомка =@Child
-	AND @Date BETWEEN От AND До", Kesco.Lib.Web.Settings.Config.DS_person);
+	AND @Date BETWEEN От AND До", Config.DS_person);
             da.SelectCommand.Parameters.AddWithValue("@Child", Id);
             da.SelectCommand.Parameters.AddWithValue("@Parent", _parent);
             da.SelectCommand.Parameters.AddWithValue("@Date", _date);
@@ -1009,8 +1030,8 @@ WHERE Параметр=1 AND КодЛицаРодителя=@Parent
             da = new SqlDataAdapter(@"
 DECLARE @ДолжностьДательный nvarchar(300)
 EXEC sp_ДолжностьВДательномПадеже  @ДолжностьИменительный, @ДолжностьДательный OUT
-SELECT @ДолжностьДательный Доложность", Web.Settings.Config.DS_person);
-            da.SelectCommand.Parameters.Add("@ДолжностьИменительный", dt.Rows[0][0].ToString());
+SELECT @ДолжностьДательный Доложность", Config.DS_person);
+            da.SelectCommand.Parameters.AddWithValue("@ДолжностьИменительный", dt.Rows[0][0].ToString());
             dt = new DataTable();
             da.Fill(dt);
             ret = dt.Rows[0][0].ToString();

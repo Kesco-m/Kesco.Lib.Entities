@@ -131,16 +131,6 @@ namespace Kesco.Lib.Entities.Documents
         public DateTime ChangeDate { get; set; }
 
         /// <summary>
-        /// Тип документа Рус
-        /// </summary>
-       // public string DocTypeNameRus { get; set; }
-
-        /// <summary>
-        /// Тип документа Eng
-        /// </summary>
-       // public string DocTypeNameEng { get; set; }
-
-        /// <summary>
         /// Язык документа
         /// </summary>
         public string Language { get; set; }
@@ -665,6 +655,38 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
             return DBManager.GetData(query, ConnString);
         }
 
+        /// <summary>
+        ///  Загрузить все вытекающие документы
+        /// </summary>
+        public static DataTable LoadSequelDocs(string docId)
+        {
+            string query = string.Format(@"
+SELECT D._КодДокумента КодДокумента, D.ДатаДокумента, D.КодТипаДокумента, КодПоляДокумента, D.КодРесурса1,ISNULL(D.Money1,0) Money1
+FROM vwСвязиДокументов S (nolock)
+			INNER JOIN vwДокументыДокументыДанные D (nolock) ON S.КодДокументаВытекающего=D.КодДокумента
+WHERE КодДокументаОснования={0}", docId
+);
+            return DBManager.GetData(query, ConnString);
+        }
+
+
+        public static bool CheckLoadSequelDoc(string docId, string fieId)
+        {
+            string sqlQuery = string.Format(@"
+                    SELECT COUNT(*) FROM vwСвязиДокументов
+                    WHERE КодПоляДокумента = {0} AND КодДокументаВытекающего = {1}", fieId, docId);
+
+            var result = DBManager.ExecuteScalar(sqlQuery, CommandType.Text, Config.DS_document);
+
+            if (result == null)
+                return false;
+
+            int count;
+            int.TryParse(result.ToString(), out count);
+
+            return count > 0;
+        }
+
         #endregion
 
         #region Прочее
@@ -809,6 +831,10 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
             LoadDocument(id, extendedLoad);
         }
 
+        /// <summary>
+        /// Конструктор класа (Сущность документ)
+        /// </summary>
+        /// <param name="id"></param>
         public Document(string id) : base(id)
         {
             LoadDocument(id, true);
@@ -1380,6 +1406,20 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
         /// </summary>
         public virtual Document Clone()
         {
+          //var newObj = new Document();
+          //  foreach (var pi in this.GetType().GetProperties().Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType.IsSerializable))
+          //  {
+          //      pi.SetValue(newObj, pi.GetValue(this, null), null);
+          //  }
+
+          //  newObj.DocumentData = DocumentData.Clone();
+
+          //  if (_docType != null)
+          //      newObj._docType = _docType.Clone();
+
+          //  return newObj;
+
+
             var cloneDoc = (Document)MemberwiseClone();
             cloneDoc.DocumentData = DocumentData.Clone();
 
@@ -1440,6 +1480,10 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="guid"></param>
         public void ClearDeliveryTemporary(string guid)
         {
             var sqlParams = new Dictionary<string, object>

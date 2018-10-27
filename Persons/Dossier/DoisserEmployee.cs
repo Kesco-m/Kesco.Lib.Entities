@@ -29,7 +29,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
 
             /// <summary>
             /// Id типа контактов
-            /// <summary>
+            /// </summary>
             public int ContactTypeID { get; set; }
 
             /// <summary>
@@ -45,13 +45,37 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// </summary>
         public class UserInfoContact
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public string Contact { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public int ContactType { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public string Icon { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public string PhoneNumber { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public string Note { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public string @Type { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public int Order { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public bool InDictionary { get; set; }
         }
 
@@ -140,14 +164,25 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// </value>
         public List<EmployeePosition> Positions { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<EmployeeWorkPlace> WorkPlaces { get; set; }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public List<EmployeeCoWorker> CoWorkers { get; set; }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public List<EmployeeRole> Roles { get; set; }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsPersonAdministrator { get; set; }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public List<Employee> CommonEmployees { get; set; }
         /// <summary>
         /// Строка подключения к БД.
@@ -426,7 +461,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
                 {
                     while (dbReader.Read())
                     {
-                        var tempUser = new Employee();
+                        var tempUser = new Employee(false);
                         tempUser.LoadFromDbReader(dbReader, true);
                         userList.Add(tempUser);
                     }

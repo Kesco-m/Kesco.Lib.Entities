@@ -47,11 +47,18 @@ namespace Kesco.Lib.Entities.Corporate
         ///  Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         public EmployeePassage(string id):base(id)
         {
             Load();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Load()
         {
             var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", Id.ToInt() } };

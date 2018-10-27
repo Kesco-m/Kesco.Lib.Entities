@@ -102,12 +102,19 @@ namespace Kesco.Lib.Entities.Transport
             get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Load()
         {
             var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_БазисПоставки, CN, CommandType.Text, sqlParams));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dt"></param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

@@ -25,6 +25,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public TTN()
         {
             Initialization();
+            BasisDocLinks = new List<DocLink>();
         }
 
         /// <summary>
@@ -35,6 +36,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             LoadDocument(id, true);
             Initialization();
         }
+
+        /// <summary>
+        ///  Связанные документы-основания
+        /// </summary>
+        public List<DocLink> BasisDocLinks { get; set; }
 
         /// <summary>
         /// Инициализация документа ТТН
@@ -58,8 +64,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             PlatelschikOKPOField = GetDocField("702");
             PlatelschikBSField = GetDocField("703");
             PlatelschikBSDataField = GetDocField("704");
-            DogovorField = GetDocField("707");
-            PrilozhenieField = GetDocField("708");
+            DogovorField = GetDocField("707");              // договор
+            PrilozhenieField = GetDocField("708");          // приложение
             DogovorTextField = GetDocField("709");
             GOPersonOKPOField = GetDocField("710");
             GOPersonBSField = GetDocField("711");
@@ -85,16 +91,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             AvtomobilField = GetDocField("1272");
             AvtomobilNomerField = GetDocField("1273");
             PritsepNomerField = GetDocField("1274");
-            SchetPredField = GetDocField("1579");
+            SchetPredField = GetDocField("1579");           // счета
             TTNTrField = GetDocField("1584");
-            ZvkBField = GetDocField("1598");
+            ZvkBField    = GetDocField("1598");             //заявки
             SignSupervisorPostField = GetDocField("1604");
             SignBuhgalterPostField = GetDocField("1605");
             SignOtpustilField = GetDocField("1618");
             SignOtpustilPostField = GetDocField("1619");
-            PlatezhkiField = GetDocField("1631");
-            BillOfLadingField = GetDocField("1632");
-            AkkredField = GetDocField("1707");
+            PlatezhkiField = GetDocField("1631");           // платежки
+            BillOfLadingField = GetDocField("1632");        // киносамент
+            AkkredField = GetDocField("1707");              // аккредитив
             MonthResourceField = GetDocField("1718");
             CorrectingDocField = GetDocField("1744");
             CorrectingFlagField = GetDocField("1747");
@@ -103,12 +109,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             Amount = GetDocField("1425");
             ChoosePowerOfAttorney = GetDocField("1585");
 
-            DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);
-            PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);
-            CorrectingDocBind = new BaseDocFacade(this, CorrectingDocField, BaseSetBehavior.RemoveAllAndAddDoc);
-            BillOfLadingBind = new BaseDocFacade(this, BillOfLadingField, BaseSetBehavior.RemoveAllAndAddDoc);
-            SchetPredBind = new BaseDocFacade(this, SchetPredField);
-            PlatezhkiBind = new BaseDocFacade(this, PlatezhkiField);
+            DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);            // договор
+            PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);    // приложение
+            CorrectingDocBind = new BaseDocFacade(this, CorrectingDocField, BaseSetBehavior.RemoveAllAndAddDoc);//корректировочный документ
+            BillOfLadingBind = new BaseDocFacade(this, BillOfLadingField, BaseSetBehavior.RemoveAllAndAddDoc);  // коносамент
+            SchetPredBind = new BaseDocFacade(this, SchetPredField);                                            // счета
+            PlatezhkiBind = new BaseDocFacade(this, PlatezhkiField);                                            // платежки
         }
 
         /// <summary>
@@ -191,7 +197,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// </summary>
         public DocField PlatelschikBSDataField { get; set; }
 
-
         /// <summary>
         /// Id документов "Платежные документы"
         /// </summary>
@@ -215,18 +220,21 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// </summary>
         public DocField DogovorField { get; set; }
 
-        public Dogovor Dog { get; set; }
+        private Dogovor _dogovor { get; set; }
+        /// <summary>
+        /// Договор
+        /// </summary>
         public Dogovor Dogovor
         {
             get
             {
-                if (Dog != null && _Dogovor == Dog.Id)
+                if (_dogovor != null && _Dogovor == _dogovor.Id)
                 {
-                    return Dog;
+                    return _dogovor;
                 }
 
-                Dog = new Dogovor(_Dogovor);
-                return Dog;
+                _dogovor = new Dogovor(_Dogovor);
+                return _dogovor;
             }
         }
 
@@ -235,18 +243,21 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// </summary>
         public DocField PrilozhenieField { get; set; }
 
-        public Prilozhenie Pril { get; set; }
+        private Prilozhenie _prilozhenie { get; set; }
+        /// <summary>
+        /// Приложение
+        /// </summary>
         public Prilozhenie Prilozhenie
         {
             get
             {
-                if (Pril != null && _Prilozhenie == Pril.Id)
+                if (_prilozhenie != null && _Prilozhenie == _prilozhenie.Id)
                 {
-                    return Pril;
+                    return _prilozhenie;
                 }
 
-                Pril = new Prilozhenie(_Prilozhenie);
-                return Pril;
+                _prilozhenie = new Prilozhenie(_Prilozhenie);
+                return _prilozhenie;
             }
         }
 
@@ -599,6 +610,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Возвращает сумму всех позиций товаров по накладной по полю сумма НДС
+        /// </summary>        
         public decimal SummaNDSAll_Mris
         {
             get
@@ -607,6 +621,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Возвращает сумму всех позиций товаров по накладной по полю всего
+        /// </summary>
         public decimal VsegoAll_Mris
         {
             get
@@ -665,25 +682,46 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
         */
 
+        /// <summary>
+        /// Загрузка табличных данный позиций документа (товары и услуги)
+        /// </summary>
         public void LoadDocumentPositions()
         {
             LoadPositionMris();
+            LoadPositionFactUsl();
         }
 
+        /// <summary>
+        /// Создает новый объект, являющийся копией текущего экземпляра.
+        /// </summary>
+        public override Document Clone()
+        {
+            var ttnDoc = (TTN)base.Clone();
+            ttnDoc.BasisDocLinks.CloneList(BasisDocLinks);
+            return ttnDoc;
+        }
+
+        /// <summary>
+        /// Сохранение табличных данных
+        /// </summary>
+        /// <param name="reloadPostions"></param>
+        /// <param name="cmds"></param>
         public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
         {
             var positionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+            var positionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
 
-            positionMris.ForEach(delegate(Mris p0)
+            // товары
+            PositionMris.ForEach(delegate(Mris p0)
             {
-                var p = PositionMris.FirstOrDefault(x => x.Id == p0.MrisId.ToString());
+                var p = positionMris.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
                 if (p == null)
                     p0.Delete(false);
             });
 
             PositionMris.ForEach(delegate(Mris p)
             {
-                if (string.IsNullOrEmpty(p.MrisId.ToString()))
+                if (string.IsNullOrEmpty(p.PositionId.ToString()))
                 {
                     p.DocumentId = int.Parse(Id);
                     p.Save(reloadPostions, cmds);
@@ -691,9 +729,32 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                 }
                 var p0 =
                     positionMris.FirstOrDefault(
-                        x => x.Id == p.Id && (x.MrisId != p.MrisId));
+                        x => x.Id == p.Id && (x.PositionId != p.PositionId));
                 if (p0 != null) p.Save(reloadPostions, cmds);
             });
+
+            // услуги
+            PositionFactUsl.ForEach(delegate(FactUsl p0)
+            {
+                var p = positionFactUsl.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
+                if (p == null)
+                    p0.Delete(false);
+            });
+
+            PositionFactUsl.ForEach(delegate(FactUsl p)
+            {
+                if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                {
+                    p.DocumentId = int.Parse(Id);
+                    p.Save(reloadPostions, cmds);
+                    return;
+                }
+                var p0 =
+                    positionFactUsl.FirstOrDefault(
+                        x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                if (p0 != null) p.Save(reloadPostions, cmds);
+            });
+
         }
 
         /// <summary>
@@ -704,6 +765,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <param name="stavkaId">Код ставки НДС</param>
         /// <param name="price">стоимость</param>
         /// <param name="stavka">сумма НДС</param>
+        /// <param name="sf">склад получателя</param>
+        /// <param name="pf">склад плательщика</param>
         public void FillPositionsByGuid(Guid guid, int stavkaId, decimal price, decimal stavka, string sf, string pf)
         {
             // Отправку нельзя выгрузить дважды в одну и ту же табличную часть
@@ -752,6 +815,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             ClearDeliveryTemporary(guid.ToString());
         }
 
+        /// <summary>
+        /// Отправки: уникальные значения ГО/ГП, транспортные узлы  и др. в выбранных отправках
+        /// </summary>
+        /// <param name="dt">Набор данных</param>
+        /// <param name="values">Массив значений</param>
         public void FillGPersonsDictionary(DataTable dt, ref StringDictionary values)
         {
             StringCollection GOs = new StringCollection();
@@ -788,5 +856,23 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             values.Add("реквизитыго", GOData);
             values.Add("реквизитыгп", GPData);
         }
+
+        public override void Save(bool evalLoad, List<DBCommand> cmds = null)
+        {
+            base.Save(evalLoad, cmds);
+
+            // для сохранения нужен ID документа
+            if (!IsNew)
+            {
+                // сохраняем связи документа
+                foreach (var l in BasisDocLinks)
+                {
+                    l.SequelDocId = DocId;
+                    if (l.DocLinkId == 0)
+                        l.Create();
+                }
+            }
+        }
+
     }
 }

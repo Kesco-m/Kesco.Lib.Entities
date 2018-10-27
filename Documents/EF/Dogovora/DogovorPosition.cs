@@ -112,7 +112,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
         /// СтавкаНДС (float, not null)
         /// </value>
         [DBField("СтавкаНДС")]
-        public decimal StavkaNDS { get; set; }
+        public double StavkaNDS { get; set; }
 
         /// <summary>
         /// 

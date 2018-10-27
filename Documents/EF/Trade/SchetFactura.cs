@@ -424,6 +424,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Платежки
+        /// </summary>
         public string _Platezhki
         {
             get
@@ -436,6 +439,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Счет
+        /// </summary>
         public string _Schets
         {
             get

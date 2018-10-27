@@ -40,11 +40,22 @@ namespace Kesco.Lib.Entities.Resources
         /// </summary>
         public int UnitCode { get; set; }
 
+
+        private Unit _unit { get; set; }
         /// <summary>
         ///  Единица Измерения
         /// </summary>
         public Unit Unit {
-            get { return new Unit(UnitCode.ToString()); }
+            get
+            {
+                if (_unit != null && UnitCode.ToString() == _unit.Id)
+                {
+                    return _unit;
+                }
+
+                _unit = new Unit(UnitCode.ToString());
+                return _unit;
+            }
         }
 
         /// <summary>
@@ -77,14 +88,20 @@ namespace Kesco.Lib.Entities.Resources
         /// </summary>
         public int R { get; set; }
 
-        public string OwnerPersonID { get; set; }
+        /// <summary>
+        /// КодЛица
+        /// </summary>
+        public int OwnerPersonId { get; set; }
         
+        /// <summary>
+        /// Получение точности единицы измерения у лица, которому 
+        /// </summary>
         public string UnitScale
         {
             get
             {
-			    var sqlParams = new Dictionary<string, object> { { "@КодРесурса", ResourceId.ToString() }
-                                                                , { "@КодЛица", OwnerPersonID.ToString()} };
+			    var sqlParams = new Dictionary<string, object> { { "@КодРесурса", ResourceId }
+                                                                , { "@КодЛица", OwnerPersonId} };
                 var dt = DBManager.GetData(SQLQueries.SELECT_РесурсыЛица, CN, CommandType.Text, sqlParams);
                 if (dt.Rows.Count != 0) return (dt.Rows[0]["Точность"].ToString());
 
@@ -228,6 +245,12 @@ namespace Kesco.Lib.Entities.Resources
             get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_resource) : _connectionString; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oldUnit"></param>
+        /// <param name="newUnit"></param>
+        /// <returns></returns>
         public double ConvertionCoefficient(Unit oldUnit, Unit newUnit)
         {
             if (oldUnit == null)
@@ -265,6 +288,9 @@ namespace Kesco.Lib.Entities.Resources
 
         private List<UnitAdv> unitAdvList { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public List<UnitAdv> UnitAdvList
         {
             get { return unitAdvList ?? (unitAdvList = GetUnitAdvList(ResourceId)); }
@@ -319,22 +345,39 @@ namespace Kesco.Lib.Entities.Resources
             return list;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_unit"></param>
+        /// <param name="default"></param>
+        /// <param name="_ownerId"></param>
+        /// <returns></returns>
         public int GetScale4Unit(string _unit, int @default, string _ownerId)
         {
-            OwnerPersonID = _ownerId;
+            OwnerPersonId = int.Parse(_ownerId);
             if (UnitCode.ToString().Equals(_unit) || (_unit == string.Empty && UnitCode == 0))
                 return int.Parse(UnitScale);
 
             var resourceList = UnitAdvList;
             if (resourceList != null)
             {
+                var unitAdv = resourceList.Find(r => r.Unit.Id == _unit).Точность;
+                return unitAdv == 0 ? @default : unitAdv;
+                /*
                 foreach (UnitAdv unitAdv in resourceList)
                     if (unitAdv.Unit.Equals(_unit))
                         return unitAdv.Точность == 0 ? @default : unitAdv.Точность;
+                */
             }
             return @default;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_unit"></param>
+        /// <param name="default"></param>
+        /// <returns></returns>
         public int GetScale4Unit(string _unit, int @default)
         {
             if (UnitCode.ToString().Equals(_unit))

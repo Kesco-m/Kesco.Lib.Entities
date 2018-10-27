@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
@@ -73,7 +74,15 @@ namespace Kesco.Lib.Entities.Documents.EF
         /// </summary>
         public T Clone()
         {
-            return (T) MemberwiseClone();
+            //return (T) MemberwiseClone();
+
+            var newObj = Activator.CreateInstance(GetType());
+            foreach (var pi in this.GetType().GetProperties().Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType.IsSerializable))
+            {
+                pi.SetValue(newObj, pi.GetValue(this, null), null);
+            }
+            return (T) newObj;
+
         }
 
         /// <summary>
@@ -123,10 +132,6 @@ namespace Kesco.Lib.Entities.Documents.EF
             }
         }
 
-        /// <summary>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public static List<T> LoadByDocId(int docId)
         {
             var list = new List<T>();
@@ -145,20 +150,20 @@ namespace Kesco.Lib.Entities.Documents.EF
                             .GetProperty("Unavailable", BindingFlags.Public | BindingFlags.Instance);
                         if (null != prop && prop.CanWrite)
                             prop.SetValue(position, false, null);
-                        
+
                         foreach (var p in dbProps)
                         {
                             var pInfo = p.Key;
                             var fInfo = p.Value;
 
                             //для первичного ключа Entity
-                            var type = p.Value.IsPK && pInfo.PropertyType == typeof (string)
-                                ? typeof (int)
+                            var type = p.Value.IsPK && pInfo.PropertyType == typeof(string)
+                                ? typeof(int)
                                 : pInfo.PropertyType;
 
                             var value = DBManager.GetReaderValue(dbReader, type, fInfo.Ordinal);
 
-                            if (p.Value.IsPK && pInfo.PropertyType == typeof (string) && type == typeof (int))
+                            if (p.Value.IsPK && pInfo.PropertyType == typeof(string) && type == typeof(int))
                                 value = value.ToString();
                             //=============================================
 
@@ -170,12 +175,11 @@ namespace Kesco.Lib.Entities.Documents.EF
                         prop = position.GetType().GetProperty("DbOriginal", BindingFlags.Public | BindingFlags.Instance);
                         if (null != prop && prop.CanWrite)
                             prop.SetValue(position, method.Invoke(position, null), null);
-                       
+
                         list.Add(position);
                     }
                 }
             }
-
 
             return list;
         }

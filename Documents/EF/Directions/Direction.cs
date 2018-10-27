@@ -28,6 +28,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         private Employee _supervisor;
         private DataTable _supervisorData;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
         public Direction()
         {
             Type = DocTypeEnum.УказаниеВОтделИтНаОрганизациюРабочегоМеста;
@@ -75,37 +78,125 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             
         }
 
+        /// <summary>
+        /// Сотрудник
+        /// </summary>
         public DocField SotrudnikField { get; private set; }
+        /// <summary>
+        /// Должность
+        /// </summary>
         public DocField SotrudnikPostField { get; private set; }
+        /// <summary>
+        /// Непосредственный руководитель
+        /// </summary>
         public DocField SupervisorField { get; private set; }
+        /// <summary>
+        /// Мобильный телефон сотрудника
+        /// </summary>
         public DocField RedirectNumField { get; private set; }
+        /// <summary>
+        /// Организовать сотруднику
+        /// </summary>
         public DocField WorkPlaceTypeField { get; private set; }
+        /// <summary>
+        /// Организовать рабочее место
+        /// </summary>
         public DocField WorkPlaceField { get; private set; }
+        /// <summary>
+        /// Телефон
+        /// </summary>
         public DocField PhoneEquipField { get; private set; }
+        /// <summary>
+        /// Телефонная связь
+        /// </summary>
         public DocField PhoneLinkField { get; private set; }
+        /// <summary>
+        /// Компьютер
+        /// </summary>
         public DocField CompTypeField { get; private set; }
+        /// <summary>
+        /// Дополнительное оборудование на рабочем месте
+        /// </summary>
         public DocField AdvEquipField { get; private set; }
+        /// <summary>
+        /// Доступ к корпоративной сети
+        /// </summary>
         public DocField AccessEthernetField { get; private set; }
+        /// <summary>
+        /// Логин
+        /// </summary>
         public DocField LoginField { get; private set; }
+        /// <summary>
+        /// Доп. информация по организации рабочего места
+        /// </summary>
         public DocField AdvInfoField { get; private set; }
+        /// <summary>
+        /// Вид доступа к данным
+        /// </summary>
         public DocField SotrudnikParentCheckField { get; private set; }
+        /// <summary>
+        /// Вместо, как у сотрудника
+        /// </summary>
         public DocField SotrudnikParentField { get; private set; }
+        /// <summary>
+        /// E-mail
+        /// </summary>
         public DocField MailNameField { get; private set; }
+        /// <summary>
+        /// Domain
+        /// </summary>
         public DocField DomainField { get; private set; }
+        /// <summary>
+        /// DisplayName
+        /// </summary>
         public DocField DisplayNameField { get; private set; }
+        /// <summary>
+        /// Предпочитаемый язык
+        /// </summary>
         public DocField SotrudnikLanguageField { get; private set; }
+        /// <summary>
+        /// Код лица сотрудника
+        /// </summary>
         public DocField SotrudnikPersonField { get; private set; }
+        /// <summary>
+        /// Код лица заказчика
+        /// </summary>
         public DocField PersonZakazchikField { get; private set; }
+        /// <summary>
+        /// Код лица работодателя
+        /// </summary>
         public DocField PersonEmployerField { get; private set; }
+        /// <summary>
+        /// Код лица работодателя руководителя
+        /// </summary>
         public DocField PersonEmployerHeadField { get; private set; }
+        /// <summary>
+        /// Документ о приеме на работу
+        /// </summary>
         public DocField OsnovanieField { get; private set; }
-
+        /// <summary>
+        /// Доступ к общим папкам
+        /// </summary>
         public DocField PositionCommonFoldersField { get; private set; }
+        /// <summary>
+        /// Дополнительные права
+        /// </summary>
         public DocField PositionAdvancedGrantsField { get; private set; }
+        /// <summary>
+        /// Выполняемые роли
+        /// </summary>
         public DocField PositionRolesField { get; private set; }
+        /// <summary>
+        /// Доступ к типам лиц
+        /// </summary>
         public DocField PositionTypesField { get; private set; }
-
+        /// <summary>
+        /// Документ о приеме на работу
+        /// </summary>
         public BaseDocFacade OsnovanieBind { get; private set; }
+        /// <summary>
+        /// Список документов
+        /// </summary>
         public List<DocLink> OsnovanieLinks { get; set; }
 
        
@@ -224,7 +315,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     "Ошибка вызова процедур сохранения позиций документа, т.к. документ еще не сохранен!", "",
                     Assembly.GetExecutingAssembly().GetName(),
                     MethodBase.GetCurrentMethod().Name, Priority.Error);
-                return;
             }
             SavePositionsCommonFolders(reloadPostions, cmds);
             SavePositionsRoles(reloadPostions, cmds);
@@ -265,7 +355,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 {
                     while (dbReader.Read())
                     {
-                        var user = new Employee();
+                        var user = new Employee(false);
                         user.LoadFromDbReader(dbReader, true);
                         userList.Add(user);
                     }
@@ -375,7 +465,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         public string FormatingMobilNumber(ref string phoneNum)
         {
             if (phoneNum.Length == 0) return "";
-            var ret = "";
             var areaName = "";
             var telCodeCountry = "";
             var telCodeInCountry = "";
@@ -446,6 +535,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         ///     Сохранение позици ПозицииУказанийИТПапки
         /// </summary>
         /// <param name="folders">Список выбранных папок</param>
+        /// <param name="reloadPostions">Перезапросить данные о позициях</param>
         public void SavePositionsCommonFoldersByDictionary(Dictionary<string, string> folders, bool reloadPostions)
         {
             //Удаляем те позиции, которых нет в списке
@@ -560,6 +650,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         ///     Сохранение позици ПозицииУказанийИТПрава
         /// </summary>
         /// <param name="grants">Список выбранных прав</param>
+        /// <param name="reloadPostions">Перезапросить данные о позициях</param>
         public void SavePositionsAdvancedGrantsByDictionary(Dictionary<string, string> grants, bool reloadPostions)
         {
             foreach (var p in from p in PositionAdvancedGrants

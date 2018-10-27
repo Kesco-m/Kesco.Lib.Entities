@@ -24,6 +24,11 @@ namespace Kesco.Lib.Entities
         public int WorkPlace { get; set; }
 
         /// <summary>
+        /// Признак Офис
+        /// </summary>
+        public int Office { get; set; }
+
+        /// <summary>
         /// Признак Закрыто
         /// </summary>
         public int LocationClose { get; set; }
@@ -110,6 +115,7 @@ namespace Kesco.Lib.Entities
                 ShortName = dt.Rows[0]["Расположение"].ToString();
                 Name = dt.Rows[0]["РасположениеPath1"].ToString();
                 WorkPlace = Convert.ToInt16(dt.Rows[0]["РабочееМесто"]);
+                Office = Convert.ToInt16(dt.Rows[0]["Офис"]);
                 LocationClose = Convert.ToInt16(dt.Rows[0]["Закрыто"]);
                 NamePath0 = dt.Rows[0]["РасположениеPath0"].ToString();
                 NamePath1 = dt.Rows[0]["РасположениеPath1"].ToString();
@@ -141,6 +147,7 @@ namespace Kesco.Lib.Entities
                         Name = dt.Rows[i]["Расположение"].ToString(),
                         ShortName = dt.Rows[0]["Расположение"].ToString(),
                         WorkPlace = Convert.ToInt16(dt.Rows[i]["РабочееМесто"]),
+                        Office = Convert.ToInt16(dt.Rows[i]["Офис"]),
                         LocationClose = Convert.ToInt16(dt.Rows[i]["Закрыто"]),
                         NamePath0 = dt.Rows[i]["РасположениеPath0"].ToString(),
                         NamePath1 = dt.Rows[i]["РасположениеPath1"].ToString(),

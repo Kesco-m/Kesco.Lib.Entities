@@ -44,7 +44,6 @@ namespace Kesco.Lib.Entities
             set { Unavailable = !value; }
         }
 
-        
         /// <summary>
         /// Строка подключения к БД. 
         /// Обязательно к переопределению для классов подключающихся к БД

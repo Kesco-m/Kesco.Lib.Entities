@@ -55,12 +55,14 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        ///     Конструктор, возвращающий экземпляр класса текущего сотрудника
+        /// Конструктор по-умолчанию. Если необходимо получить текущего создайте объект с fillCurrentUser = true 
         /// </summary>
-        public Employee()
+        /// <param name="fillCurrentUser">Заполнить объект данными текущего сотрудника</param>
+        public Employee(bool fillCurrentUser)
         {
-            GetCurrentUser();
+            if (fillCurrentUser) GetCurrentUser();
         }
+        
 
         /// <summary>
         ///     ID. Поле КодСотрудника
@@ -419,6 +421,9 @@ namespace Kesco.Lib.Entities.Corporate
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool NationalAndInternationalAreTheSame
         {
             get
@@ -430,6 +435,9 @@ namespace Kesco.Lib.Entities.Corporate
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string FullNameCorrected
         {
             get
@@ -456,6 +464,9 @@ namespace Kesco.Lib.Entities.Corporate
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string FullNameEnCorrected
         {
             get
@@ -466,7 +477,6 @@ namespace Kesco.Lib.Entities.Corporate
                 {
                     sb.Append(LastNameEn);
                 }
-
 
                 if (!String.IsNullOrEmpty(FirstNameEn))
                 {
@@ -1221,7 +1231,7 @@ namespace Kesco.Lib.Entities.Corporate
                 {
                     while (dbReader.Read())
                     {
-                        var empl = new Employee();
+                        var empl = new Employee(false);
                         empl.LoadFromDbReader(dbReader, true);
                         _employeesOnWorkPlace.Add(empl);
                     }

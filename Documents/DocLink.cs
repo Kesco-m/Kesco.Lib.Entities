@@ -182,21 +182,27 @@ namespace Kesco.Lib.Entities.Documents
 
                     #endregion
 
-                    var row = new DocLink
+                    while (dbReader.Read())
                     {
-                        Unavailable = false,
-                        Id = dbReader.GetInt32(colКодСвязиДокументов).ToString(),
-                        BaseDocId = dbReader.GetInt32(colКодДокументаОснования),
-                        SequelDocId = dbReader.GetInt32(colКодДокументаВытекающего),
-                        SortParent = dbReader.GetInt32(colПорядокОснования),
-                        SortChild = dbReader.GetInt32(colПорядокВытекающего),
-                        ChangePersonId = dbReader.GetInt32(colИзменил),
-                        ChangeDate = dbReader.GetDateTime(colИзменено)
-                    };
+                        var row = new DocLink
+                        {
+                            Unavailable = false,
+                            Id = dbReader.GetInt32(colКодСвязиДокументов).ToString(),
+                            BaseDocId = dbReader.GetInt32(colКодДокументаОснования),
+                            SequelDocId = dbReader.GetInt32(colКодДокументаВытекающего),
+                            SortParent = dbReader.GetInt32(colПорядокОснования),
+                            SortChild = dbReader.GetInt32(colПорядокВытекающего),
+                            ChangePersonId = dbReader.GetInt32(colИзменил),
+                            ChangeDate = dbReader.GetDateTime(colИзменено)
+                        };
 
-                    if (!dbReader.IsDBNull(colКодПоляДокумента)) { row.DocFieldId = dbReader.GetInt32(colКодПоляДокумента); }
+                        if (!dbReader.IsDBNull(colКодПоляДокумента))
+                        {
+                            row.DocFieldId = dbReader.GetInt32(colКодПоляДокумента);
+                        }
 
-                    res.Add(row);
+                        res.Add(row);
+                    }
                 }
             }
 
@@ -381,7 +387,7 @@ namespace Kesco.Lib.Entities.Documents
                 return;
             }
             if(BaseDocId <= 0)
-                throw new ArgumentException("Код документа основания должен больше нуля");
+                throw new ArgumentException("Код документа основания должен быть больше нуля");
 
             if(SequelDocId <= 0)
                 throw new ArgumentException("Код вытекающего документа должен быть больше нуля");

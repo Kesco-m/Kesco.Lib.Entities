@@ -95,6 +95,11 @@ namespace Kesco.Lib.Entities.Persons.Dossier
             LoadPeronInfoFromDoisser(0, showOldValues);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sectionID"></param>
+        /// <param name="showOldValues"></param>
         public void LoadPeronInfoFromDoisser(int sectionID, bool showOldValues)
         {
             var contextList = new List<DossierContext>();

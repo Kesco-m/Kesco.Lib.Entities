@@ -27,6 +27,11 @@ namespace Kesco.Lib.Entities.Persons
             Load();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
         public PersonCatalog(string id, string name)
         {
             Id = id;
@@ -63,6 +68,10 @@ namespace Kesco.Lib.Entities.Persons
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_Каталог, CN, CommandType.Text, sqlParams));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dt"></param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

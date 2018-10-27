@@ -56,6 +56,9 @@ namespace Kesco.Lib.Entities.Stores
         /// </summary>
         private static string _connectionString;
 
+        /// <summary>
+        /// Типы складов
+        /// </summary>
         public StoreType() { }
 
         private StoreType SetData(DataRow r)
@@ -69,6 +72,10 @@ namespace Kesco.Lib.Entities.Stores
             return this;
         }
 
+        /// <summary>
+        /// Запрос списка типов складов
+        /// </summary>
+        /// <returns></returns>
         public static List<StoreType> GetList()
         {
             DataTable dt = DBManager.GetData(SQLQueries.SELECT_ТипыСкладов, Config.DS_person, CommandType.Text, null);

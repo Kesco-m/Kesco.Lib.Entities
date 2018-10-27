@@ -67,7 +67,7 @@ namespace Kesco.Lib.Entities.Documents
         /// <summary>
         ///  Обязательность
         /// </summary>
-        public bool IsMandatory { get; set; }
+        public bool IsRequired { get; set; }
 
         /// <summary>
         ///  Рассчетное, вычисляемое поле
@@ -441,7 +441,7 @@ namespace Kesco.Lib.Entities.Documents
                             DocumentFieldEN = dbReader.GetString(colПолеДокументаEN),
                             DocumentFieldET = dbReader.GetString(colПолеДокументаET),
                             DataColomnName = dbReader.GetString(colКолонкаТаблицы),
-                            IsMandatory = dbReader.GetBoolean(colОбязательность),
+                            IsRequired = dbReader.GetBoolean(colОбязательность),
                             IsCalculated = dbReader.GetBoolean(colРассчетное),
                             FieldTypeID = dbReader.GetInt32(colКодТипаПоля),
                             Decimals = dbReader.GetInt32(colЧислоДесятичныхЗнаков),
@@ -516,7 +516,7 @@ namespace Kesco.Lib.Entities.Documents
                         DocumentFieldEN = dbReader.GetString(colПолеДокументаEN);
                         DocumentFieldET = dbReader.GetString(colПолеДокументаET);
                         DataColomnName = dbReader.GetString(colКолонкаТаблицы);
-                        IsMandatory = dbReader.GetBoolean(colОбязательность);
+                        IsRequired = dbReader.GetBoolean(colОбязательность);
                         IsCalculated = dbReader.GetBoolean(colРассчетное);
                         FieldTypeID = dbReader.GetInt32(colКодТипаПоля);
                         Decimals = dbReader.GetInt32(colЧислоДесятичныхЗнаков);
@@ -578,7 +578,7 @@ namespace Kesco.Lib.Entities.Documents
             sqlParams.Add("@ПолеДокументаEN", DocumentFieldEN);
             sqlParams.Add("@ПолеДокументаET", DocumentFieldET);
             sqlParams.Add("@КолонкаТаблицы", DataColomnName);
-            sqlParams.Add("@Обязательность", IsMandatory);
+            sqlParams.Add("@Обязательность", IsRequired);
             sqlParams.Add("@Рассчетное", IsCalculated);
             sqlParams.Add("@КодТипаПоля", FieldTypeID);
             sqlParams.Add("@ЧислоДесятичныхЗнаков", Decimals);

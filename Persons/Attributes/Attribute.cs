@@ -305,6 +305,9 @@ namespace Kesco.Lib.Entities.Persons.Attributes
 
         }
 
+        /// <summary>
+        /// Проверка атрибута
+        /// </summary>
         public void Check()
         {
             var sqlParams = new Dictionary<string, object>();

@@ -292,6 +292,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Загрузка групп услуг
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static DataTable GetUslsGroup(string id)
         {
             DataTable dt;
@@ -357,7 +362,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             get { return _uslus ?? (_uslus = LoadUsls()); }
         }
 
-         public List<FactUsl> LoadUsls()
+        /// <summary>
+        /// Загрузка услуг
+        /// </summary>
+        /// <returns></returns>
+ 
+        public List<FactUsl> LoadUsls()
          {
              var dt = DBManager.GetData(SqlLoadUsls(Id), ConnString);
              List<FactUsl> col = new List<FactUsl>(dt.Rows.Count);

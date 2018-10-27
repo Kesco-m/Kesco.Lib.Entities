@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
 using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Resources;
+using Kesco.Lib.Entities.Stores;
+using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Documents.EF.Trade
 {
@@ -21,9 +26,22 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public override int DocumentId { get; set; }
 
         /// <summary>
+        ///     КодПозицииУказанийИТРоль
+        /// </summary>
+        [DBField("КодДвиженияНаСкладе", 0)]
+        public override int? PositionId
+        {
+            get { return base.PositionId; }
+            set { base.PositionId = value; }
+        }
+
+        /// <summary>
         ///     Документ
         /// </summary>
         private Document document { get; set; }
+        /// <summary>
+        ///     Документ
+        /// </summary>
         public Document Document
         {
             get
@@ -37,15 +55,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                 return document;
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <value>
-        /// КодДвиженияНаСкладе (int, not null)
-        /// </value>
-        [DBField("КодДвиженияНаСкладе",0)] 
-        public int MrisId { get; set; }
 
         /// <summary>
         /// 
@@ -78,6 +87,30 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ShipperStoreIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Склад Отправителя
+        /// </summary>
+        private Store shipperStore { get; set; }
+        /// <summary>
+        /// Склад Отправителя
+        /// </summary>
+        public Store ShipperStore
+        {
+            get
+            {
+                if (shipperStore != null && ShipperStoreId.ToString() == shipperStore.Id)
+                {
+                    return shipperStore;
+                }
+
+                shipperStore = new Store(ShipperStoreId.ToString());
+                return shipperStore;
+            }
+        }
+
+        /// <summary>
+        /// Binder для поля Склад Отправителя
+        /// </summary>
         public BinderValue ShipperStoreIdBind = new BinderValue();
 
         /// <summary>
@@ -93,6 +126,30 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { PayerStoreIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Склад Получателя
+        /// </summary>
+        private Store payerStore { get; set; }
+        /// <summary>
+        /// Склад Получателя
+        /// </summary>
+        public Store PayerStore
+        {
+            get
+            {
+                if (payerStore != null && PayerStoreId.ToString() == payerStore.Id)
+                {
+                    return payerStore;
+                }
+
+                payerStore = new Store(PayerStoreId.ToString());
+                return payerStore;
+            }
+        }
+
+        /// <summary>
+        /// Binder для поля Склад Получателя
+        /// </summary>
         public BinderValue PayerStoreIdBind = new BinderValue();
 
         /// <summary>
@@ -118,14 +175,23 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
        
+        /// <summary>
+        /// Binder для поля КодРесурса
+        /// </summary>
         public BinderValue ResourceIdBind = new BinderValue();
 
+        /// <summary>
+        /// Название ресурса
+        /// </summary>
         public string Resourcename = "";
 
         /// <summary>
         /// Ресурс
         /// </summary>
         private Resource resource { get; set; }
+        /// <summary>
+        /// Ресурс
+        /// </summary>
         public Resource Resource
         { 
             get
@@ -153,6 +219,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceRusBind.Value = value.Length == 0 ? "" : value; }
         }
 
+        /// <summary>
+        /// Binder для поля РесурсРус
+        /// </summary>
         public BinderValue ResourceRusBind = new BinderValue();
 
         /// <summary>
@@ -168,6 +237,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceLatBind.Value = value.Length == 0 ? "" : value; }
         }
 
+        /// <summary>
+        /// Binder для поля РесурсЛат
+        /// </summary>
         public BinderValue ResourceLatBind = new BinderValue();
 
         /// <summary>
@@ -179,10 +251,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("Количество")]
         public double Count
         {
-            get { return string.IsNullOrEmpty(CountBind.Value) ? 0 : double.Parse(CountBind.Value); }
+            get
+            {
+                return string.IsNullOrEmpty(CountBind.Value) ? 0 : (double)ConvertExtention.Convert.Str2Decimal(CountBind.Value);
+            }
             set { CountBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Количество
+        /// </summary>
         public BinderValue CountBind = new BinderValue();
         
         /// <summary>
@@ -198,12 +276,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { UnitIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля 
+        /// </summary>КодЕдиницыИзмерения
         public BinderValue UnitIdBind = new BinderValue();
 
         /// <summary>
         /// Единица измерения
         /// </summary>
         private Unit unit { get; set; }
+        /// <summary>
+        /// Единица измерения
+        /// </summary>
         public Unit Unit
         {
             get
@@ -225,12 +309,15 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// Коэффициент (float, null
         /// </value>
         [DBField("Коэффициент")]
-        public double Coef
+        public double? Coef
         {
-            get { return string.IsNullOrEmpty(CoefBind.Value) ? 0 : double.Parse(CoefBind.Value); }
+            get { return string.IsNullOrEmpty(CoefBind.Value) ? 0 : (double)ConvertExtention.Convert.Str2Decimal(CoefBind.Value); }
             set { CoefBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Коэффициент
+        /// </summary>
         public BinderValue CoefBind = new BinderValue();
 
         /// <summary>
@@ -251,10 +338,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("ЦенаБезНДС")]
         public decimal CostOutNDS
         {
-            get { return string.IsNullOrEmpty(CostOutNDSBind.Value) ? 0 : decimal.Parse(CostOutNDSBind.Value); }
+            get { return string.IsNullOrEmpty(CostOutNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(CostOutNDSBind.Value); }
             set { CostOutNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля ЦенаБезНДС
+        /// </summary>
         public BinderValue CostOutNDSBind = new BinderValue();
 
         /// <summary>
@@ -266,10 +356,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("СуммаБезНДС")]
         public decimal SummaOutNDS
         {
-            get { return string.IsNullOrEmpty(SummaOutNDSBind.Value) ? 0 : decimal.Parse(SummaOutNDSBind.Value); }
+            get { return string.IsNullOrEmpty(SummaOutNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(SummaOutNDSBind.Value); }
             set { SummaOutNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля СуммаБезНДС
+        /// </summary>
         public BinderValue SummaOutNDSBind = new BinderValue();
 
         /// <summary>
@@ -285,12 +378,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { StavkaNDSIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля КодСтавкиНДС
+        /// </summary>
         public BinderValue StavkaNDSIdBind = new BinderValue();
 
         /// <summary>
         /// СтавкаНДС
         /// </summary>
         private StavkaNDS stavkaNDS { get; set; }
+        /// <summary>
+        /// СтавкаНДС
+        /// </summary>
         public StavkaNDS StavkaNDS
         {
             get
@@ -314,10 +413,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("СуммаНДС")]
         public decimal SummaNDS
         {
-            get { return string.IsNullOrEmpty(SummaNDSBind.Value) ? 0 : decimal.Parse(SummaNDSBind.Value); }
+            get { return string.IsNullOrEmpty(SummaNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(SummaNDSBind.Value); }
             set { SummaNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля СуммаНДС
+        /// </summary>
         public BinderValue SummaNDSBind = new BinderValue();
 
         /// <summary>
@@ -329,10 +431,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("Акциз")]
         public decimal Aktsiz
         {
-            get { return string.IsNullOrEmpty(AktsizBind.Value) ? 0 : decimal.Parse(AktsizBind.Value); }
+            get { return string.IsNullOrEmpty(AktsizBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(AktsizBind.Value); }
             set { AktsizBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Всего
+        /// </summary>
         public BinderValue AktsizBind = new BinderValue();
 
         /// <summary>
@@ -344,10 +449,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("Всего")]
         public decimal Vsego
         {
-            get { return string.IsNullOrEmpty(VsegoBind.Value) ? 0 : decimal.Parse(VsegoBind.Value); }
+            get { return string.IsNullOrEmpty(VsegoBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(VsegoBind.Value); }
             set { VsegoBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Всего
+        /// </summary>
         public BinderValue VsegoBind = new BinderValue();
 
         /// <summary>
@@ -363,6 +471,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { CountryIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }        
         }
 
+        /// <summary>
+        /// Binder для поля КодСтраныПроисхождения
+        /// </summary>
         public BinderValue CountryIdBind = new BinderValue();
 
         /// <summary>
@@ -378,6 +489,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { GTDIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля КодТаможеннойДекларации
+        /// </summary>
         public BinderValue GTDIdBind = new BinderValue();
 
         /// <summary>
@@ -404,6 +518,14 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             Id = id;
             Load();
             //FillData(id);
+        }
+
+        /// <summary>
+        ///     Строка подключения к БД.
+        /// </summary>
+        public sealed override string CN
+        {
+            get { return ConnString; }
         }
 
         /// <summary>
@@ -565,6 +687,154 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             Vsego = ConvertExtention.Convert.Round(_vsego, scale);
 
             return message;
+        }
+
+        /// <summary>
+        /// Возвращает остатки по документу
+        /// </summary>
+        /// <param name="IdSklad">Код Склада</param>
+        /// <param name="Type">Тип Набора</param>
+        /// <param name="IdRes">Код Ресурса</param>
+        /// <param name="IdUnit">Код Единицы Измерения</param>
+        /// <param name="IdDoc">Код Документа</param>
+        /// <param name="date">Дата</param>
+        /// <returns>DataTable</returns>
+        public static DataTable GetOstatkiDoc(int IdSklad, bool Type, int IdRes, int IdUnit, int IdDoc, DateTime date)
+        {
+            SqlCommand cmd = new SqlCommand("sp_ОстаткиДляНабора") {CommandType = CommandType.StoredProcedure};
+            var sqlParams = new Dictionary<string, object>
+            {
+                { "@КодРесурса", IdRes }, 
+                { "@КодСклада", IdSklad }, 
+                { "@КодЕдиницыИзмерения", IdUnit }, 
+                { "@Дата", date }, 
+                { "@ТипНабора", Type } 
+            };
+
+            if (IdDoc > 0)
+                sqlParams.Add("@КодДокумента", IdDoc);
+
+            DataTable dt = DBManager.GetData("sp_ОстаткиДляНабора", ConnString, CommandType.StoredProcedure, sqlParams);
+            if (!dt.Columns.Contains("КодДвиженияНаСкладе")) dt.Columns.Add("КодДвиженияНаСкладе", typeof (int));
+            if (!dt.Columns.Contains("ТипТранзакции")) dt.Columns.Add("ТипТранзакции", typeof(int));
+            if (!dt.Columns.Contains("КодДокумента")) dt.Columns.Add("КодДокумента", typeof(int));
+            if (!dt.Columns.Contains("КодОтправкиВагона")) dt.Columns.Add("КодОтправкиВагона", typeof(int));
+            if (!dt.Columns.Contains("ОтправкаВагона")) dt.Columns.Add("ОтправкаВагона", typeof(string));
+            if (!dt.Columns.Contains("ТипПодписи")) dt.Columns.Add("ТипПодписи", typeof(int));
+            if (!dt.Columns.Contains("Приход")) dt.Columns.Add("Приход", typeof(decimal));
+            if (!dt.Columns.Contains("Факт")) dt.Columns.Add("Факт", typeof(decimal));
+            if (!dt.Columns.Contains("Расчет")) dt.Columns.Add("Факт", typeof(decimal));
+            dt.Constraints.Add("pk", dt.Columns["КодДвиженияНаСкладе"], true);
+
+            return dt;
+        }
+
+        /// <summary>
+        /// Расход Без Набора
+        /// </summary>
+        /// <param name="IdSklad">Код склада</param>
+        /// <param name="IdRes">Код ресурса</param>
+        /// <param name="IdUnit">Код единицы измерения</param>
+        /// <param name="IdDoc">Код документа</param>
+        /// <param name="date">Дата</param>
+        /// <param name="Fakt">Факт</param>
+        /// <param name="Raschet">Расчет</param>
+        public static void GetDebit(int IdSklad, int IdRes, int IdUnit, int IdDoc, DateTime date, out decimal Fakt, out decimal Raschet)
+        {
+            SqlConnection conn = new SqlConnection();
+            SqlCommand cm = new SqlCommand("sp_РасходыБезНаборов", conn);
+            cm.Parameters.AddWithValue("@КодСклада", IdSklad);
+            cm.Parameters.AddWithValue("@КодРесурса", IdRes);
+            cm.Parameters.AddWithValue("@КодЕдиницыИзмерения", IdUnit);
+            cm.Parameters.AddWithValue("@Дата", date);
+            if (IdDoc != -1)
+                cm.Parameters.AddWithValue("@КодДокумента", IdDoc);
+
+            SqlParameter pFakt = cm.Parameters.Add("@Факт", SqlDbType.Float);
+            pFakt.Direction = ParameterDirection.Output;
+
+            SqlParameter pRaschet = cm.Parameters.Add("@Расчет", SqlDbType.Float);
+            pRaschet.Direction = ParameterDirection.Output;
+
+            cm.CommandType = CommandType.StoredProcedure;
+
+            try
+            {
+                conn.ConnectionString = ConnString;
+                conn.Open();
+                cm.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw new Kesco.Lib.Log.DetailedException(ex.Message, ex, cm);
+            }
+            finally
+            {
+                conn.Close();
+                conn.Dispose();
+            }
+
+            if (pFakt.Value == DBNull.Value)
+                Fakt = 0m;
+            else
+                Fakt = (decimal)(double)pFakt.Value;
+
+            if (pRaschet.Value == DBNull.Value)
+                Raschet = 0m;
+            else
+                Raschet = (decimal)(double)pRaschet.Value;
+        }
+
+        /// <summary>
+        /// Метод добавляет выбранные наборы
+        /// </summary>
+        /// <param name="documentId">Идентификатор доукмента</param>
+        /// <param name="resourceId">Идентификатор товара</param>
+        /// <param name="unitId">Единица измерения</param>
+        /// <param name="typeNabor">Тип набора</param>
+        /// <param name="naborDoc">таблица с выбранными наборами</param>
+        public static void SaveDistrib(string documentId, string resourceId, string unitId, bool typeNabor, DataTable naborDoc)
+        {
+            string sql = @"
+--удаляем все наборы по документу и выбранному ресурсу
+DELETE FROM Наборы WHERE EXISTS(SELECT * FROM vwДвиженияНаСкладах ДНС (nolock)
+WHERE ДНС.КодДокумента=" + documentId + " AND ДНС.КодРесурса=" + resourceId + " AND ДНС.КодДвиженияНаСкладе=Наборы." + (typeNabor ? "КодДвиженияНаСклад" : "КодДвиженияСоСклада") + ")\r\n";
+            if (naborDoc.Rows.Count > 0)
+            {
+                sql += @"
+--добавляем новые наборы одним запросом
+INSERT INTO Наборы (КодДвиженияНаСклад,КодДвиженияСоСклада,Количество,Изменил,Изменено)";
+
+                int inx = 0;
+                foreach (DataRow r in naborDoc.Rows)
+                {
+                    sql += @"SELECT ";
+                    sql += (typeNabor ? r["КодДвиженияВДокументе"] : r["КодДвиженияВНаборе"]) + ",";
+                    sql += (typeNabor ? r["КодДвиженияВНаборе"] : r["КодДвиженияВДокументе"]) + ",";
+                    sql += r["Количество"].ToString().Replace(",", ".") + "*Справочники.dbo.fn_unitConverter(" + resourceId + "," + unitId + ",null),";
+                    sql += "0,GETUTCDATE()";
+
+                    if (inx < naborDoc.Rows.Count - 1)
+                        sql += @" UNION ALL";
+                    inx++;
+                }
+            }
+
+            SqlConnection cn = new SqlConnection(ConnString);
+            SqlCommand cm = new SqlCommand(sql, cn);
+            try
+            {
+                cn.Open();
+                cm.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw new Log.DetailedException(ex.Message, ex, cm);
+            }
+            finally
+            {
+                cn.Close();
+            }
         }
 
 

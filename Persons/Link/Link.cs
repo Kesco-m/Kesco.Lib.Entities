@@ -116,13 +116,13 @@ namespace Kesco.Lib.Entities.Link
         /// Конструктор
         /// </summary>
         /// <param name="id">ID связи лиц</param>
+        /// <param name="name"></param>
         public Link(string id, string name)
             : base(id)
         {
             Id = id;
             Name = name;
         }
-
 
         /// <summary>
         /// Метод загрузки данных сущности "связь лиц"
@@ -131,7 +131,6 @@ namespace Kesco.Lib.Entities.Link
         {
             FillData(Id);
         }
-
 
         /// <summary>
         /// Метод создания сущности связи лиц

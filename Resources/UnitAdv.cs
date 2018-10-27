@@ -137,6 +137,9 @@ public class UnitAdv : Entity
             }
         }
 
+        /// <summary>
+        /// Дополнительная ед. изм.
+        /// </summary>
         public Unit Unit
         {
             get

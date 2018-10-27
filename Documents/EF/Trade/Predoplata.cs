@@ -240,16 +240,28 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
 
         #endregion
 
+        /// <summary>
+        /// Bind поля Договор
+        /// </summary>
         public BaseDocFacade DogovorBind { get; private set; }
 
+        /// <summary>
+        /// Bind поля Приложение
+        /// </summary>
         public BaseDocFacade PrilozhenieBind { get; private set; }
 
+        /// <summary>
+        /// Договор
+        /// </summary>
         public string _Dogovor
         {
             get { return DogovorBind.Value; }
             set { DogovorBind.Value = value; }
         }
 
+        /// <summary>
+        /// Приложение
+        /// </summary>
         public string _Prilozhenie
         {
             get { return PrilozhenieBind.Value; }

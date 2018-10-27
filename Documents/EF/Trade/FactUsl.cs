@@ -27,9 +27,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public override int DocumentId { get; set; }
 
         /// <summary>
-        ///     Документ
+        /// Документ
         /// </summary>
         private Document document { get; set; }
+        /// <summary>
+        /// Документ
+        /// </summary>
         public Document Document
         {
             get
@@ -45,13 +48,14 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// 
+        ///     КодПозицииУказанийИТРоль
         /// </summary>
-        /// <value>
-        /// КодОказаннойУслуги (int, not null)
-        /// </value>
         [DBField("КодОказаннойУслуги", 0)]
-        public int UslId { get; set; }
+        public override int? PositionId
+        {
+            get { return base.PositionId; }
+            set { base.PositionId = value; }
+        }
 
         /// <summary>
         /// 
@@ -59,7 +63,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <value>
         /// GuidОказаннойУслуги (uniqueidentifier, not null)
         /// </value>
-        [DBField("GuidОказаннойУслуги")]
+        ///[DBField("GuidОказаннойУслуги")]
         public Guid UslGuid { get; set; }
 
         /// <summary>
@@ -75,6 +79,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { Agent1Bind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Агент1
+        /// </summary>
         public BinderValue Agent1Bind = new BinderValue();
 
         /// <summary>
@@ -90,6 +97,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { Agent2Bind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Агент2
+        /// </summary>
         public BinderValue Agent2Bind = new BinderValue();
 
         /// <summary>
@@ -114,12 +124,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля КодРесурса
+        /// </summary>
         public BinderValue ResourceIdBind = new BinderValue();
 
         /// <summary>
         /// Ресурс
         /// </summary>
         private Resource resource { get; set; }
+        /// <summary>
+        /// Ресурс
+        /// </summary>
         public Resource Resource
         {
             get
@@ -147,6 +163,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceRusBind.Value = value.Length == 0 ? "" : value; }
         }
 
+        /// <summary>
+        /// Binder для поля РесурсРус
+        /// </summary>
         public BinderValue ResourceRusBind = new BinderValue();
 
         /// <summary>
@@ -162,6 +181,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { ResourceLatBind.Value = value.Length == 0 ? "" : value; }
         }
 
+        /// <summary>
+        /// Binder для поля РесурсЛат
+        /// </summary>
         public BinderValue ResourceLatBind = new BinderValue();
 
         /// <summary>
@@ -182,10 +204,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("Количество")]
         public double Count
         {
-            get { return string.IsNullOrEmpty(CountBind.Value) ? 0 : double.Parse(CountBind.Value); }
+            get { return string.IsNullOrEmpty(CountBind.Value) ? 0 : (double)ConvertExtention.Convert.Str2Decimal(CountBind.Value); }
             set { CountBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Количество
+        /// </summary>
         public BinderValue CountBind = new BinderValue();
 
         /// <summary>
@@ -198,15 +223,21 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public int? UnitId
         {
             get { return string.IsNullOrEmpty(UnitIdBind.Value) ? (int?)null : int.Parse(UnitIdBind.Value); }
-            set { UnitIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
+            set { UnitIdBind.Value = value.ToString().IsNullEmptyOrZero() ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля КодЕдиницыИзмерения
+        /// </summary>
         public BinderValue UnitIdBind = new BinderValue();
 
         /// <summary>
         /// Единица измерения
         /// </summary>
         private Unit unit { get; set; }
+        /// <summary>
+        /// Единица измерения
+        /// </summary>
         public Unit Unit
         {
             get
@@ -228,12 +259,15 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// Коэффициент (float, null
         /// </value>
         [DBField("Коэффициент")]
-        public double Coef
+        public double? Coef
         {
-            get { return string.IsNullOrEmpty(CoefBind.Value) ? 0 : double.Parse(CoefBind.Value); }
+            get { return string.IsNullOrEmpty(CoefBind.Value) ? 0 : (double)ConvertExtention.Convert.Str2Decimal(CoefBind.Value); }
             set { CoefBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Коэффициент
+        /// </summary>
         public BinderValue CoefBind = new BinderValue();
 
         /// <summary>
@@ -245,10 +279,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("ЦенаБезНДС")]
         public decimal CostOutNDS
         {
-            get { return string.IsNullOrEmpty(CostOutNDSBind.Value) ? 0 : decimal.Parse(CostOutNDSBind.Value); }
+            get { return string.IsNullOrEmpty(CostOutNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(CostOutNDSBind.Value); }
             set { CostOutNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля ЦенаБезНДС
+        /// </summary>
         public BinderValue CostOutNDSBind = new BinderValue();
 
         /// <summary>
@@ -260,10 +297,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("СуммаБезНДС")]
         public decimal SummaOutNDS
         {
-            get { return string.IsNullOrEmpty(SummaOutNDSBind.Value) ? 0 : decimal.Parse(SummaOutNDSBind.Value); }
+            get { return string.IsNullOrEmpty(SummaOutNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(SummaOutNDSBind.Value); }
             set { SummaOutNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля СуммаБезНДС
+        /// </summary>
         public BinderValue SummaOutNDSBind = new BinderValue();
 
         /// <summary>
@@ -279,12 +319,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             set { StavkaNDSIdBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля КодСтавкиНДС
+        /// </summary>
         public BinderValue StavkaNDSIdBind = new BinderValue();
 
         /// <summary>
         /// СтавкаНДС
         /// </summary>
         public StavkaNDS stavkaNDS { get; set; }
+        /// <summary>
+        /// СтавкаНДС
+        /// </summary>
         public StavkaNDS StavkaNDS
         {
             get
@@ -308,10 +354,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("СуммаНДС")]
         public decimal SummaNDS
         {
-            get { return string.IsNullOrEmpty(SummaNDSBind.Value) ? 0 : decimal.Parse(SummaNDSBind.Value); }
+            get { return string.IsNullOrEmpty(SummaNDSBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(SummaNDSBind.Value); }
             set { SummaNDSBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля СуммаНДС
+        /// </summary>
         public BinderValue SummaNDSBind = new BinderValue();
 
         /// <summary>
@@ -323,10 +372,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("Всего")]
         public decimal Vsego
         {
-            get { return string.IsNullOrEmpty(VsegoBind.Value) ? 0 : decimal.Parse(VsegoBind.Value); }
+            get { return string.IsNullOrEmpty(VsegoBind.Value) ? 0 : ConvertExtention.Convert.Str2Decimal(VsegoBind.Value); }
             set { VsegoBind.Value = value.ToString().Length == 0 ? "" : value.ToString(); }
         }
 
+        /// <summary>
+        /// Binder для поля Всего
+        /// </summary>
         public BinderValue VsegoBind = new BinderValue();
 
         /// <summary>

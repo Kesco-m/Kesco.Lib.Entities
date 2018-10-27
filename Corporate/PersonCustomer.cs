@@ -47,11 +47,18 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         private static string _connectionString;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         public PersonCustomer(string id):base(id)
         {
             Load();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Load()
         {
             var sqlParams = new Dictionary<string, object> { { "@Id", Id.ToInt() } };

@@ -79,12 +79,18 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// </summary>
         private static string _connectionString;
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         public DossierContext()
         {
             
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         public DossierContext(string id):base(id)
         {
             Load();
@@ -119,6 +125,10 @@ namespace Kesco.Lib.Entities.Persons.Dossier
             //}
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dbReader"></param>
         public void LoadFromDbReader(DBReader dbReader)
         {
             

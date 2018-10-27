@@ -67,6 +67,10 @@ namespace Kesco.Lib.Entities.Persons
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_ОрганизационноПравоваяФорма, CN, CommandType.Text, sqlParams));
         }
 
+        /// <summary>
+        /// Метод заполнения полей сущности из таблицы данных
+        /// </summary>
+        /// <param name="dt">Таблица данных</param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

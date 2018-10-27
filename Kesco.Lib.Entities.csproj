@@ -144,7 +144,6 @@
     <Compile Include="Corporate\Phones\Phone.cs" />
     <Compile Include="Corporate\EmployeeContact.cs" />
     <Compile Include="Corporate\EmployeeCoWorker.cs" />
-    <Compile Include="Corporate\EmployeeCurrent.cs" />
     <Compile Include="Corporate\PersonCustomer.cs" />
     <Compile Include="Corporate\EmployeePassage.cs" />
     <Compile Include="Corporate\EmployeePhoto.cs" />

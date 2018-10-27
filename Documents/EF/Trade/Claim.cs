@@ -152,6 +152,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+        /// <summary>
+        /// Договор
+        /// </summary>
         public string _Dogovor
         {
             get
@@ -164,6 +167,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
              }
         }
 
+        /// <summary>
+        /// Приложение
+        /// </summary>
         public string _Prilozhenie
         {
             get

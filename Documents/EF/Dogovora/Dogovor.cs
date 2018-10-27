@@ -147,19 +147,30 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
         /// </summary>
         public DocField NumberOptionsField { get { return GetFieldByColumnName("Int7"); } }
 
-
+        /// <summary>
+        /// Куратор
+        /// </summary>
         public string _Kurator
         {
             get { return KuratorField == null ? "" : KuratorField.ValueString; }
         }
 
+        /// <summary>
+        /// Куратор
+        /// </summary>
         public Employee Kurator { get { return new Employee(_Kurator); } }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string _ValidFrom
         {
             get { return ValidFromField.IsValueEmpty ? "" : ValidFromField.ValueString; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string _ValidTill
         {
             get { return ValidTillField.IsValueEmpty ? "" : ValidTillField.ValueString; }
@@ -265,6 +276,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             get { return ValyutaField == null ? "" : ValyutaField.ValueInt.ToString(); }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Date"></param>
+        /// <returns></returns>
         public decimal GetCoefUe2Valuta(DateTime Date)
         {
             if (!UE) return 1M;
@@ -396,6 +412,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             return res;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public ValidAtStatuses GetValidAtStatus(DateTime date)
         {
             if (DocType.ChildOf(DocTypeEnum.Договор) || DocType.ChildOf(DocTypeEnum.Приложение))
@@ -408,16 +429,25 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             return ValidAtStatuses.Valid;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool ValidTillUnlimited
         {
             get { return _ValidTill.Equals("20500101"); }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DateTime ValidFrom
         {
             get { return ValidFromField.DateTimeValue ?? DateTime.MinValue; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DateTime ValidTill
         {
             get { return ValidTillField.DateTimeValue ?? DateTime.MinValue; }
@@ -654,6 +684,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
                 return f;
         }
 
+        /// <summary>
+        /// Сохранение позиций документа
+        /// </summary>
         public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
         {
             var documentPosition = DocumentPosition<DogovorPosition>.LoadByDocId(int.Parse(Id));
@@ -681,6 +714,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 
         }
 
+        /// <summary>
+        ///    Загрузка позиций документа
+        /// </summary>
         public void LoadDocumentPositions()
         {
             LoadDogovorPosition();

@@ -175,6 +175,9 @@ namespace Kesco.Lib.Entities.Persons
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool HasBProject
         {
             get

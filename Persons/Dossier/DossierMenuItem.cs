@@ -72,10 +72,6 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// </summary>
         public string ParametrsURL { get; set; }
         /// <summary>
-        /// Доступ ролей
-        /// </summary>
-        //public string AccessRoles { get; set; }
-        /// <summary>
         /// Строка подключения к БД.
         /// </summary>
         public sealed override string CN
@@ -96,6 +92,9 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// </summary>
         private static string _connectionString;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Load()
         {
             //FillData(DBManager.GetData(SQLQueries.SELECT_КонтактПоID, CN, CommandType.Text, null));

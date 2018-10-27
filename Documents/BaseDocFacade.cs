@@ -68,7 +68,7 @@ namespace Kesco.Lib.Entities.Documents
                     SetAction = RemoveAllAndAddDoc;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("Для поведения " + behavior + " не уставнолен делегат");
+                    throw new ArgumentOutOfRangeException("Для поведения " + behavior + " не установлен делегат");
             }
         }
 

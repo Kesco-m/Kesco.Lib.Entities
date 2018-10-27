@@ -126,7 +126,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         ///  Сохраняем текущий документ
         /// </summary>
         /// <param name="evalLoad">Выполнить повторную загрузку</param>
-        /// <param name="cmd">Объект sql-команды для анализа запроса</param>
+        /// <param name="cmds">Объект sql-команды для анализа запроса</param>
         public override void Save(bool evalLoad, List<DBCommand> cmds = null)
         {
             base.Save(evalLoad, cmds);

@@ -15,7 +15,7 @@ namespace Kesco.Lib.Entities.Corporate.Phones
         /// <summary>
         /// Процедура разбора телефонного номера на части
         /// </summary>
-        /// <param name="text">Полный телефонный номер, которвый нужно разобрать</param>
+        /// <param name="textNum">Полный телефонный номер, которвый нужно разобрать</param>
         /// <param name="p_areaName">Название территории</param>
         /// <param name="p_telCodeCountry">Телефонный код страны</param>
         /// <param name="p_telCodeInCountry">Телефонный код в стране</param>

@@ -34,7 +34,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         public MtrChildType LinkType { get; set; }
 
         /// <summary>
-        //// ID типа документа
+        /// ID типа документа
         /// </summary>
         public int TypeID { get; set; }
 

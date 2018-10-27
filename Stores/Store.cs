@@ -45,7 +45,7 @@ namespace Kesco.Lib.Entities.Stores
         /// <summary>
         /// КодРаспорядителя
         /// </summary>
-        public int? ManagerCode { get; set; }
+        public int? ManagerId { get; set; }
 
         /// <summary>
         /// КодПодразделенияРаспорядителя
@@ -146,7 +146,7 @@ namespace Kesco.Lib.Entities.Stores
         {
             get
             {
-                return ManagerCode != null && ManagerCode > 0 ? new Person(ManagerCode.ToString()) : null;
+                return ManagerId != null && ManagerId > 0 ? new Person(ManagerId.ToString()) : null;
             }
         }
 
@@ -193,7 +193,7 @@ namespace Kesco.Lib.Entities.Stores
                 ResidenceId = dt.Rows[0]["КодМестаХранения"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодМестаХранения"];
                 ResourceId = Convert.ToInt32(dt.Rows[0]["КодРесурса"]);
                 KeeperId = dt.Rows[0]["КодХранителя"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодХранителя"];
-                ManagerCode = dt.Rows[0]["КодРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодРаспорядителя"];
+                ManagerId = dt.Rows[0]["КодРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодРаспорядителя"];
                 ManagerSubdivisionCode = dt.Rows[0]["КодПодразделенияРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодПодразделенияРаспорядителя"];
                 AgreementCode = dt.Rows[0]["КодДоговора"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодДоговора"];
                 Subsidiary = dt.Rows[0]["Филиал"].ToString();
@@ -231,7 +231,7 @@ namespace Kesco.Lib.Entities.Stores
                         ResidenceId = dt.Rows[i]["КодМестаХранения"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодМестаХранения"],
                         ResourceId = Convert.ToInt32(dt.Rows[i]["КодРесурса"]),
                         KeeperId = dt.Rows[i]["КодХранителя"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодХранителя"],
-                        ManagerCode = dt.Rows[i]["КодРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодРаспорядителя"],
+                        ManagerId = dt.Rows[i]["КодРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодРаспорядителя"],
                         ManagerSubdivisionCode = dt.Rows[i]["КодПодразделенияРаспорядителя"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодПодразделенияРаспорядителя"],
                         AgreementCode = dt.Rows[i]["КодДоговора"] == DBNull.Value ? null : (int?)dt.Rows[i]["КодДоговора"],
                         Subsidiary = dt.Rows[i]["Филиал"].ToString(),
@@ -246,7 +246,12 @@ namespace Kesco.Lib.Entities.Stores
             return storeList;
         }
 
-		public bool IsValidAt(DateTime d)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="d"></param>
+		/// <returns></returns>
+        public bool IsValidAt(DateTime d)
 		{
 			if(From.HasValue && d.Date<From) return false;
 			if(To.HasValue && d.Date>=To) return false;
@@ -254,7 +259,7 @@ namespace Kesco.Lib.Entities.Stores
 			var sqlParams = new Dictionary<string, object>();
 			sqlParams.Add("@Дата", d);
 			sqlParams.Add("@КодХранителя", KeeperId.HasValue ? (object)KeeperId : DBNull.Value);
-			sqlParams.Add("@КодРаспорядителя", ManagerCode.HasValue ? (object)ManagerCode : DBNull.Value);
+			sqlParams.Add("@КодРаспорядителя", ManagerId.HasValue ? (object)ManagerId : DBNull.Value);
 
 			DataTable dt = DBManager.GetData(SQLQueries.SELECT_TEST_ЛицаСкладаДействуют, CN, CommandType.Text, sqlParams);
 
@@ -326,7 +331,7 @@ namespace Kesco.Lib.Entities.Stores
             sqlParams.Add("@КодМестаХранения", (StoreTypeId >= 20) ? ((ResidenceId == 0) ? DBNull.Value : (object)ResidenceId) : DBNull.Value);
             sqlParams.Add("@КодРесурса", ResourceId == 0 ? DBNull.Value : (object)ResourceId);
             sqlParams.Add("@КодХранителя", KeeperId == 0 ? DBNull.Value : (object)KeeperId);
-            sqlParams.Add("@КодРаспорядителя", ManagerCode == 0 ? DBNull.Value : (object)ManagerCode);
+            sqlParams.Add("@КодРаспорядителя", ManagerId == 0 ? DBNull.Value : (object)ManagerId);
             sqlParams.Add("@КодПодразделенияРаспорядителя", ((ManagerSubdivisionCode == 0) ? DBNull.Value : (object)ManagerSubdivisionCode));
             sqlParams.Add("@КодДоговора", ((AgreementCode == 0) ? DBNull.Value : (object)AgreementCode));
             sqlParams.Add("@Филиал", (StoreTypeId >= 10) ? string.Empty : Subsidiary);
@@ -348,22 +353,32 @@ namespace Kesco.Lib.Entities.Stores
 
         #endregion
 
+        /// <summary>
+        /// Получает остаток ресурса на складе
+        /// </summary>
+        /// <param name="_Sklad">КодСклада</param>
+        /// <param name="_Resource">КодРесурса</param>
+        /// <param name="_Unit">КодЕдиницыИзмерения</param>
+        /// <param name="_DateTo">ДатаДо</param>
+        /// <param name="IncludeSubRes">ВключатьПодчиенныеРесурсы</param>
+        /// <param name="_VidOstatkov">ВидОстатка</param>
+        /// <returns>Остаток</returns>
         public static string GetOstatokResource(string _Sklad, string _Resource, string _Unit, DateTime _DateTo, bool IncludeSubRes, string _VidOstatkov)
         {
             if (string.IsNullOrEmpty(_Sklad)) return "";
             string rez = "";
             SqlCommand cm = new SqlCommand("sp_ОстатокНаСкладе");
-            cm.Parameters.Add("@КодСклада", int.Parse(_Sklad));
-            cm.Parameters.Add("@КодРесурса", int.Parse(_Resource));
+            cm.Parameters.AddWithValue("@КодСклада", int.Parse(_Sklad));
+            cm.Parameters.AddWithValue("@КодРесурса", int.Parse(_Resource));
             if (_Unit.Length > 0)
-                cm.Parameters.Add("@КодЕдиницыИзмерения", int.Parse(_Unit));
+                cm.Parameters.AddWithValue("@КодЕдиницыИзмерения", int.Parse(_Unit));
             else
-                cm.Parameters.Add("@КодЕдиницыИзмерения", DBNull.Value);
+                cm.Parameters.AddWithValue("@КодЕдиницыИзмерения", DBNull.Value);
 
             if (_DateTo != DateTime.MinValue)
-                cm.Parameters.Add("@ДатаДо", _DateTo);
+                cm.Parameters.AddWithValue("@ДатаДо", _DateTo);
             else
-                cm.Parameters.Add("@ДатаДо", DBNull.Value);
+                cm.Parameters.AddWithValue("@ДатаДо", DBNull.Value);
 
             SqlParameter vid_ost = cm.Parameters.Add("@ВидОстатка", SqlDbType.Int);
             if (_VidOstatkov.Equals("0"))
@@ -373,7 +388,7 @@ namespace Kesco.Lib.Entities.Stores
             else
                 vid_ost.Value = DBNull.Value;
 
-            cm.Parameters.Add("@ВключатьПодчиенныеРесурсы", IncludeSubRes);
+            cm.Parameters.AddWithValue("@ВключатьПодчиенныеРесурсы", IncludeSubRes);
             SqlParameter ost = cm.Parameters.Add("@Остаток", SqlDbType.Float);
             ost.Direction = ParameterDirection.Output;
 

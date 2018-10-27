@@ -9,6 +9,9 @@ using Kesco.Lib.Entities.Persons.PersonOld;
 
 namespace Kesco.Lib.Entities.Documents.EF.Applications
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Vacation : Document
     {
         private VacationType objectVacationType;
@@ -79,23 +82,41 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         Employee User {get; set;}
 
         #region Поля документа
-        // Лицо сотрудника
+        /// <summary>
+        /// Лицо сотрудника
+        /// </summary>
         public DocField PersonFrom { get; private set; }
-        // От сотрудника
+        /// <summary>
+        /// От сотрудника
+        /// </summary>
         public DocField EmployeeFrom { get; private set; }
-        // От организации сотрудника
+        /// <summary>
+        /// От организации сотрудника
+        /// </summary>
         public DocField CompanyFrom { get; private set; }
-        // Руководителю организации
+        /// <summary>
+        /// Руководителю организации
+        /// </summary>
         public DocField EmployeeTo { get; private set; }
-        // Тип отпуска
+        /// <summary>
+        /// Тип отпуска
+        /// </summary>
         public DocField VacationType { get; private set; }
-        // Дата начала отпуска
+        /// <summary>
+        /// Дата начала отпуска
+        /// </summary>
         public DocField DateFrom { get; private set; }
+        /// <summary>
         /// Продолжительность отпуска
+        /// </summary>
         public DocField Days { get; private set; }
-        // Дата конца отпуска
+        /// <summary>
+        /// Дата конца отпуска
+        /// </summary>
         public DocField DateTo { get; private set; }
-        // Замещающий сотрудник
+        /// <summary>
+        /// Замещающий сотрудник
+        /// </summary>
         public DocField Sub { get; private set; }
         #endregion
 
@@ -134,18 +155,29 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Vacation()
         {
             Initialization();
            
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
         public Vacation(Employee e)
         {
             User = e;
             Initialization();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
         public Vacation(string id)
         {
             Id = id;
@@ -157,6 +189,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
 
         //TODO: Переделать/оптимизировать все, что ниже
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public DataTable GetPostSupervisor()
         {
             DataTable dt = new DataTable();
@@ -199,6 +235,10 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
 
         #region GenerateText
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public string GetText()
         {
             StringBuilder sb = new StringBuilder();
@@ -237,7 +277,10 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
 
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public string GetText_Full()
         {
             StringBuilder sb = new StringBuilder();

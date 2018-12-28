@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
+using Kesco.Lib.Entities.Corporate;
 using Kesco.Lib.Log;
 using Kesco.Lib.Web.Settings;
 
@@ -155,7 +160,6 @@ namespace Kesco.Lib.Entities.Documents
 
             }
         }
-
 
         #endregion
 
@@ -344,7 +348,7 @@ ORDER BY Изменено DESC
             {
                 if (_fields == null && TypeID > 0)
                 {
-                    _fields = DocField.GetDocFieldsByDocId(TypeID, this);
+                    _fields = DocField.GetDocFieldsByDocTypeId(TypeID, this);
                 }
 
                 return _fields;
@@ -381,11 +385,12 @@ ORDER BY Изменено DESC
         /// <summary>
         ///  Получить связи документа для контрола select
         /// </summary>
-        public List<Item> GetDocLinksItems(int fieldId)
+        public List<Item> GetDocLinksItems(int fieldId, int? copyId = null)
         {
-            if (DocId > 0)
+            var docId = copyId ?? DocId;
+            if (docId > 0)
             {
-                var sqlQuery = SQLQueries.SELECT_ВсеОснования + DocId + " AND vwСвязиДокументов.КодПоляДокумента =" + fieldId; 
+                var sqlQuery = SQLQueries.SELECT_ВсеОснования + docId + " AND vwСвязиДокументов.КодПоляДокумента =" + fieldId; 
 
                 var docs = GetDocumentsList(sqlQuery);
                 if (docs != null)
@@ -669,7 +674,28 @@ WHERE КодДокументаОснования={0}", docId
             return DBManager.GetData(query, ConnString);
         }
 
-
+        /// <summary>
+        ///  Загрузить данные для документов по типу
+        /// </summary>
+        public static string GetTRWeselLastNote(string _id, string _docType, int idDoc, DateTime date)
+        {
+            string sqlQuery = string.Format(@"
+SELECT TOP 1 (CASE WHEN КодТУзла1={0} THEN Text100_1 ELSE Text100_2 END) Note FROM vwДокументыДокументыДанные (nolock)
+WHERE КодТипаДокумента={1} AND {0} IN (КодТУзла1,КодТУзла2) " + ((idDoc > 0) ? " AND КодДокумента!=" + idDoc : "") + @"
+AND ДатаДокумента <='" + date.ToString("yyyyMMdd") + @"'
+ORDER BY ДатаДокумента DESC
+", _id, _docType);
+            
+            var result = DBManager.ExecuteScalar(sqlQuery, CommandType.Text, Config.DS_document);
+            return result == null ? "" : result.ToString();
+        }
+        
+        /// <summary>
+        /// Получить количествовытекающих документов по куду поля и коду документа
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <param name="fieId"></param>
+        /// <returns></returns>
         public static bool CheckLoadSequelDoc(string docId, string fieId)
         {
             string sqlQuery = string.Format(@"
@@ -738,7 +764,8 @@ WHERE КодДокументаОснования={0}", docId
                 if (DocumentData.PersonId5.Equals(personInt)) return 5;
                 if (DocumentData.PersonId6.Equals(personInt)) return 6;
             }
-            //if (Regex.IsMatch(_Persons, "(^|,)" + person + "(,|$)")) return 0;
+            var persons = DocPersons.GetDocsPersonsByDocId(DocId);
+            if (persons.Any(p => p.Id == person)) return 0;
             return -1;
         }
 
@@ -774,48 +801,32 @@ WHERE КодДокументаОснования={0}", docId
         #endregion
 
         /// <summary>
-        /// Составное имя документа
-        /// </summary>
-        public string FullDocName
-        {
-            get
-            {
-                return GetFullDocumentName(this);
-            }
-        }
-
-        /// <summary>
         /// Получение составного имени документа
         /// </summary>
-        /// <param name="doc">Документ</param>
         /// <returns>Имя документа</returns>
-        public static string GetFullDocumentName(Document doc)
+        public string GetFullDocumentName(Employee currentUser)
         {
-            string docType = null;
+            var docType = "";
+            var dd = "";
+            var lang = (currentUser != null && !currentUser.Unavailable) ? currentUser.Language : "";
+            switch (lang)
+            {
+                case "ru":
+                    docType = TypeDocRu;
+                    dd = "от";
+                    break;
+                default:
+                    docType = TypeDocEn;
+                    dd = "dd";
+                    break;
+            }
 
-            if (doc.DocType != null)
-                switch (doc.Language)
-                {
-                    case "en":
-                    case "et":
-                        docType = doc.DocType.TypeDocEn;
-                        break;
-                    case "ru":
-                        docType = doc.DocType.TypeDocRu;
-                        break;
-                    default:
-                        docType = doc.DocType.TypeDocRu;
-                        break;
-                }
-
-            string docName =
-                    string.IsNullOrEmpty(docType) ?
-                        doc.Name :
-                        string.Format("{0}{1}{2}",
-                                        docType,
-                                        string.IsNullOrEmpty(doc.Number) ? string.Empty : string.Format(" № {0}", doc.Number),
-                                        doc.Date == DateTime.MinValue ? string.Empty : string.Format(" от {0}", doc.Date.GetIndependenceDate())
-                        );
+            var docName = string.Format("{0}{1}{2}",
+                 string.IsNullOrEmpty(Name) ? docType : Name,
+                 string.IsNullOrEmpty(Number) ? string.Empty : string.Format(" № {0}", Number),
+                 Date == DateTime.MinValue ? string.Empty : string.Format(" {0} {1}", dd, Date.GetIndependenceDate())
+                );
+             
             return docName; 
         }
 
@@ -906,6 +917,8 @@ WHERE КодДокументаОснования={0}", docId
                     int colЗащищен = dbReader.GetOrdinal("Защищен");
                     int colИзменил = dbReader.GetOrdinal("Изменил");
                     int colИзменено = dbReader.GetOrdinal("Изменено");
+                    int colТипДокумента = dbReader.GetOrdinal("ТипДокумента");
+                    int colTypeDoc = dbReader.GetOrdinal("TypeDoc");
 
                     #endregion
 
@@ -924,7 +937,9 @@ WHERE КодДокументаОснования={0}", docId
                        NumberRLReverse = dbReader.GetString(colНомерДокументаRLReverse);
                        Protected = dbReader.GetByte(colЗащищен);
                        ChangePersonID = dbReader.GetInt32(colИзменил);
-                       ChangeDate = dbReader.GetDateTime(colИзменено);
+                       Changed = dbReader.GetDateTime(colИзменено);
+                       TypeDocRu = dbReader.GetString(colТипДокумента);
+                       TypeDocEn = dbReader.GetString(colTypeDoc);
                     }
                 }
                 else
@@ -961,6 +976,8 @@ WHERE КодДокументаОснования={0}", docId
                     int colЗащищен = dbReader.GetOrdinal("Защищен");
                     int colИзменил = dbReader.GetOrdinal("Изменил");
                     int colИзменено = dbReader.GetOrdinal("Изменено");
+                    int colТипДокумента = dbReader.GetOrdinal("ТипДокумента");
+                    int colTypeDoc = dbReader.GetOrdinal("TypeDoc");
                     #endregion
 
                     while (dbReader.Read())
@@ -977,7 +994,10 @@ WHERE КодДокументаОснования={0}", docId
                             NumberRLReverse = dbReader.GetString(colНомерДокументаRLReverse),
                             Protected = dbReader.GetByte(colЗащищен),
                             ChangePersonID = dbReader.GetInt32(colИзменил),
-                            ChangeDate = dbReader.GetDateTime(colИзменено)
+                            Changed = dbReader.GetDateTime(colИзменено),
+                            TypeDocRu = dbReader.GetString(colТипДокумента),
+                            TypeDocEn = dbReader.GetString(colTypeDoc)
+
                         };
 
                         if (!dbReader.IsDBNull(colДатаДокумента)) { docRow.Date = dbReader.GetDateTime(colДатаДокумента); }
@@ -1093,29 +1113,23 @@ WHERE КодДокументаОснования={0}", docId
         /// </remarks>
         public bool IsNoBProject()
         {
+            if (IsNew) return _isNoBizProject;
             // если код лица изменился то проверим, если нет, то старое значение
-            if (PersonChanged())
-            {
-                _personId1 = DocumentData.PersonId1;
-                _personId2 = DocumentData.PersonId2;
-                _personId3 = DocumentData.PersonId3;
-                _personId4 = DocumentData.PersonId4;
-                _personId5 = DocumentData.PersonId5;
-                _personId6 = DocumentData.PersonId6;
+            if (!PersonChanged()) return _isNoBizProject;
 
-                // запрос по сути как EXIST если есть, то возвращает 1
-                string sql = String.Format(@"
-                SELECT 1 FROM vwЛицаДокументов
-	            INNER JOIN Справочники.dbo.vwЛица Л ON Л.КодЛица = vwЛицаДокументов.КодЛица
-                WHERE vwЛицаДокументов.КодДокумента = {0} AND КодБизнесПроекта IS NOT NULL", Id);
+            _personId1 = DocumentData.PersonId1;
+            _personId2 = DocumentData.PersonId2;
+            _personId3 = DocumentData.PersonId3;
+            _personId4 = DocumentData.PersonId4;
+            _personId5 = DocumentData.PersonId5;
+            _personId6 = DocumentData.PersonId6;
 
-                // если вернет null значит не одной записи нет, если 1 то есть хотябы одна запись
-                var result = DBManager.ExecuteScalar(sql, CommandType.Text, CN);
+              
+            var sqlParams = new Dictionary<string, object> {{"@id", int.Parse(Id)}};
+            // если вернет null значит не одной записи нет, если 1 то есть хотябы одна запись
+            var result = DBManager.ExecuteScalar(SQLQueries.SELECT_ID_ЛицаДокументаПоБизнесПроекту, CommandType.Text, CN, sqlParams);
 
-                return _isNoBizProject = result == null;
-            }
-
-            return _isNoBizProject;
+            return _isNoBizProject = result == null;
         }
 
         private int? _personId1;
@@ -1163,7 +1177,9 @@ WHERE КодДокументаОснования={0}", docId
             if (IsNew)
                 Create(cmds);
             else
+            {
                 UpdateData(cmds);
+            }
 
             try
             {
@@ -1180,7 +1196,6 @@ WHERE КодДокументаОснования={0}", docId
                 throw dex;
             }
         }
-        
 
         /// <summary>
         ///  Метод создания сущности документ(insert)
@@ -1308,7 +1323,7 @@ WHERE КодДокументаОснования={0}", docId
             //sqlParams.Add("@КодТипаДокументаДанных", );
             sqlParams.Add("@НазваниеДокумента", string.IsNullOrWhiteSpace(DocumentName) ? "" : DocumentName);
             sqlParams.Add("@НомерДокумента", string.IsNullOrWhiteSpace(Number) ? "" : Number);
-            sqlParams.Add("@ДатаДокумента", Date == DateTime.MinValue? (object) null : Date);
+            sqlParams.Add("@ДатаДокумента", Date == DateTime.MinValue? (object) null : Date.ToString("yyyyMMdd"));
             sqlParams.Add("@Описание", string.IsNullOrWhiteSpace(Description) ? "" : Description);
 
             if (DocumentData != null)
@@ -1338,10 +1353,10 @@ WHERE КодДокументаОснования={0}", docId
                 sqlParams.Add("@КодТУзла2", DocumentData.UzelId2);
                 sqlParams.Add("@КодТерритории", DocumentData.TerritoryId);
                 sqlParams.Add("@КодСтатьиБюджета", DocumentData.BudgetId);
-                sqlParams.Add("@Дата2", DocumentData.Date2);
-                sqlParams.Add("@Дата3", DocumentData.Date3);
-                sqlParams.Add("@Дата4", DocumentData.Date4);
-                sqlParams.Add("@Дата5", DocumentData.Date5);
+                sqlParams.Add("@Дата2", string.IsNullOrEmpty(DocumentData._Date2) ? null : DocumentData._Date2);
+                sqlParams.Add("@Дата3", string.IsNullOrEmpty(DocumentData._Date3) ? null : DocumentData._Date3);
+                sqlParams.Add("@Дата4", string.IsNullOrEmpty(DocumentData._Date4) ? null : DocumentData._Date4);
+                sqlParams.Add("@Дата5", string.IsNullOrEmpty(DocumentData._Date5) ? null : DocumentData._Date5);
                 sqlParams.Add("@Flag1", DocumentData.Flag1);
                 sqlParams.Add("@Flag2", DocumentData.Flag2);
                 sqlParams.Add("@Int1", DocumentData.Int1);
@@ -1419,7 +1434,27 @@ WHERE КодДокументаОснования={0}", docId
 
           //  return newObj;
 
+            using (MemoryStream stream = new MemoryStream())
+            {
 
+                if (this.GetType().IsSerializable)
+                {
+
+                    BinaryFormatter formatter = new BinaryFormatter();
+
+                    formatter.Serialize(stream, this);
+
+                    stream.Position = 0;
+
+                    return (Document)formatter.Deserialize(stream);
+
+                }
+
+                return null;
+
+            }
+
+            /*
             var cloneDoc = (Document)MemberwiseClone();
             cloneDoc.DocumentData = DocumentData.Clone();
 
@@ -1429,6 +1464,7 @@ WHERE КодДокументаОснования={0}", docId
             // подписи не копируются - незачем.
 
             return cloneDoc;
+            */
         }
 
         /// <summary>
@@ -1492,5 +1528,76 @@ WHERE КодДокументаОснования={0}", docId
             };
             DBManager.ExecuteNonQuery(SQLQueries.DELETE_ОтправкаВагоновВыгрузка, CommandType.Text, CN, sqlParams);
         }
+
+        /// <summary>
+        /// Получение иконокдокумента
+        /// </summary>
+        /// <param name="_d"></param>
+        /// <param name="col"></param>
+        public static void FillAdvIcons(string _d, NameValueCollection col)
+        {
+            if (string.IsNullOrEmpty(_d) || col == null) return;
+
+            try
+            {
+                var param = new Dictionary<string, object> { { "@КодДокумента", _d } };
+                var dt = DBManager.GetData("dbo.sp_СостояниеДокумента", Config.DS_document, CommandType.StoredProcedure, param);
+                for (var i = 0; i < dt.Rows.Count; i++)
+                {
+                    if (col.Get(dt.Rows[i][0].ToString()) != null) continue;
+                    col.Add(dt.Rows[i][0].ToString(), dt.Rows[i][1].ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new DetailedException("Ошибка при получении состояния документа", ex);
+            }
+        }
+
+        /// <summary>
+        /// Метод получения даты последнего изменения
+        /// </summary>
+        public override DateTime GetLastChanged(string id)
+        {
+            var param = new Dictionary<string, object> { { "@Id", id } };
+            var res = DBManager.ExecuteScalar(SQLQueries.SELECT_Документ_LastChanged, CommandType.Text, CN, param);
+
+            if (res is DateTime)
+                return (DateTime)res;
+
+            return DateTime.MinValue;
+        }
+
+        /// <summary>
+        /// Проверка на то, что текущий документ является договором
+        /// </summary>
+        public bool IsDogovor {
+            get
+            {
+                var dt = DBManager.GetData(SQLQueries.SELECT_ТипыДоговоров, CN);
+                if (dt.Rows.Count == 0) return false;
+
+                var query = dt.AsEnumerable().Where(dr => dr.Field<Int32>("КодТипаДокумента").Equals(TypeID));
+
+                return query.Any();
+            }
+        }
+
+        /// <summary>
+        /// Проверка на то, что текущий документ является приложением
+        /// </summary>
+        public bool IsEnclosure {
+            get
+            {
+                var dt = DBManager.GetData(SQLQueries.SELECT_ТипыПриложений, CN);
+                if (dt.Rows.Count == 0) return false;
+
+                var query = dt.AsEnumerable().Where(dr => dr.Field<Int32>("КодТипаДокумента").Equals(TypeID));
+
+                return query.Any();
+            }
+        }
+
+
     }
 }

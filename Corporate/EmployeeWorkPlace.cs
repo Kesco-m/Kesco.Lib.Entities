@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Kesco.Lib.BaseExtention.Enums;
+using Kesco.Lib.BaseExtention.Enums.Corporate;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
@@ -26,6 +28,32 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public List<EmployeeCoWorker> CoWorkers { get; set; }
 
+        public void GetWorkPlaceSpecifications(out string icon, out string title)
+        {
+            switch (WorkPlacePar)
+            {
+                case (int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто:
+                    icon =ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title =ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int) ТипыРабочихМест.НомерГостиницы:
+                    icon = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int) ТипыРабочихМест.Оборудование:
+                    icon = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int) ТипыРабочихМест.CкладОборудования:
+                    icon = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                default:
+                    icon = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+            }
+        }
        
         /// <summary>
         /// Строка подключения к БД.

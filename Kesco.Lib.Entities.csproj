@@ -241,6 +241,7 @@
     <Compile Include="Stores\StoreType.cs" />
     <Compile Include="Territories\Territory.cs" />
     <Compile Include="Transport\Basis.cs" />
+    <Compile Include="Transport\TransportNode.cs" />
     <Compile Include="TreeNodeEntity.cs" />
   </ItemGroup>
   <ItemGroup>

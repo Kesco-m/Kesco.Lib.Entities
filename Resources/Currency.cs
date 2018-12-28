@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
+using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Resources
 {
@@ -11,6 +13,7 @@ namespace Kesco.Lib.Entities.Resources
     /// <example>
     ///  Получить валюту по Id  Currency.GetCurrency(value);
     /// </example>
+    [Serializable]      
     public class Currency : Resource
     {
         /// <summary>
@@ -27,7 +30,17 @@ namespace Kesco.Lib.Entities.Resources
         ///  Запрещаем создание экземпляров
         ///  Использование Получить валюту по Id Currency.GetCurrency(value);
         /// </summary>
-        private  Currency(string id) {}
+        private Currency(string id) {}
+
+        /// <summary>
+        /// Рубли
+        /// </summary>
+        public enum Code
+        {
+            RUR = 183,
+            USD = 184,
+            EUR = 193
+        }
 
         #region Поля сущности
 
@@ -69,8 +82,6 @@ namespace Kesco.Lib.Entities.Resources
         {
             return _allCurrencies ?? (_allCurrencies = GetCurrencyList()); 
         }
-
-
 
         /// <summary>
         ///  Получить валюту по ID, в случае неудачи возвращает null
@@ -130,6 +141,43 @@ namespace Kesco.Lib.Entities.Resources
                 }
             }
             return list;
+        }
+
+        public static int GetCurrencyByName(string ShortName)
+        {
+            var sqlParams = new Dictionary<string, object> { { "@КодКлассификатораБукв", ShortName }};
+            var dt = DBManager.GetData(SQLQueries.SELECT_ID_Валюты_ПоКодуКлассификатораБукв, Config.DS_resource, CommandType.Text, sqlParams);
+
+            return dt.Rows.Count == 1 ? Convert.ToInt32(dt.Rows[0]["КодВалюты"].ToString()) : 0;
+        }
+
+        public static decimal GetKursCbrf(int curId, DateTime d)
+        {
+            decimal kurs;
+            decimal scale;
+
+            return GetKursCbrf(curId, d, out kurs, out scale);
+        }
+
+        public static decimal GetKursCbrf(int curId, DateTime d, out decimal kurs, out decimal scale)
+        {
+            var query = string.Format(SQLQueries.SELECT_LoadKursCbrf, curId, d.ToString("yyyyMMdd"));
+            var dt = DBManager.GetData(query, Config.DS_resource);
+
+            kurs = 0m;
+            scale = 1m;
+            if (dt.Rows.Count == 1)
+            {
+                kurs = ConvertExtention.Convert.Str2Decimal(dt.Rows[0]["Курс"].ToString());
+                scale = ConvertExtention.Convert.Str2Decimal(dt.Rows[0]["Единиц"].ToString());
+            }
+
+            if (kurs == 0m)
+            {
+                throw new Log.DetailedException("Нет курса " + GetCurrency(curId).Name + " на дату " + d.ToLongDateString(), null, false);
+            }
+
+            return kurs / scale;
         }
 
     }

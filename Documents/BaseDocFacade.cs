@@ -14,6 +14,7 @@ namespace Kesco.Lib.Entities.Documents
     ///  Если у поля нет маппинга значит значения сохраняются в СвязиДокументов, эту функцию берет на себя этот класс
     ///  на данный момент(30.08.2017) этот класс использует DocField и инкапсулирует всю логику работы с BaseDocFacade и програмисту незачем самостоятельно реализовывать логику
     /// </remarks>
+    [Serializable]
     [DebuggerDisplay("Value = {Value}, DocField = {_field.DocFieldId}")]
     public class BaseDocFacade : IBinderValue<string>
     {

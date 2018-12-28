@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
@@ -9,6 +10,7 @@ namespace Kesco.Lib.Entities.Resources
     /// <summary>
     /// Единица измерения дополнительная
     /// </summary>
+[Serializable]       
 public class UnitAdv : Entity
 {
         #region Поля сущности

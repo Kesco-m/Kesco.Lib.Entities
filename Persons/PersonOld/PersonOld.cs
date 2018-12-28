@@ -20,6 +20,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
     /// <remarks>
     ///  В V4 отсутствует старые person и Card
     /// </remarks>
+    [Serializable]
     public class PersonOld : Entity
     {
         #region Поля сущности "Лицо"
@@ -194,6 +195,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
                 BirthDate = dt.Rows[0]["ДатаРождения"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[0]["ДатаРождения"]);
                 EndDate = dt.Rows[0]["ДатаКонца"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[0]["ДатаКонца"]);
                 Note = dt.Rows[0]["Примечание"] == DBNull.Value ? string.Empty : dt.Rows[0]["Примечание"].ToString();
+                Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"]);
             }
             else
             {
@@ -235,6 +237,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
                         BirthDate = dt.Rows[i]["ДатаРождения"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[i]["ДатаРождения"]),
                         EndDate = dt.Rows[i]["ДатаКонца"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[i]["ДатаКонца"]),
                         Note = dt.Rows[i]["Примечание"] == DBNull.Value ? string.Empty : dt.Rows[i]["Примечание"].ToString(),
+                        Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"])
                     }
                 );
             }
@@ -557,14 +560,6 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
             /// </value>
             public int Изменил { get; set; }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <value>
-            /// Изменено (datetime, not null)
-            /// </value>
-            public DateTime Изменено { get; set; }
-
             #endregion
 
             /// <summary>
@@ -628,7 +623,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
                             АдресЮридический = dbReader.GetString(colАдресЮридический);
                             АдресЮридическийЛат = dbReader.GetString(colАдресЮридическийЛат);
                             Изменил = dbReader.GetInt32(colИзменил);
-                            Изменено = dbReader.GetDateTime(colИзменено);
+                            Changed = dbReader.GetDateTime(colИзменено);
                         }
                     }
                     else
@@ -702,7 +697,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
                             row.АдресЮридический = dbReader.GetString(colАдресЮридический);
                             row.АдресЮридическийЛат = dbReader.GetString(colАдресЮридическийЛат);
                             row.Изменил = dbReader.GetInt32(colИзменил);
-                            row.Изменено = dbReader.GetDateTime(colИзменено);
+                            row.Changed = dbReader.GetDateTime(colИзменено);
                             list.Add(row);
                         }
                     }
@@ -987,13 +982,11 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
             if (prefix) pref = ((crd.Пол.ToLower().Equals("ж")) ? "госпоже " : "господину ");
             string ret = "";
 
-            DataTable dt = new DataTable();
-            SqlDataAdapter da = new SqlDataAdapter(@"
-DECLARE @ФамилияДательный nvarchar(300)
-EXEC sp_ФамилияВДательномПадеже  @ФамилияИменительный,1, @ФамилияДательный OUT
-SELECT @ФамилияДательный Фамилия", Config.DS_person);
-            da.SelectCommand.Parameters.AddWithValue("@ФамилияИменительный", crd.ФамилияРус);
-            da.Fill(dt);
+            var param = new Dictionary<string, object> { { "@ФамилияИменительный", crd.ФамилияРус } };
+            var dt = DBManager.GetData(@"
+                DECLARE @ФамилияДательный nvarchar(300)
+                EXEC sp_ФамилияВДательномПадеже  @ФамилияИменительный,1, @ФамилияДательный OUT
+                SELECT @ФамилияДательный Фамилия", Config.DS_person, CommandType.StoredProcedure, param);
 
             ret = dt.Rows[0][0].ToString();
             ret += ret.Length > 0 ? " " : "";
@@ -1012,31 +1005,49 @@ SELECT @ФамилияДательный Фамилия", Config.DS_person);
         public string PersonNP_GetPostDatelPadegHead( string _parent, string _date)
         {
             string ret = "";
-            DataTable dt = new DataTable();
-            SqlDataAdapter da = new SqlDataAdapter(@"
-SELECT Описание
-FROM vwСвязиЛиц
-WHERE Параметр=1 AND КодЛицаРодителя=@Parent
-	AND КодЛицаПотомка =@Child
-	AND @Date BETWEEN От AND До", Config.DS_person);
-            da.SelectCommand.Parameters.AddWithValue("@Child", Id);
-            da.SelectCommand.Parameters.AddWithValue("@Parent", _parent);
-            da.SelectCommand.Parameters.AddWithValue("@Date", _date);
-
-            da.Fill(dt);
+            var param = new Dictionary<string, object>
+            {
+                { "@Child", Id },
+                { "@Parent", _parent },
+                { "@Date", _date }
+            };
+            var dt = DBManager.GetData(@"
+                SELECT Описание
+                FROM vwСвязиЛиц
+                WHERE Параметр=1 AND КодЛицаРодителя=@Parent
+	                AND КодЛицаПотомка =@Child
+	                AND @Date BETWEEN От AND До", Config.DS_person, CommandType.Text, param);
 
             if (dt.Rows.Count != 1) return "";
 
-            da = new SqlDataAdapter(@"
-DECLARE @ДолжностьДательный nvarchar(300)
-EXEC sp_ДолжностьВДательномПадеже  @ДолжностьИменительный, @ДолжностьДательный OUT
-SELECT @ДолжностьДательный Доложность", Config.DS_person);
-            da.SelectCommand.Parameters.AddWithValue("@ДолжностьИменительный", dt.Rows[0][0].ToString());
-            dt = new DataTable();
-            da.Fill(dt);
+            param = new Dictionary<string, object>
+            {
+                { "@ДолжностьИменительный",  dt.Rows[0][0].ToString() },
+                { "@Parent", _parent },
+                { "@Date", _date }
+            };
+            dt = DBManager.GetData(@"
+                DECLARE @ДолжностьДательный nvarchar(300)
+                EXEC sp_ДолжностьВДательномПадеже  @ДолжностьИменительный, @ДолжностьДательный OUT
+                SELECT @ДолжностьДательный Доложность", Config.DS_person, CommandType.Text, param);
             ret = dt.Rows[0][0].ToString();
 
             return ret;
         }
+
+        /// <summary>
+        /// Метод получения даты последнего изменения
+        /// </summary>
+        public override DateTime GetLastChanged(string id)
+        {
+            var param = new Dictionary<string, object> {{"@Id", id}};
+            var res = DBManager.ExecuteScalar(SQLQueries.SELECT_Лицо_LastChanged, CommandType.Text, CN, param);
+
+            if (res is DateTime)
+                return (DateTime)res;
+
+            return DateTime.MinValue;
+        }
+
     }
 }

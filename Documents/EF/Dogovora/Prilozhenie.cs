@@ -1,10 +1,12 @@
-﻿using Kesco.Lib.BaseExtention.Enums.Docs;
+﻿using System;
+using Kesco.Lib.BaseExtention.Enums.Docs;
 
 namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 {
     /// <summary>
     /// Документ "Приложение к договору"
     /// </summary>
+    [Serializable]
     public class Prilozhenie : Dogovor
     {
         /// <summary>

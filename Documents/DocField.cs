@@ -396,7 +396,7 @@ namespace Kesco.Lib.Entities.Documents
         /// <summary>
         ///  Получить поля документа по типу документа
         /// </summary>
-        public static Dictionary<string, DocField> GetDocFieldsByDocId(int id, Document document)
+        public static Dictionary<string, DocField> GetDocFieldsByDocTypeId(int id, Document document)
         {
             Dictionary<string, DocField> list = null;
             using (var dbReader = new DBReader(SQLQueries.SELECT_ПоляДокументов_ТипДокумента, id , CommandType.Text, ConnString))

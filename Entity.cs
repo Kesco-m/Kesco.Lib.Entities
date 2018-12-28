@@ -61,11 +61,47 @@ namespace Kesco.Lib.Entities
         public string Name { get; set; }
 
         /// <summary>
+        /// Тип документа (RU)
+        /// </summary>
+        public string TypeDocRu { get; set; }
+
+        /// <summary>
+        /// Тип документа (EN)
+        /// </summary>
+        public string TypeDocEn { get; set; }
+
+        /// <summary>
         /// Метод получения сущности
         /// </summary>
         public virtual void Load()
         {
             throw new NotImplementedException("Метод Load не реализован для класса наследника");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// Изменено (datetime, not null)
+        /// </value>
+        public DateTime Changed { get; set; }
+
+      
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// Устанавливаем при каждом post-запросе для определения необходимости кеширования объектов
+        /// </value>
+        public string CurrentPostRequest { get; set; }
+        
+        /// <summary>
+        /// Метод получения даты последнего изменения
+        /// </summary>
+        public virtual DateTime GetLastChanged(string id)
+        {
+            //throw new NotImplementedException("Метод GetLastChanged не реализован для класса наследника");
+            return DateTime.MinValue;
         }
 
         /// <summary>

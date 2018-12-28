@@ -13,6 +13,7 @@ namespace Kesco.Lib.Entities.Documents
     /// <example>
     /// Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
     /// </example>
+    [Serializable]
     [DebuggerDisplay("ID = {Id}")]
     public class DocumentData : Entity, ICloneable<DocumentData>
     {
@@ -164,9 +165,31 @@ namespace Kesco.Lib.Entities.Documents
         public DateTime? Date2 { get; set; }
 
         /// <summary>
+        /// Поле Дата2 [string] yyyyMMdd
+        /// </summary>
+        public string _Date2
+        {
+            get
+            {
+                return !Date2.HasValue ? "" : Date2.Value.ToString("yyyyMMdd");
+            }
+        }
+
+        /// <summary>
         /// Поле Дата3 [smalldatetime] NULL
         /// </summary>
         public DateTime? Date3 { get; set; }
+
+        /// <summary>
+        /// Поле _Date3 [string] yyyyMMdd
+        /// </summary>
+        public string _Date3
+        {
+            get
+            {
+                return !Date3.HasValue ? "" : Date3.Value.ToString("yyyyMMdd");
+            }
+        }
 
         /// <summary>
         /// Поле Дата4 [smalldatetime] NULL
@@ -174,10 +197,30 @@ namespace Kesco.Lib.Entities.Documents
         public DateTime? Date4 { get; set; }
 
         /// <summary>
+        /// Поле _Date4 [string] yyyyMMdd
+        /// </summary>
+        public string _Date4
+        {
+            get
+            {
+                return !Date4.HasValue ? "" : Date4.Value.ToString("yyyyMMdd");
+            }
+        }
+        /// <summary>
         /// Поле Дата5 [smalldatetime] NULL
         /// </summary>
         public DateTime? Date5 { get; set; }
 
+        /// <summary>
+        /// Поле _Date5 [string] yyyyMMdd
+        /// </summary>
+        public string _Date5
+        {
+            get
+            {
+                return !Date5.HasValue ? "" : Date5.Value.ToString("yyyyMMdd");
+            }
+        }
         /// <summary>
         /// Поле Flag1 [tinyint] NULL
         /// </summary>

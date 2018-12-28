@@ -193,7 +193,6 @@ namespace Kesco.Lib.Entities
         /// </summary>
         public bool IsGuestWorkPlace { get { return ((WorkPlace.Equals((int)ТипыРабочихМест.ГостевоеРабочееМесто))); } }
 
-
         private bool? isOffice = null;
 
         /// <summary>

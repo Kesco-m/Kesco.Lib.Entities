@@ -131,6 +131,7 @@ namespace Kesco.Lib.Entities.Resources
                 Parent = dt.Rows[0]["Parent"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["Parent"]);
                 L = dt.Rows[0]["L"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["L"]);
                 R = dt.Rows[0]["R"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["R"]);
+                Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"]);
             }
             else
             {
@@ -161,7 +162,8 @@ namespace Kesco.Lib.Entities.Resources
                         NDS = dt.Rows[i]["СпецНДС"] == DBNull.Value ? 0 : Convert.ToInt16(dt.Rows[i]["СпецНДС"]),
                         Parent = dt.Rows[i]["Parent"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["Parent"]),
                         L = dt.Rows[i]["L"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["L"]),
-                        R = dt.Rows[i]["R"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["R"])
+                        R = dt.Rows[i]["R"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["R"]),
+                        Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"])
                     }
                 );
             }
@@ -361,7 +363,9 @@ namespace Kesco.Lib.Entities.Resources
             var resourceList = UnitAdvList;
             if (resourceList != null)
             {
-                var unitAdv = resourceList.Find(r => r.Unit.Id == _unit).Точность;
+                var unitAdv = 0;
+                var res = resourceList.Find(r => r.Unit.Id == _unit);
+                if (res != null) unitAdv = res.Точность;
                 return unitAdv == 0 ? @default : unitAdv;
                 /*
                 foreach (UnitAdv unitAdv in resourceList)
@@ -398,6 +402,20 @@ namespace Kesco.Lib.Entities.Resources
         ///  Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         public static string _connectionString;
+
+        /// <summary>
+        /// Метод получения даты последнего изменения
+        /// </summary>
+        public override DateTime GetLastChanged(string id)
+        {
+            var param = new Dictionary<string, object> { { "@Id", id } };
+            var res = DBManager.ExecuteScalar(SQLQueries.SELECT_Склад_LastChanged, CommandType.Text, CN, param);
+
+            if (res is DateTime)
+                return (DateTime)res;
+
+            return DateTime.MinValue;
+        }
 
     }
 

@@ -10,12 +10,14 @@ using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Corporate;
+using Kesco.Lib.Entities.Resources;
 
 namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 {
     /// <summary>
     /// Договор (класс также является базовым для приложения к договору)
     /// </summary>
+    [Serializable]
     public class Dogovor : Document, IDocumentWithPositions
     {
         /// <summary>
@@ -101,15 +103,15 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 
 
         /// <summary>
-        /// Поле КодСклада4
+        /// Поле КодСклада1
         /// </summary>
-        public DocField Sklad1Field { get { return GetFieldByColumnName("КодСклада4"); } }
+        public DocField Sklad1Field { get { return GetFieldByColumnName("КодСклада1"); } }
         /// <summary>
-        /// Поле КодСклада4
+        /// Поле КодСклада2
         /// </summary>
-        public DocField Sklad2Field { get { return GetFieldByColumnName("КодСклада4"); } }
+        public DocField Sklad2Field { get { return GetFieldByColumnName("КодСклада2"); } }
         /// <summary>
-        /// Поле 
+        /// Поле КодСклада3
         /// </summary>
         public DocField Sklad3Field { get { return GetFieldByColumnName("КодСклада3"); } }
         /// <summary>
@@ -225,11 +227,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             get
             {
                 if (UEField.DocFieldId == 0) return false;
-
+                if (UEField.Value == null) return false;
                 var ue = (byte)UEField.Value;
                 return UEField != null && ue == 1;
             }
         }
+
 
         /// <summary>
         ///  Получить название на русском
@@ -737,5 +740,50 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             else
                 DogovorPositionList = DocumentPosition<DogovorPosition>.LoadByDocId(int.Parse(Id));
         }
+
+        decimal КурсЦБРФ(string Valuta, DateTime Date)
+        {
+            if (DateUniversal != DateTime.MinValue)
+                Date = DateUniversal;
+
+            if (Date == DateTime.MinValue)
+                throw new Exception("Неврено указана дата в формуле расчета у.е.");
+
+            Valuta = Valuta.ToUpper().Trim();
+            
+            var curId = Currency.GetCurrencyByName(Valuta);
+            if (curId == 0)
+                throw new Exception("Неправильно записана валюта: " + Valuta);
+
+            return Resources.Currency.GetKursCbrf(curId, Date);
+
+        }
+
+        private DateTime ДатаОплаты()
+        {
+            if (DatePayment == DateTime.MinValue && this.DateUniversal == DateTime.MinValue)
+                throw new Exception("Не передана дата оплаты для определения коэффициента пересчета у.е.");
+            return DatePayment;
+        }
+
+        private DateTime ДатаРеализации()
+        {
+            if (DateTrade == DateTime.MinValue && this.DateUniversal == DateTime.MinValue)
+                throw new Exception("Не передана дата реализации для определения коэффициента пересчета у.е.");
+            return DateTrade;
+        }
+
+        private DateTime ДатаСчета()
+        {
+            if (DatePredoplata == DateTime.MinValue && this.DateUniversal == DateTime.MinValue)
+                throw new Exception("Не передана дата счета для определения коэффициента пересчета у.е.");
+            return DatePredoplata;
+        }
+
+        private decimal Kotirovka(string s)
+        {
+            return 0m;
+        }
+
     }
 }

@@ -10,7 +10,7 @@ using Kesco.Lib.Entities.Persons.PersonOld;
 namespace Kesco.Lib.Entities.Documents.EF.Applications
 {
     /// <summary>
-    /// 
+    /// Класс заявления на отпуск
     /// </summary>
     public class Vacation : Document
     {

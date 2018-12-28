@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
@@ -9,6 +10,7 @@ namespace Kesco.Lib.Entities
     /// <summary>
     ///  Базовый класс древовидных структур данных
     /// </summary>
+    [Serializable]
     public abstract class TreeNodeEntity : Entity
     {
         /// <summary>

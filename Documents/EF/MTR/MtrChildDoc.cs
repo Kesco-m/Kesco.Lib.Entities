@@ -21,6 +21,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
     ///  Не явялется ральной сущностью БД, разные данные и разных таблиц
     /// </remarks>
     [DebuggerDisplay("DocId = {DocId}, LinkType = {LinkType}")]
+    [Serializable]
     public class MtrChildDoc : Entity, ICloneable<MtrChildDoc>
     {
         /// <summary>

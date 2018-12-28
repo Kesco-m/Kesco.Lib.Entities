@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums.Corporate;
 using Kesco.Lib.BaseExtention.Enums.Docs;
@@ -35,13 +34,12 @@ namespace Kesco.Lib.Entities.Corporate
         private PersonOld _personEmployee;
         private List<EmployeePhoto> _photos;
         private List<EmployeeRole> _roles;
+        private bool? _simGprsPackage;
+        private string _simPost = "";
+        private bool? _simRequired;
         private List<EmployeePersonType> _types;
         private List<EmployeeWorkPlace> _workPlaces;
         private DataTable supervisorsData;
-        private bool? _simRequired;
-        private bool? _simGprsPackage;
-        private string _simPost="";
-        
 
         /// <summary>
         ///     Конструктор
@@ -55,14 +53,20 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Конструктор по-умолчанию. Если необходимо получить текущего создайте объект с fillCurrentUser = true 
+        ///     Конструктор по-умолчанию. Если необходимо получить текущего создайте объект с fillCurrentUser = true
         /// </summary>
         /// <param name="fillCurrentUser">Заполнить объект данными текущего сотрудника</param>
         public Employee(bool fillCurrentUser)
         {
             if (fillCurrentUser) GetCurrentUser();
         }
-        
+
+
+        //TODO: Используется в контолах SELECT из-за невозможности инициировать форму раньше объявленных контролах. Переделать в будущем!!!
+        /// <summary>
+        /// Ленивая загрузка значениями CurrentUser
+        /// </summary>
+        public bool IsLazyLoadingByCurrentUser { get; set; }
 
         /// <summary>
         ///     ID. Поле КодСотрудника
@@ -90,7 +94,6 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public int? OrganizationId { get; set; }
 
-  
         /// <summary>
         ///     ФИО сотрудника
         /// </summary>
@@ -162,36 +165,12 @@ namespace Kesco.Lib.Entities.Corporate
         public string FirstNameEn { get; set; }
 
         /// <summary>
-        ///     Gets or sets the middle name en.
-        /// </summary>
-        /// <value>
-        ///     The middle name en.
-        /// </value>
-        public string MiddleNameEn { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the last name of the initials with.
-        /// </summary>
-        /// <value>
-        ///     The last name of the initials with.
-        /// </value>
-        public string InitialsWithLastName { get; set; }
-
-        /// <summary>
         ///     Gets or sets the full name en.
         /// </summary>
         /// <value>
         ///     The full name en.
         /// </value>
         public string FullNameEn { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the initials with last name en.
-        /// </summary>
-        /// <value>
-        ///     The initials with last name en.
-        /// </value>
-        public string InitialsWithLastNameEn { get; set; }
 
         /// <summary>
         ///     Gets or sets the status.
@@ -223,19 +202,38 @@ namespace Kesco.Lib.Entities.Corporate
         /// <value>
         ///     The LoginFull.
         /// </value>
-        public string LoginFull {
+        public string LoginFull
+        {
             get { return Name; }
             set { Name = value; }
         }
 
 
         /// <summary>
-        ///     Gets or sets the account disabled.
+        ///     Gets or sets the Addition.
         /// </summary>
         /// <value>
-        ///     The account disabled.
+        ///     The Addition.
         /// </value>
-        public int? AccountDisabled { get; set; }
+        public string Addition
+        {
+            get { return Name; }
+            set { Name = value; }
+        }
+
+
+        /// <summary>
+        ///     Gets or sets the AdditionEn.
+        /// </summary>
+        /// <value>
+        ///     The AdditionEn.
+        /// </value>
+        public string AdditionEn
+        {
+            get { return Name; }
+            set { Name = value; }
+        }
+
 
         /// <summary>
         ///     Gets or sets the display name.
@@ -262,60 +260,17 @@ namespace Kesco.Lib.Entities.Corporate
         public string PersonalFolder { get; set; }
 
         /// <summary>
-        ///     Gets or sets the access.
-        /// </summary>
-        /// <value>
-        ///     The access.
-        /// </value>
-        public string Access { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the gender.
-        /// </summary>
-        /// <value>
-        ///     The gender.
-        /// </value>
-        public string Gender { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the comments.
-        /// </summary>
-        /// <value>
-        ///     The comments.
-        /// </value>
-        public string Comments { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the last name RL.
-        /// </summary>
-        /// <value>
-        ///     The last name RL.
-        /// </value>
-        public string LastNameRL { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the first name RL.
-        /// </summary>
-        /// <value>
-        ///     The first name RL.
-        /// </value>
-        public string FirstNameRL { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the middle name RL.
-        /// </summary>
-        /// <value>
-        ///     The middle name RL.
-        /// </value>
-        public string MiddleNameRL { get; set; }
-
-        /// <summary>
         ///     Gets or sets the common employee.
         /// </summary>
         /// <value>
         ///     The common employee
         /// </value>
         public string CommonEmployeeID { get; set; }
+
+        /// <summary>
+        /// Пол
+        /// </summary>
+        public string Gender { get; set; }
 
         /// <summary>
         ///     Название сотрудника для отображения в справочниках, по-умолчанию FullName
@@ -330,19 +285,22 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Сотруднику по должности положена Sim-карта
+        ///     Сотруднику по должности положена Sim-карта
         /// </summary>
-        public bool SimRequired {
+        public bool SimRequired
+        {
             get
             {
                 SetSimInfo();
                 return _simRequired != null && _simRequired.Value;
-            } 
-          }
+            }
+        }
+
         /// <summary>
-        /// К Sim-карте сотрудника подключен GPRS-пакет
+        ///     К Sim-карте сотрудника подключен GPRS-пакет
         /// </summary>
-        public bool SimGprsPackage {
+        public bool SimGprsPackage
+        {
             get
             {
                 SetSimInfo();
@@ -351,7 +309,7 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// По какой должности сотруднику положена Sim-карта
+        ///     По какой должности сотруднику положена Sim-карта
         /// </summary>
         public string SimPost
         {
@@ -363,32 +321,7 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Получение информации из должностей, о наличии у должности Sim-карты
-        /// </summary>
-        private void SetSimInfo()
-        {
-            if (RequiredRefreshInfo || !_simGprsPackage.HasValue || !_simRequired.HasValue)
-            {
-                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", Id}};
-                var dt = DBManager.GetData(SQLQueries.SELECT_СотрудникуПоДолжностиПоложенаSIM, ConnString,
-                    CommandType.Text, sqlParams);
-
-                _simGprsPackage = false;
-                _simRequired = false;
-                _simPost = "";
-                if (dt.Rows.Count == 1)
-                {
-                    _simRequired = (dt.Rows[0]["НеобходимаSIMКарта"].ToString() != "0");
-                    _simGprsPackage = (dt.Rows[0]["ПодключитьGPRSПакет"].ToString() != "0");
-                    _simPost = dt.Rows[0]["Должность"].ToString();
-                }
-
-            }
-        }
-
-
-        /// <summary>
-        ///     Доступ к сети через VPN -- ЗНАЧЕНИЕ УСТАНАВЛИВАЕТСЯ ЧЕРЕЗ вызов CommonFolders
+        ///     Доступ к сети через VPN -- ЗНАЧЕНИЕ УСТАНАВЛИВАЕТСЯ ЧЕРЕЗ вызов AdvRules
         /// </summary>
         public bool IsVPNGroup { get; set; }
 
@@ -418,77 +351,6 @@ namespace Kesco.Lib.Entities.Corporate
             get
             {
                 return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_user) : _connectionString;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool NationalAndInternationalAreTheSame
-        {
-            get
-            {
-                return
-                    ((LastName ?? String.Empty).Trim() == (LastNameEn ?? String.Empty).Trim())
-                    || ((FirstName ?? String.Empty).Trim() == (FirstNameEn ?? String.Empty).Trim())
-                    || ((MiddleName ?? String.Empty).Trim() == (MiddleNameEn ?? String.Empty).Trim());
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string FullNameCorrected
-        {
-            get
-            {
-                var sb = new StringBuilder();
-
-                if (!String.IsNullOrEmpty(LastName))
-                {
-                    sb.Append(LastName);
-                }
-
-
-                if (!String.IsNullOrEmpty(FirstName))
-                {
-                    sb.AppendFormat(sb.Length > 0 ? " {0}" : "{0}", FirstName);
-                }
-
-                if (!String.IsNullOrEmpty(MiddleName))
-                {
-                    sb.AppendFormat(sb.Length > 0 ? " {0}" : "{0}", MiddleName);
-                }
-
-                return sb.ToString();
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string FullNameEnCorrected
-        {
-            get
-            {
-                var sb = new StringBuilder();
-
-                if (!String.IsNullOrEmpty(LastNameEn))
-                {
-                    sb.Append(LastNameEn);
-                }
-
-                if (!String.IsNullOrEmpty(FirstNameEn))
-                {
-                    sb.AppendFormat((sb.Length > 0) ? " {0}" : "{0}", FirstNameEn);
-                }
-
-                if (!String.IsNullOrEmpty(MiddleNameEn))
-                {
-                    sb.AppendFormat(sb.Length > 0 ? " {0}" : "{0}", MiddleNameEn);
-                }
-
-                return sb.ToString();
             }
         }
 
@@ -532,8 +394,6 @@ namespace Kesco.Lib.Entities.Corporate
             }
         }
 
-        
-
         /// <summary>
         ///     Аксессор к лицу работодателю по основному месту работы
         /// </summary>
@@ -563,7 +423,7 @@ namespace Kesco.Lib.Entities.Corporate
                 if (RequiredRefreshInfo || _workPlaces == null)
                 {
                     _workPlaces = new List<EmployeeWorkPlace>();
-                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
+                    var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) } };
                     using (
                         var dbReader = new DBReader(SQLQueries.SELECT_РабочиеМестаСотрудника, CommandType.Text, CN,
                             sqlParams))
@@ -593,7 +453,7 @@ namespace Kesco.Lib.Entities.Corporate
                 if (RequiredRefreshInfo || _photos == null)
                 {
                     _photos = new List<EmployeePhoto>();
-                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
+                    var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) } };
                     using (
                         var dbReader = new DBReader(SQLQueries.SELECT_ФотографииСотрудника, CommandType.Text, CN,
                             sqlParams))
@@ -623,7 +483,7 @@ namespace Kesco.Lib.Entities.Corporate
                 if (RequiredRefreshInfo || _commonFolders == null)
                 {
                     _commonFolders = new List<CommonFolder>();
-                    var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
+                    var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", int.Parse(Id) } };
                     using (
                         var dbReader = new DBReader(SQLQueries.SP_ОбщиеПапкиСотрудника, CommandType.StoredProcedure, CN,
                             sqlParams))
@@ -658,15 +518,15 @@ namespace Kesco.Lib.Entities.Corporate
                                     {
                                         if (!dbReader.IsDBNull(colVPN))
                                         {
-                                            IsVPNGroup = dbReader.GetByte(colVPN).Equals(1);
+                                            IsVPNGroup = dbReader.GetValue(colVPN).Equals(1);
                                         }
                                         if (!dbReader.IsDBNull(colInternet))
                                         {
-                                            IsInternetGroup = dbReader.GetByte(colInternet).Equals(1);
+                                            IsInternetGroup = dbReader.GetValue(colInternet).Equals(1);
                                         }
                                         if (!dbReader.IsDBNull(colDialUp))
                                         {
-                                            IsDialUpGroup = dbReader.GetByte(colDialUp).Equals(1);
+                                            IsDialUpGroup = dbReader.GetValue(colDialUp).Equals(1);
                                         }
                                     }
                                 }
@@ -688,7 +548,7 @@ namespace Kesco.Lib.Entities.Corporate
                 if (!(RequiredRefreshInfo || _roles == null)) return _roles;
 
                 _roles = new List<EmployeeRole>();
-                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
+                var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", int.Parse(Id) } };
                 using (
                     var dbReader = new DBReader(SQLQueries.SELECT_РолиСотрудника, CommandType.Text, CN,
                         sqlParams))
@@ -718,9 +578,10 @@ namespace Kesco.Lib.Entities.Corporate
                 if (!(RequiredRefreshInfo || _types == null)) return _types;
 
                 _types = new List<EmployeePersonType>();
-                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
+                var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", int.Parse(Id) } };
                 using (
-                    var dbReader = new DBReader(SQLQueries.SELECT_ПраваТипыЛицСотрудника, CommandType.Text, Config.DS_person,
+                    var dbReader = new DBReader(SQLQueries.SELECT_ПраваТипыЛицСотрудника, CommandType.Text,
+                        Config.DS_person,
                         sqlParams))
                 {
                     if (dbReader.HasRows)
@@ -737,7 +598,29 @@ namespace Kesco.Lib.Entities.Corporate
                 return _types;
             }
         }
-        
+
+        /// <summary>
+        ///     Получение информации из должностей, о наличии у должности Sim-карты
+        /// </summary>
+        private void SetSimInfo()
+        {
+            if (RequiredRefreshInfo || !_simGprsPackage.HasValue || !_simRequired.HasValue)
+            {
+                var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", Id } };
+                var dt = DBManager.GetData(SQLQueries.SELECT_СотрудникуПоДолжностиПоложенаSIM, ConnString,
+                    CommandType.Text, sqlParams);
+
+                _simGprsPackage = false;
+                _simRequired = false;
+                _simPost = "";
+                if (dt.Rows.Count == 1)
+                {
+                    _simRequired = (dt.Rows[0]["НеобходимаSIMКарта"].ToString() != "0");
+                    _simGprsPackage = (dt.Rows[0]["ПодключитьGPRSПакет"].ToString() != "0");
+                    _simPost = dt.Rows[0]["Должность"].ToString();
+                }
+            }
+        }
 
         /// <summary>
         ///     получить локализованное ФИО
@@ -768,11 +651,11 @@ namespace Kesco.Lib.Entities.Corporate
             {
                 return null;
             }
-            return (from DataRow row in dt.Rows select (int) row["КодСотрудника"]).ToList();
+            return (from DataRow row in dt.Rows select (int)row["КодСотрудника"]).ToList();
         }
-        
+
         /// <summary>
-        /// Загрузка информации о сотруднике
+        ///     Загрузка информации о сотруднике
         /// </summary>
         public override void Load()
         {
@@ -783,38 +666,34 @@ namespace Kesco.Lib.Entities.Corporate
                     #region Получение порядкового номера столбца
 
                     var colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
+                    var colCommonEmployeeID = dbReader.GetOrdinal("КодОбщегоСотрудника");
+                    var colLogin = dbReader.GetOrdinal("Login");
+
                     var colСотрудник = dbReader.GetOrdinal("Сотрудник");
+                    var colFullNameEn = dbReader.GetOrdinal("Employee");
                     var colФИО = dbReader.GetOrdinal("ФИО");
                     var colFIO = dbReader.GetOrdinal("FIO");
-                    var colКодЛица = dbReader.GetOrdinal("КодЛица");
-                    var colКодЛицаЗаказчика = dbReader.GetOrdinal("КодЛицаЗаказчика");
-                    
+
+                    var colДополнение = dbReader.GetOrdinal("Дополнение");
+                    var colAddition = dbReader.GetOrdinal("Addition");
+
                     var colЯзык = dbReader.GetOrdinal("Язык");
-                    var colLastName = dbReader.GetOrdinal("Фамилия");
-                    var colFirstName = dbReader.GetOrdinal("Имя");
-                    var colMiddleName = dbReader.GetOrdinal("Отчество");
-                    var colLastNameEn = dbReader.GetOrdinal("LastName");
-                    var colFirstNameEn = dbReader.GetOrdinal("FirstName");
-                    var colMiddleNameEn = dbReader.GetOrdinal("MiddleName");
-                    var colFullName = dbReader.GetOrdinal("Сотрудник");
-                    var colInitialsWithLastName = dbReader.GetOrdinal("ИОФ");
-                    var colFullNameEn = dbReader.GetOrdinal("Employee");
-                    var colInitialsWithLastNameEn = dbReader.GetOrdinal("IOF");
                     var colStatus = dbReader.GetOrdinal("Состояние");
                     var colGuid = dbReader.GetOrdinal("GUID");
-                    var colLogin = dbReader.GetOrdinal("Login");
-                    var colLoginFull = dbReader.GetOrdinal("LoginFull");
-                    var colAccountDisabled = dbReader.GetOrdinal("AccountDisabled");
+
+
+                    var colКодЛица = dbReader.GetOrdinal("КодЛица");
+                    var colКодЛицаЗаказчика = dbReader.GetOrdinal("КодЛицаЗаказчика");
+
+                    var colLastNameEn = dbReader.GetOrdinal("LastName");
+                    var colFirstNameEn = dbReader.GetOrdinal("FirstName");
+
                     var colDisplayName = dbReader.GetOrdinal("DisplayName");
                     var colEmail = dbReader.GetOrdinal("Email");
                     var colPersonalFolder = dbReader.GetOrdinal("ЛичнаяПапка");
-                    var colAccess = dbReader.GetOrdinal("Access");
+
                     var colGender = dbReader.GetOrdinal("Пол");
-                    var colComments = dbReader.GetOrdinal("Примечания");
-                    var colLastNameRL = dbReader.GetOrdinal("ФамилияRL");
-                    var colFirstNameRL = dbReader.GetOrdinal("ИмяRL");
-                    var colMiddleNameRL = dbReader.GetOrdinal("ОтчествоRL");
-                    var colCommonEmployeeID = dbReader.GetOrdinal("КодОбщегоСотрудника");
+
                     var colИзменил = dbReader.GetOrdinal("Изменил");
                     var colИзменено = dbReader.GetOrdinal("Изменено");
 
@@ -825,58 +704,38 @@ namespace Kesco.Lib.Entities.Corporate
                         Unavailable = false;
 
                         Id = dbReader.GetInt32(colКодСотрудника).ToString();
-                        FullName = dbReader.GetString(colСотрудник);
-                        if (!dbReader.IsDBNull(colФИО))
-                        {
-                            FIO = dbReader.GetString(colФИО);
-                        }
-                        if (!dbReader.IsDBNull(colFIO))
-                        {
-                            FIOEn = dbReader.GetString(colFIO);
-                        }
-                        if (!dbReader.IsDBNull(colКодЛица))
-                        {
-                            PersonEmployeeId = dbReader.GetInt32(colКодЛица);
-                        }
-                        if (!dbReader.IsDBNull(colКодЛицаЗаказчика))
-                        {
-                            OrganizationId = dbReader.GetInt32(colКодЛицаЗаказчика);
-                        }
-                       
-                        Name = dbReader.GetString(colLoginFull);
-                        Language = dbReader.GetString(colЯзык);
-                        if (!dbReader.IsDBNull(colИзменено)) Changed = dbReader.GetDateTime(colИзменено);
-                        if (!dbReader.IsDBNull(colИзменил)) ChangedBy = dbReader.GetInt32(colИзменил);
 
-                        if (!dbReader.IsDBNull(colLastName)) LastName = dbReader.GetString(colLastName);
-                        if (!dbReader.IsDBNull(colFirstName)) FirstName = dbReader.GetString(colFirstName);
-                        if (!dbReader.IsDBNull(colMiddleName)) MiddleName = dbReader.GetString(colMiddleName);
-                        if (!dbReader.IsDBNull(colLastNameEn)) LastNameEn = dbReader.GetString(colLastNameEn);
-                        if (!dbReader.IsDBNull(colFirstNameEn)) FirstNameEn = dbReader.GetString(colFirstNameEn);
-                        if (!dbReader.IsDBNull(colMiddleNameEn)) MiddleNameEn = dbReader.GetString(colMiddleNameEn);
-                        if (!dbReader.IsDBNull(colFullName)) FullName = dbReader.GetString(colFullName);
-                        if (!dbReader.IsDBNull(colInitialsWithLastName))
-                            InitialsWithLastName = dbReader.GetString(colInitialsWithLastName);
+                        if (!dbReader.IsDBNull(colCommonEmployeeID)) CommonEmployeeID = dbReader.GetInt32(colCommonEmployeeID).ToString();
+                        if (!dbReader.IsDBNull(colLogin)) Name = dbReader.GetString(colLogin);
+                        if (!dbReader.IsDBNull(colСотрудник)) FullName = dbReader.GetString(colСотрудник);
                         if (!dbReader.IsDBNull(colFullNameEn)) FullNameEn = dbReader.GetString(colFullNameEn);
-                        if (!dbReader.IsDBNull(colInitialsWithLastNameEn))
-                            InitialsWithLastNameEn = dbReader.GetString(colInitialsWithLastNameEn);
+
+                        if (!dbReader.IsDBNull(colДополнение)) Addition = dbReader.GetString(colДополнение);
+                        if (!dbReader.IsDBNull(colAddition)) AdditionEn = dbReader.GetString(colAddition);
+
+                        if (!dbReader.IsDBNull(colЯзык)) Language = dbReader.GetString(colЯзык);
                         if (!dbReader.IsDBNull(colStatus)) Status = dbReader.GetByte(colStatus);
+
                         if (!dbReader.IsDBNull(colGuid)) Guid = dbReader.GetGuid(colGuid);
                         if (!dbReader.IsDBNull(colLogin)) Login = dbReader.GetString(colLogin);
-                        if (!dbReader.IsDBNull(colAccountDisabled))
-                            AccountDisabled = dbReader.GetByte(colAccountDisabled);
+
+                        if (!dbReader.IsDBNull(colФИО)) FIO = dbReader.GetString(colФИО);
+                        if (!dbReader.IsDBNull(colFIO)) FIOEn = dbReader.GetString(colFIO);
+
+                        if (!dbReader.IsDBNull(colКодЛица)) PersonEmployeeId = dbReader.GetInt32(colКодЛица);
+                        if (!dbReader.IsDBNull(colКодЛицаЗаказчика)) OrganizationId = dbReader.GetInt32(colКодЛицаЗаказчика);
+
+                        if (!dbReader.IsDBNull(colLastNameEn)) LastNameEn = dbReader.GetString(colLastNameEn);
+                        if (!dbReader.IsDBNull(colFirstNameEn)) FirstNameEn = dbReader.GetString(colFirstNameEn);
+
                         if (!dbReader.IsDBNull(colDisplayName)) DisplayName = dbReader.GetString(colDisplayName);
                         if (!dbReader.IsDBNull(colEmail)) Email = dbReader.GetString(colEmail);
-                        if (!dbReader.IsDBNull(colPersonalFolder))
-                            PersonalFolder = dbReader.GetString(colPersonalFolder);
-                        if (!dbReader.IsDBNull(colAccess)) Access = dbReader.GetString(colAccess);
+                        if (!dbReader.IsDBNull(colPersonalFolder)) PersonalFolder = dbReader.GetString(colPersonalFolder);
+
                         if (!dbReader.IsDBNull(colGender)) Gender = dbReader.GetString(colGender);
-                        if (!dbReader.IsDBNull(colComments)) Comments = dbReader.GetString(colComments);
-                        if (!dbReader.IsDBNull(colLastNameRL)) LastNameRL = dbReader.GetString(colLastNameRL);
-                        if (!dbReader.IsDBNull(colFirstNameRL)) FirstNameRL = dbReader.GetString(colFirstNameRL);
-                        if (!dbReader.IsDBNull(colMiddleNameRL)) MiddleNameRL = dbReader.GetString(colMiddleNameRL);
-                        if (!dbReader.IsDBNull(colCommonEmployeeID))
-                            CommonEmployeeID = dbReader.GetInt32(colCommonEmployeeID).ToString();
+
+                        if (!dbReader.IsDBNull(colИзменено)) Changed = dbReader.GetDateTime(colИзменено);
+                        if (!dbReader.IsDBNull(colИзменил)) ChangedBy = dbReader.GetInt32(colИзменил);
                     }
                 }
                 else
@@ -887,10 +746,10 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Заполнение полей объекта через DBReader
-       /// </summary>
+        ///     Заполнение полей объекта через DBReader
+        /// </summary>
         /// <param name="dbReader">V4.DBReader</param>
-       /// <param name="loadFromOutSource">Заполнять минимальное количество полей</param>
+        /// <param name="loadFromOutSource">Заполнять минимальное количество полей</param>
         public void LoadFromDbReader(DBReader dbReader, bool loadFromOutSource = false)
         {
             if (dbReader.HasRows)
@@ -898,37 +757,32 @@ namespace Kesco.Lib.Entities.Corporate
                 #region Получение порядкового номера столбца
 
                 var colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
+                var colCommonEmployeeID = dbReader.GetOrdinal("КодОбщегоСотрудника");
+                var colLogin = dbReader.GetOrdinal("Login");
                 var colСотрудник = dbReader.GetOrdinal("Сотрудник");
-                var colФИО = dbReader.GetOrdinal("ФИО");
-                var colFIO = dbReader.GetOrdinal("FIO");
-                var colКодЛица = dbReader.GetOrdinal("КодЛица");
-                var colЯзык = dbReader.GetOrdinal("Язык");
-                var colLastName = dbReader.GetOrdinal("Фамилия");
-                var colFirstName = dbReader.GetOrdinal("Имя");
-                var colMiddleName = dbReader.GetOrdinal("Отчество");
-                var colLastNameEn = dbReader.GetOrdinal("LastName");
-                var colFirstNameEn = dbReader.GetOrdinal("FirstName");
-                var colMiddleNameEn = dbReader.GetOrdinal("MiddleName");
-                var colFullName = dbReader.GetOrdinal("Сотрудник");
-                var colInitialsWithLastName = dbReader.GetOrdinal("ИОФ");
                 var colFullNameEn = dbReader.GetOrdinal("Employee");
-                var colInitialsWithLastNameEn = dbReader.GetOrdinal("IOF");
+                var colЯзык = dbReader.GetOrdinal("Язык");
                 var colStatus = dbReader.GetOrdinal("Состояние");
                 var colGuid = dbReader.GetOrdinal("GUID");
-                var colLogin = dbReader.GetOrdinal("Login");
-                var colLoginFull = dbReader.GetOrdinal("LoginFull");
-                var colAccountDisabled = dbReader.GetOrdinal("AccountDisabled");
+
+                var colФИО = dbReader.GetOrdinal("ФИО");
+                var colFIO = dbReader.GetOrdinal("FIO");
+
+                var colДополнение = dbReader.GetOrdinal("Дополнение");
+                var colAddition = dbReader.GetOrdinal("Addition");
+
+                var colКодЛица = dbReader.GetOrdinal("КодЛица");
+                var colКодЛицаЗаказчика = dbReader.GetOrdinal("КодЛицаЗаказчика");
+
+                var colLastNameEn = dbReader.GetOrdinal("LastName");
+                var colFirstNameEn = dbReader.GetOrdinal("FirstName");
+
                 var colDisplayName = dbReader.GetOrdinal("DisplayName");
                 var colEmail = dbReader.GetOrdinal("Email");
                 var colPersonalFolder = dbReader.GetOrdinal("ЛичнаяПапка");
-                var colAccess = dbReader.GetOrdinal("Access");
+
                 var colGender = dbReader.GetOrdinal("Пол");
-                var colComments = dbReader.GetOrdinal("Примечания");
-                var colLastNameRL = dbReader.GetOrdinal("ФамилияRL");
-                var colFirstNameRL = dbReader.GetOrdinal("ИмяRL");
-                var colMiddleNameRL = dbReader.GetOrdinal("ОтчествоRL");
-                var colCommonEmployeeID = dbReader.GetOrdinal("КодОбщегоСотрудника");
-                var colEmployerID = dbReader.GetOrdinal("КодЛицаЗаказчика");
+
                 var colИзменил = dbReader.GetOrdinal("Изменил");
                 var colИзменено = dbReader.GetOrdinal("Изменено");
 
@@ -936,78 +790,72 @@ namespace Kesco.Lib.Entities.Corporate
 
                 if (!loadFromOutSource)
                 {
-                    if (dbReader.Read())
+                    if (!dbReader.Read())
                     {
                         Unavailable = false;
 
                         Id = dbReader.GetInt32(colКодСотрудника).ToString();
-                        FullName = dbReader.GetString(colСотрудник);
-                        if (!dbReader.IsDBNull(colФИО))
-                        {
-                            FIO = dbReader.GetString(colФИО);
-                        }
-                        if (!dbReader.IsDBNull(colFIO))
-                        {
-                            FIOEn = dbReader.GetString(colFIO);
-                        }
-                        if (!dbReader.IsDBNull(colКодЛица))
-                        {
-                            PersonEmployeeId = dbReader.GetInt32(colКодЛица);
-                        }
-                        Name = dbReader.GetString(colLoginFull);
-                        Language = dbReader.GetString(colЯзык);
+
+                        if (!dbReader.IsDBNull(colCommonEmployeeID))
+                            CommonEmployeeID = dbReader.GetInt32(colCommonEmployeeID).ToString();
+
+                        if (!dbReader.IsDBNull(colLogin)) Name = dbReader.GetString(colLogin);
+                        if (!dbReader.IsDBNull(colСотрудник)) FullName = dbReader.GetString(colСотрудник);
+                        if (!dbReader.IsDBNull(colFullNameEn)) FullNameEn = dbReader.GetString(colFullNameEn);
+
+                        if (!dbReader.IsDBNull(colФИО)) FIO = dbReader.GetString(colФИО);
+                        if (!dbReader.IsDBNull(colFIO)) FIOEn = dbReader.GetString(colFIO);
+
+                        if (!dbReader.IsDBNull(colДополнение)) Addition = dbReader.GetString(colДополнение);
+                        if (!dbReader.IsDBNull(colAddition)) AdditionEn = dbReader.GetString(colAddition);
+
+                        if (!dbReader.IsDBNull(colЯзык)) Language = dbReader.GetString(colЯзык);
+                        if (!dbReader.IsDBNull(colStatus)) Status = dbReader.GetByte(colStatus);
+
+                        if (!dbReader.IsDBNull(colКодЛица)) PersonEmployeeId = dbReader.GetInt32(colКодЛица);
+                        if (!dbReader.IsDBNull(colКодЛицаЗаказчика))
+                            OrganizationId = dbReader.GetInt32(colКодЛицаЗаказчика);
                     }
                 }
-                else if (loadFromOutSource)
+                else
                 {
                     Unavailable = false;
 
                     Id = dbReader.GetInt32(colКодСотрудника).ToString();
-                    FullName = dbReader.GetString(colСотрудник);
-                    if (!dbReader.IsDBNull(colФИО))
-                    {
-                        FIO = dbReader.GetString(colФИО);
-                    }
-                    if (!dbReader.IsDBNull(colFIO))
-                    {
-                        FIOEn = dbReader.GetString(colFIO);
-                    }
-                    if (!dbReader.IsDBNull(colКодЛица))
-                    {
-                        PersonEmployeeId = dbReader.GetInt32(colКодЛица);
-                    }
-                    Name = dbReader.GetString(colLoginFull);
-                    Language = dbReader.GetString(colЯзык);
-                    if (!dbReader.IsDBNull(colИзменено)) Changed = dbReader.GetDateTime(colИзменено);
-                    if (!dbReader.IsDBNull(colИзменил)) ChangedBy = dbReader.GetInt32(colИзменил);
 
-                    if (!dbReader.IsDBNull(colLastName)) LastName = dbReader.GetString(colLastName);
-                    if (!dbReader.IsDBNull(colFirstName)) FirstName = dbReader.GetString(colFirstName);
-                    if (!dbReader.IsDBNull(colMiddleName)) MiddleName = dbReader.GetString(colMiddleName);
-                    if (!dbReader.IsDBNull(colLastNameEn)) LastNameEn = dbReader.GetString(colLastNameEn);
-                    if (!dbReader.IsDBNull(colFirstNameEn)) FirstNameEn = dbReader.GetString(colFirstNameEn);
-                    if (!dbReader.IsDBNull(colMiddleNameEn)) MiddleNameEn = dbReader.GetString(colMiddleNameEn);
-                    if (!dbReader.IsDBNull(colFullName)) FullName = dbReader.GetString(colFullName);
-                    if (!dbReader.IsDBNull(colInitialsWithLastName))
-                        InitialsWithLastName = dbReader.GetString(colInitialsWithLastName);
+                    if (!dbReader.IsDBNull(colCommonEmployeeID))
+                        CommonEmployeeID = dbReader.GetInt32(colCommonEmployeeID).ToString();
+                    if (!dbReader.IsDBNull(colLogin)) Name = dbReader.GetString(colLogin);
+
+                    if (!dbReader.IsDBNull(colСотрудник)) FullName = dbReader.GetString(colСотрудник);
                     if (!dbReader.IsDBNull(colFullNameEn)) FullNameEn = dbReader.GetString(colFullNameEn);
-                    if (!dbReader.IsDBNull(colInitialsWithLastNameEn))
-                        InitialsWithLastNameEn = dbReader.GetString(colInitialsWithLastNameEn);
+
+                    if (!dbReader.IsDBNull(colФИО)) FIO = dbReader.GetString(colФИО);
+                    if (!dbReader.IsDBNull(colFIO)) FIOEn = dbReader.GetString(colFIO);
+
+                    if (!dbReader.IsDBNull(colДополнение)) Addition = dbReader.GetString(colДополнение);
+                    if (!dbReader.IsDBNull(colAddition)) AdditionEn = dbReader.GetString(colAddition);
+
+                    if (!dbReader.IsDBNull(colЯзык)) Language = dbReader.GetString(colЯзык);
                     if (!dbReader.IsDBNull(colStatus)) Status = dbReader.GetByte(colStatus);
+
                     if (!dbReader.IsDBNull(colGuid)) Guid = dbReader.GetGuid(colGuid);
                     if (!dbReader.IsDBNull(colLogin)) Login = dbReader.GetString(colLogin);
-                    if (!dbReader.IsDBNull(colAccountDisabled)) AccountDisabled = dbReader.GetByte(colAccountDisabled);
+
+                    if (!dbReader.IsDBNull(colКодЛица)) PersonEmployeeId = dbReader.GetInt32(colКодЛица);
+                    if (!dbReader.IsDBNull(colКодЛицаЗаказчика)) OrganizationId = dbReader.GetInt32(colКодЛицаЗаказчика);
+
+                    if (!dbReader.IsDBNull(colLastNameEn)) LastNameEn = dbReader.GetString(colLastNameEn);
+                    if (!dbReader.IsDBNull(colFirstNameEn)) FirstNameEn = dbReader.GetString(colFirstNameEn);
+
                     if (!dbReader.IsDBNull(colDisplayName)) DisplayName = dbReader.GetString(colDisplayName);
                     if (!dbReader.IsDBNull(colEmail)) Email = dbReader.GetString(colEmail);
                     if (!dbReader.IsDBNull(colPersonalFolder)) PersonalFolder = dbReader.GetString(colPersonalFolder);
-                    if (!dbReader.IsDBNull(colAccess)) Access = dbReader.GetString(colAccess);
+
                     if (!dbReader.IsDBNull(colGender)) Gender = dbReader.GetString(colGender);
-                    if (!dbReader.IsDBNull(colComments)) Comments = dbReader.GetString(colComments);
-                    if (!dbReader.IsDBNull(colLastNameRL)) LastNameRL = dbReader.GetString(colLastNameRL);
-                    if (!dbReader.IsDBNull(colFirstNameRL)) FirstNameRL = dbReader.GetString(colFirstNameRL);
-                    if (!dbReader.IsDBNull(colMiddleNameRL)) MiddleNameRL = dbReader.GetString(colMiddleNameRL);
-                    if (!dbReader.IsDBNull(colCommonEmployeeID))
-                        CommonEmployeeID = dbReader.GetString(colCommonEmployeeID);
+
+                    if (!dbReader.IsDBNull(colИзменено)) Changed = dbReader.GetDateTime(colИзменено);
+                    if (!dbReader.IsDBNull(colИзменил)) ChangedBy = dbReader.GetInt32(colИзменил);
                 }
             }
             else
@@ -1042,7 +890,7 @@ namespace Kesco.Lib.Entities.Corporate
                 Id = dt.Rows[0]["КодСотрудника"].ToString();
                 FullName = dt.Rows[0]["Сотрудник"].ToString();
                 FullNameEn = dt.Rows[0]["Employee"].ToString();
-                PersonEmployeeId = dt.Rows[0]["КодЛица"] == DBNull.Value ? null : (int?) dt.Rows[0]["КодЛица"];
+                PersonEmployeeId = dt.Rows[0]["КодЛица"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодЛица"];
                 Name = dt.Rows[0]["LoginFull"].ToString();
                 FIO = dt.Rows[0]["ФИО"].ToString();
                 FIOEn = dt.Rows[0]["FIO"].ToString();
@@ -1109,7 +957,6 @@ namespace Kesco.Lib.Entities.Corporate
                 }
             }
         }
-        
 
         /// <summary>
         ///     Получение описание состония сотрудника по коду состония
@@ -1173,8 +1020,8 @@ namespace Kesco.Lib.Entities.Corporate
             var dt = new DataTable("UserPositions");
 
             var sqlParams = new Dictionary<string, object>();
-            sqlParams.Add("@КодСотрудника", new object[] {Id, DBManager.ParameterTypes.Int32});
-            sqlParams.Add("@Совместитель", new object[] {(int) combine, DBManager.ParameterTypes.Int32});
+            sqlParams.Add("@КодСотрудника", new object[] { Id, DBManager.ParameterTypes.Int32 });
+            sqlParams.Add("@Совместитель", new object[] { (int)combine, DBManager.ParameterTypes.Int32 });
 
             dt = DBManager.GetData(SQLQueries.SELECT_ДолжностиСотрудника, CN, CommandType.Text, sqlParams);
 
@@ -1207,8 +1054,8 @@ namespace Kesco.Lib.Entities.Corporate
             var dt = new DataTable("UserPositions");
 
             var sqlParams = new Dictionary<string, object>();
-            sqlParams.Add("@КодСотрудника", new object[] {subordinateUserId, DBManager.ParameterTypes.Int32});
-            sqlParams.Add("@КодРуководителя", new object[] {int.Parse(Id), DBManager.ParameterTypes.Int32});
+            sqlParams.Add("@КодСотрудника", new object[] { subordinateUserId, DBManager.ParameterTypes.Int32 });
+            sqlParams.Add("@КодРуководителя", new object[] { int.Parse(Id), DBManager.ParameterTypes.Int32 });
 
             dt = DBManager.GetData(SQLQueries.SELECT_ПроверкаПодчиненияСотрудника, CN, CommandType.Text, sqlParams);
             return dt.Rows.Count > 0;
@@ -1222,7 +1069,7 @@ namespace Kesco.Lib.Entities.Corporate
         public List<Employee> EmployeesOnWorkPlace(int wp)
         {
             _employeesOnWorkPlace = new List<Employee>();
-            var sqlParams = new Dictionary<string, object> {{"@Id", wp}, {"@idEmpl", int.Parse(Id)}, {"@state", 0}};
+            var sqlParams = new Dictionary<string, object> { { "@Id", wp }, { "@idEmpl", int.Parse(Id) }, { "@state", 0 } };
             using (
                 var dbReader = new DBReader(SQLQueries.SELECT_СотрудникиНаРабочемМесте, CommandType.Text, CN,
                     sqlParams))

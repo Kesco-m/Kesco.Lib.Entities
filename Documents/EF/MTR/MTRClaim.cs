@@ -12,6 +12,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
     /// <summary>
     /// Документ заявки на МТР
     /// </summary>
+    [Serializable]
     public class MTRClaim : Document
     {
         /// <summary>

@@ -14,6 +14,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
     /// <summary>
     /// Движения на cкладах
     /// </summary>
+    [Serializable]
     [DBSource("vwДвиженияНаСкладах", SQLQueries.SUBQUERY_ID_ДвиженияНаСкладах, SQLQueries.SUBQUERY_ID_DOC_ДвиженияНаСкладах)]
     public class Mris : DocumentPosition<Mris>
     {
@@ -161,8 +162,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         [DBField("КодОтправкиВагона")]
         public int? DeliveryId { get; set; }
 
-		
-		 /// <summary>
+ 	    /// <summary>
         /// 
         /// </summary>
         /// <value>
@@ -540,7 +540,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             var message = string.Empty;
             /*
-             Элемент = 1 - поле Продукт
+             Элемент = 1 - поле Товар
                        2 - поле Цена
                        3 - поле Количество
                        4 - поле Сумма
@@ -579,7 +579,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             {
                 case 10:
                 case 20:
-                case 30: //изменение продукта, изменение цены, изменение количества
+                case 30: //изменение товара, изменение цены, изменение количества
 
                     if (_costOutNDS == 0 && _summaOutNDS != 0)
                         _costOutNDS = ConvertExtention.Convert.Round((decimal)((double)_summaOutNDS / d_kol), 4);
@@ -642,12 +642,14 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                             if (_stavkaNDS != 0)
                             {
                                 _summaNDS = _vsego - _summaOutNDS;
-                                message = "В результате округления были слегка завышены налоги.";
+                                // В результате округления были слегка завышены налоги.
+                                message = "TTN_msgTaxInflated";
                             }
                             else
                             {
                                 _vsego = _summaOutNDS + _summaNDS;
-                                message = "В результате округления была изменено значение Всего.";
+                                // В результате округления было изменено значение Всего.
+                                message = "TTN_msgVsegoChanged";
                             }
                         }
                         else if (_summaOutNDS + _summaNDS > _vsego)
@@ -669,7 +671,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                     if ((oldCost == _costOutNDS || _costOutNDS <= ConvertExtention.Convert.Str2Decimal("0.0001")) && _costOutNDS != 0)
                     {
                         if (_costOutNDS == 0) _costOutNDS = ConvertExtention.Convert.Str2Decimal("0.0001");
-                        message = "Округление прошло не удачно.";
+                        // Округление прошло не удачно.
+                        message = "TTN_msgRoundingNotSuccessful.";
                     }
                     break;
                 case 81: // перерасчет обратно Всего

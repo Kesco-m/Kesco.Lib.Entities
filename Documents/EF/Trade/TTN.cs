@@ -5,18 +5,21 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Documents.EF.Dogovora;
 using Kesco.Lib.Entities.Resources;
+using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Documents.EF.Trade
 {
     /// <summary>
     /// Документ Товарно-транспортная накладная
     /// </summary>
+    [Serializable]
     public class TTN : Document, IDocumentWithPositions
     {
         /// <summary>
@@ -26,6 +29,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             Initialization();
             BasisDocLinks = new List<DocLink>();
+            PositionFactUsl = new List<FactUsl>();
+            PositionMris = new List<Mris>();
         }
 
         /// <summary>
@@ -48,66 +53,65 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         private void Initialization()
         {
             Type = DocTypeEnum.ТоварноТранспортнаяНакладная;
-            PostavschikField = GetDocField("589");
-            PlatelschikField = GetDocField("590");
-            GOPersonField = GetDocField("689");
-            GPPersonField = GetDocField("690");
-            PostavschikDataField = GetDocField("691");
-            PlatelschikDataField = GetDocField("692");
-            GOPersonDataField = GetDocField("693");
-            GPPersonDataField = GetDocField("694");
-            PostavschikOKPOField = GetDocField("695");
-            PostavschikBSField = GetDocField("696");
-            PostavschikBSDataField = GetDocField("698");
-            SignSupervisorField = GetDocField("700");
-            SignBuhgalterField = GetDocField("701");
-            PlatelschikOKPOField = GetDocField("702");
-            PlatelschikBSField = GetDocField("703");
-            PlatelschikBSDataField = GetDocField("704");
-            DogovorField = GetDocField("707");              // договор
-            PrilozhenieField = GetDocField("708");          // приложение
-            DogovorTextField = GetDocField("709");
-            GOPersonOKPOField = GetDocField("710");
-            GOPersonBSField = GetDocField("711");
-            GOPersonBSDataField = GetDocField("713");
-            GOPersonWeselField = GetDocField("715");
-            GPPersonOKPOField = GetDocField("716");
-            GPPersonBSField = GetDocField("717");
-            GPPersonBSDataField = GetDocField("719");
-            GPPersonWeselField = GetDocField("721");
-            CurrencyField = GetDocField("722");
-            PrimechanieField = GetDocField("723");
-            DateProvodkiField = GetDocField("758");
-            MrisSaleField = GetDocField("760");
-            PostavschikAddressField = GetDocField("779");
-            PlatelschikAddressField = GetDocField("780");
-            UslField = GetDocField("792");
-            GPPersonNoteField = GetDocField("930");
-            GOPersonNoteField = GetDocField("931");
-            KursField = GetDocField("1044");
-            FormulaDescrField = GetDocField("1064");
-            DoverennostField = GetDocField("1270");
-            VoditelField = GetDocField("1271");
-            AvtomobilField = GetDocField("1272");
-            AvtomobilNomerField = GetDocField("1273");
-            PritsepNomerField = GetDocField("1274");
-            SchetPredField = GetDocField("1579");           // счета
-            TTNTrField = GetDocField("1584");
-            ZvkBField    = GetDocField("1598");             //заявки
-            SignSupervisorPostField = GetDocField("1604");
-            SignBuhgalterPostField = GetDocField("1605");
-            SignOtpustilField = GetDocField("1618");
-            SignOtpustilPostField = GetDocField("1619");
-            PlatezhkiField = GetDocField("1631");           // платежки
-            BillOfLadingField = GetDocField("1632");        // киносамент
-            AkkredField = GetDocField("1707");              // аккредитив
-            MonthResourceField = GetDocField("1718");
-            CorrectingDocField = GetDocField("1744");
-            CorrectingFlagField = GetDocField("1747");
-
-            FinOperationRule = GetDocField("1787");
-            Amount = GetDocField("1425");
-            ChoosePowerOfAttorney = GetDocField("1585");
+            PostavschikField            = GetDocField("589");
+            PlatelschikField            = GetDocField("590");
+            GOPersonField               = GetDocField("689");
+            GPPersonField               = GetDocField("690");
+            PostavschikDataField        = GetDocField("691");
+            PlatelschikDataField        = GetDocField("692");
+            GOPersonDataField           = GetDocField("693");
+            GPPersonDataField           = GetDocField("694");
+            PostavschikOKPOField        = GetDocField("695");
+            PostavschikBSField          = GetDocField("696");
+            PostavschikBSDataField      = GetDocField("698");
+            SignSupervisorField         = GetDocField("700");
+            SignBuhgalterField          = GetDocField("701");
+            PlatelschikOKPOField        = GetDocField("702");
+            PlatelschikBSField          = GetDocField("703");
+            PlatelschikBSDataField      = GetDocField("704");
+            DogovorField                = GetDocField("707"); // договор
+            PrilozhenieField            = GetDocField("708"); // приложение
+            DogovorTextField            = GetDocField("709");
+            GOPersonOKPOField           = GetDocField("710");
+            GOPersonBSField             = GetDocField("711");
+            GOPersonBSDataField         = GetDocField("713");
+            GOPersonWeselField          = GetDocField("715");
+            GPPersonOKPOField           = GetDocField("716");
+            GPPersonBSField             = GetDocField("717");
+            GPPersonBSDataField         = GetDocField("719");
+            GPPersonWeselField          = GetDocField("721");
+            CurrencyField               = GetDocField("722");
+            PrimechanieField            = GetDocField("723");
+            DateProvodkiField           = GetDocField("758");
+            MrisSaleField               = GetDocField("760");
+            PostavschikAddressField     = GetDocField("779");
+            PlatelschikAddressField     = GetDocField("780");
+            UslField                    = GetDocField("792");
+            GPPersonNoteField           = GetDocField("930");
+            GOPersonNoteField           = GetDocField("931");
+            KursField                   = GetDocField("1044");
+            FormulaDescrField           = GetDocField("1064");
+            DoverennostField            = GetDocField("1270");
+            VoditelField                = GetDocField("1271");
+            AvtomobilField              = GetDocField("1272");
+            AvtomobilNomerField         = GetDocField("1273");
+            PritsepNomerField           = GetDocField("1274");
+            SchetPredField              = GetDocField("1579"); // счета
+            TTNTrField                  = GetDocField("1584");
+            ZvkBField                   = GetDocField("1598"); //заявки
+            SignSupervisorPostField     = GetDocField("1604");
+            SignBuhgalterPostField      = GetDocField("1605");
+            SignOtpustilField           = GetDocField("1618");
+            SignOtpustilPostField       = GetDocField("1619");
+            PlatezhkiField              = GetDocField("1631"); // платежки
+            BillOfLadingField           = GetDocField("1632"); // киносамент
+            AkkredField                 = GetDocField("1707"); // аккредитив
+            MonthResourceField          = GetDocField("1718");
+            CorrectingDocField          = GetDocField("1744");
+            CorrectingFlagField         = GetDocField("1747");
+            FinOperationRule            = GetDocField("1787");
+            Amount                      = GetDocField("1425");
+            ChoosePowerOfAttorney       = GetDocField("1585");
 
             DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);            // договор
             PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);    // приложение
@@ -209,7 +213,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <summary>
         ///  Получить id договора
         /// </summary>
-        public string _Dogovor
+        private string _Dogovor
         {
             get { return DogovorBind.Value; }
             set { DogovorBind.Value = value; }
@@ -459,7 +463,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <summary>
         ///  Документ корректировочный
         /// </summary>
-        public DocField CorrectingFlagField { get; set; }
+        public DocField CorrectingFlagField  { get; set; }
          
         /// <summary>
         ///  Правило формирования фин. операций
@@ -542,6 +546,26 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
+        /// Id корректирующего документа (ТТН)
+        /// </summary>
+        public string _CorrectingSequelDoc
+        {
+            get
+            {
+                var col = GetSequelDocs(CorrectingDocField.DocFieldId);
+                return (col.Count > 0) ? col[0].Id : "";
+            }
+        }
+
+        /// <summary>
+        /// Корректирующий документ (ТТН)
+        /// </summary>
+        public Document CorrectingSequelDoc
+        {
+            get { return (_CorrectingSequelDoc.Length > 0) ? new Document(_CorrectingSequelDoc) : null; }
+        }
+
+        /// <summary>
         /// Id документов "Счет, инвойс-проформа"
         /// </summary>
         public string _SchetPred
@@ -575,12 +599,36 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <summary>
         ///    ДвиженияНаСкладах
         /// </summary>
-        public void LoadPositionMris()
+        public void LoadPositionMris(string copyId = "")
         {
             if (Id.IsNullEmptyOrZero())
-                PositionMris = new List<Mris>();
+            {
+                if (copyId.IsNullEmptyOrZero())
+                    PositionMris = new List<Mris>();
+                else
+                {
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionMris)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
             else
-                PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+            {
+                if (copyId.IsNullEmptyOrZero())
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+                else
+                {
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionMris)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -591,12 +639,34 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <summary>
         ///    ОказанныеУслуги
         /// </summary>
-        public void LoadPositionFactUsl()
+        public void LoadPositionFactUsl(string copyId = "")
         {
             if (Id.IsNullEmptyOrZero())
-                PositionFactUsl = new List<FactUsl>();
+                if (copyId.IsNullEmptyOrZero())
+                    PositionFactUsl = new List<FactUsl>();
+                else
+                {
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionFactUsl)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
             else
-                PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
+            {
+                if (copyId.IsNullEmptyOrZero())
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
+                else
+                {
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionFactUsl)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -698,6 +768,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         {
             var ttnDoc = (TTN)base.Clone();
             ttnDoc.BasisDocLinks.CloneList(BasisDocLinks);
+            ttnDoc.PositionMris.CloneList(PositionMris);
+            ttnDoc.PositionFactUsl.CloneList(PositionFactUsl);
             return ttnDoc;
         }
 
@@ -708,52 +780,57 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         /// <param name="cmds"></param>
         public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
         {
-            var positionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
-            var positionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
-
             // товары
-            PositionMris.ForEach(delegate(Mris p0)
+            var positionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+            if (PositionMris != null && PositionMris.Count > 0)
             {
-                var p = positionMris.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
-                if (p == null)
-                    p0.Delete(false);
-            });
-
-            PositionMris.ForEach(delegate(Mris p)
-            {
-                if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                PositionMris.ForEach(delegate(Mris p0)
                 {
-                    p.DocumentId = int.Parse(Id);
-                    p.Save(reloadPostions, cmds);
-                    return;
-                }
-                var p0 =
-                    positionMris.FirstOrDefault(
-                        x => x.Id == p.Id && (x.PositionId != p.PositionId));
-                if (p0 != null) p.Save(reloadPostions, cmds);
-            });
+                    var p = positionMris.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
+                    if (p == null)
+                        p0.Delete(false);
+                });
+
+                PositionMris.ForEach(delegate(Mris p)
+                {
+                    if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                    {
+                        p.DocumentId = int.Parse(Id);
+                        p.Save(reloadPostions, cmds);
+                        return;
+                    }
+                    var p0 =
+                        positionMris.FirstOrDefault(
+                            x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                    if (p0 != null) p.Save(reloadPostions, cmds);
+                });
+            }
 
             // услуги
-            PositionFactUsl.ForEach(delegate(FactUsl p0)
+            var positionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
+            if (PositionFactUsl != null && PositionFactUsl.Count > 0)
             {
-                var p = positionFactUsl.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
-                if (p == null)
-                    p0.Delete(false);
-            });
-
-            PositionFactUsl.ForEach(delegate(FactUsl p)
-            {
-                if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                PositionFactUsl.ForEach(delegate(FactUsl p0)
                 {
-                    p.DocumentId = int.Parse(Id);
-                    p.Save(reloadPostions, cmds);
-                    return;
-                }
-                var p0 =
-                    positionFactUsl.FirstOrDefault(
-                        x => x.Id == p.Id && (x.PositionId != p.PositionId));
-                if (p0 != null) p.Save(reloadPostions, cmds);
-            });
+                    var p = positionFactUsl.FirstOrDefault(x => x.Id == p0.PositionId.ToString());
+                    if (p == null)
+                        p0.Delete(false);
+                });
+
+                PositionFactUsl.ForEach(delegate(FactUsl p)
+                {
+                    if (string.IsNullOrEmpty(p.PositionId.ToString()))
+                    {
+                        p.DocumentId = int.Parse(Id);
+                        p.Save(reloadPostions, cmds);
+                        return;
+                    }
+                    var p0 =
+                        positionFactUsl.FirstOrDefault(
+                            x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                    if (p0 != null) p.Save(reloadPostions, cmds);
+                });
+            }
 
         }
 
@@ -770,7 +847,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public void FillPositionsByGuid(Guid guid, int stavkaId, decimal price, decimal stavka, string sf, string pf)
         {
             // Отправку нельзя выгрузить дважды в одну и ту же табличную часть
-            var dt = new DataTable();
             var sql = string.Format(@"
                 SELECT v.*,res.РесурсРус,res.РесурсЛат FROM ОтправкаВагоновВыгрузка v (nolock)
 	            INNER JOIN Справочники.dbo.Ресурсы res on v.КодРесурса = res.КодРесурса
@@ -778,8 +854,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
 	            AND NOT EXISTS(SELECT * FROM vwДвиженияНаСкладах WHERE vwДвиженияНаСкладах.КодДокумента = {1}
 				AND vwДвиженияНаСкладах.КодОтправкиВагона = v.КодОтправкиВагона )", guid, this.Id);
 
-            var da = new SqlDataAdapter(sql, Kesco.Lib.Web.Settings.Config.DS_document);
-            da.Fill(dt);
+            var dt = DBManager.GetData(sql, Config.DS_document);
 
             for (int i = 0; i < dt.Rows.Count; i++)
             {
@@ -857,6 +932,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             values.Add("реквизитыгп", GPData);
         }
 
+        /// <summary>
+        /// Сохранение ТТН
+        /// </summary>
+        /// <param name="evalLoad"></param>
+        /// <param name="cmds"></param>
         public override void Save(bool evalLoad, List<DBCommand> cmds = null)
         {
             base.Save(evalLoad, cmds);
@@ -865,11 +945,22 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             if (!IsNew)
             {
                 // сохраняем связи документа
-                foreach (var l in BasisDocLinks)
+                foreach (var l in PositionMris)
                 {
-                    l.SequelDocId = DocId;
-                    if (l.DocLinkId == 0)
-                        l.Create();
+                    l.DocumentId = DocId;
+                    if (l.Id.IsNullEmptyOrZero())
+                    {
+                        l.Save(false);
+                    }
+                }
+
+                foreach (var l in PositionFactUsl)
+                {
+                    l.DocumentId = DocId;
+                    if (l.Id.IsNullEmptyOrZero())
+                    {
+                        l.Save(false);
+                    }
                 }
             }
         }

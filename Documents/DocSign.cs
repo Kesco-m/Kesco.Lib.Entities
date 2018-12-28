@@ -16,6 +16,7 @@ namespace Kesco.Lib.Entities.Documents
     /// <example>
     /// Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
     /// </example>
+    [Serializable]
     [DebuggerDisplay("ID = {Id}, DocId = {DocId}")]
     public class DocSign : Entity, ICloneable<DocSign>
     {

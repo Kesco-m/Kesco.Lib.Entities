@@ -18,6 +18,11 @@ namespace Kesco.Lib.Entities.Stores
         #region Поля сущности
 
         /// <summary>
+        /// Полное имя объекта
+        /// </summary>
+        public string FullName { get; set; }
+
+        /// <summary>
         /// IBAN
         /// </summary>
         public string IBAN { get; set; }
@@ -26,6 +31,11 @@ namespace Kesco.Lib.Entities.Stores
         /// КодТипаСклада
         /// </summary>
         public int StoreTypeId { get; set; }
+
+        /// <summary>
+        /// Название ТипаСклада
+        /// </summary>
+        public string StoreTypeName { get; set; }
 
         /// <summary>
         /// КодМестаХранения
@@ -38,14 +48,29 @@ namespace Kesco.Lib.Entities.Stores
         public int ResourceId { get; set; }
 
         /// <summary>
+        /// Название Ресурса
+        /// </summary>
+        public string ResourceName { get; set; }
+
+        /// <summary>
         /// КодХранителя
         /// </summary>
         public int? KeeperId { get; set; }
 
         /// <summary>
+        /// Название Хранителя
+        /// </summary>
+        public string KeeperName { get; set; }
+
+        /// <summary>
         /// КодРаспорядителя
         /// </summary>
         public int? ManagerId { get; set; }
+
+        /// <summary>
+        /// Название распорядителя
+        /// </summary>
+        public string ManagerName { get; set; }
 
         /// <summary>
         /// КодПодразделенияРаспорядителя
@@ -68,16 +93,16 @@ namespace Kesco.Lib.Entities.Stores
         public string Note { get; set; }
 
         /// <summary>
-        /// Изменено
-        /// </summary>
-        public DateTime Changed { get; set; }
-
-        /// <summary>
         /// Изменил
         /// </summary>
         public string ChangeBy { get; set; }
 
-		/// <summary>
+        /// <summary>
+        /// Действует
+        /// </summary>
+        public bool Alive { get; set; }
+        
+        /// <summary>
 		/// От
 		/// </summary>
 		public DateTime? From { get; set; }
@@ -188,6 +213,7 @@ namespace Kesco.Lib.Entities.Stores
 
                 Id = dt.Rows[0]["КодСклада"].ToString();
                 Name = dt.Rows[0]["Склад"].ToString();
+                FullName = dt.Rows[0]["Название"].ToString();
                 IBAN = dt.Rows[0]["IBAN"].ToString();
                 StoreTypeId = Convert.ToInt32(dt.Rows[0]["КодТипаСклада"]);
                 ResidenceId = dt.Rows[0]["КодМестаХранения"] == DBNull.Value ? null : (int?)dt.Rows[0]["КодМестаХранения"];
@@ -200,7 +226,7 @@ namespace Kesco.Lib.Entities.Stores
                 Note = dt.Rows[0]["Примечание"].ToString();
                 Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"]);
                 ChangeBy = dt.Rows[0]["Изменил"].ToString();
-
+                Alive = Convert.ToBoolean(dt.Rows[0]["Действует"]);
 				From = dt.Rows[0]["От"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["От"];
 				To = dt.Rows[0]["До"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["До"];
             }
@@ -238,6 +264,7 @@ namespace Kesco.Lib.Entities.Stores
                         Note = dt.Rows[i]["Примечание"].ToString(),
                         Changed = Convert.ToDateTime(dt.Rows[i]["Изменено"]),
                         ChangeBy = dt.Rows[i]["Изменил"].ToString(),
+                        Alive = Convert.ToBoolean(dt.Rows[0]["Действует"]),
 						From = dt.Rows[0]["От"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["От"],
 						To = dt.Rows[0]["До"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["До"]
                     }
@@ -267,6 +294,19 @@ namespace Kesco.Lib.Entities.Stores
 
 			return (int)dt.Rows[0][0] != 0;
 		}
+
+        /// <summary>
+        /// Действует
+        /// </summary>
+        /// <param name="d"></param>
+        /// <returns></returns>
+        public bool IsAlive(DateTime d)
+        {
+            if (From.HasValue && d.Date < From) return false;
+            if (To.HasValue && d.Date >= To) return false;
+            if (!Alive) return false;
+            return true;
+        }
 
         /// <summary>
         /// Загрузка данных по складу
@@ -312,7 +352,6 @@ namespace Kesco.Lib.Entities.Stores
         ///  Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
-
 
         #region Сохранение склада
 
@@ -409,6 +448,20 @@ namespace Kesco.Lib.Entities.Stores
                 cm.Connection.Close();
             }
             return rez;
+        }
+
+        /// <summary>
+        /// Метод получения даты последнего изменения
+        /// </summary>
+        public override DateTime GetLastChanged(string id)
+        {
+            var param = new Dictionary<string, object> { { "@Id", id } };
+            var res = DBManager.ExecuteScalar(SQLQueries.SELECT_Склад_LastChanged, CommandType.Text, CN, param);
+
+            if (res is DateTime)
+                return (DateTime)res;
+
+            return DateTime.MinValue;
         }
     }
 }

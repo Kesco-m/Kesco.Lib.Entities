@@ -19,6 +19,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
     /// Позиция заявки
     /// </summary>
     [DebuggerDisplay("ID = {MtrPositionId}, Document = {DocumentId}, Order = {MtrOrder},  Name = {MtrName}")]
+    [Serializable]
     public class MTRClaimItem : ICloneable<MTRClaimItem>
     {
         #region Поля сущности

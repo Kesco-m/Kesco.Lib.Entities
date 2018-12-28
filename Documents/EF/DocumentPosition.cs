@@ -14,6 +14,7 @@ namespace Kesco.Lib.Entities.Documents.EF
     /// <summary>
     ///     Абстрактный класс позиции документа
     /// </summary>
+    [Serializable]
     public abstract class DocumentPosition<T> : Entity, ICloneable<T> where T : new()
     {
         /// <summary>
@@ -132,6 +133,11 @@ namespace Kesco.Lib.Entities.Documents.EF
             }
         }
 
+        /// <summary>
+        /// Загрузка позиций по Id документа
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <returns></returns>
         public static List<T> LoadByDocId(int docId)
         {
             var list = new List<T>();
@@ -193,7 +199,6 @@ namespace Kesco.Lib.Entities.Documents.EF
         {
             var dbProps = GetDbProperties();
             var param = new Dictionary<string, object>();
-
             var sqlSave = "";
 
             if (string.IsNullOrEmpty(Id))

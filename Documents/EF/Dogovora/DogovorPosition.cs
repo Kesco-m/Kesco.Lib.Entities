@@ -7,6 +7,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
     /// <summary>
     /// Движения на cкладах
     /// </summary>
+    [Serializable]
     [DBSource("vwПозицииДоговоров", SQLQueries.SELECT_ID_ПозицияДоговора, SQLQueries.SELECT_ID_ПозицииДоговораПоРесурсу)]
     public class DogovorPosition : DocumentPosition<DogovorPosition>
     {

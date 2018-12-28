@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
@@ -9,6 +10,7 @@ namespace Kesco.Lib.Entities.Resources
     /// <summary>
     /// Единица измерения
     /// </summary>
+[Serializable]   
 public class Unit : Entity
 {
         #region Поля сущности
@@ -197,6 +199,5 @@ public class Unit : Entity
             return list;
         }
 
-
-}
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using Kesco.Lib.DALC;
@@ -9,6 +10,7 @@ namespace Kesco.Lib.Entities.Documents
     /// <summary>
     ///  Класс сущности "СвязиТиповДокументов"
     /// </summary>
+    [Serializable]
     [DebuggerDisplay("DocBasisId = {DocBasisId}, ChildDocId = {ChildDocId}, DocFieldId = {DocFieldId}")]
     public class DocTypeLink : Entity
     {

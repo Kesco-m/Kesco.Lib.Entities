@@ -55,10 +55,19 @@ namespace Kesco.Lib.Entities
         /// </summary>
         public virtual string Id { get; set; }
 
+        private string _name;
         /// <summary>
         /// Имя объекта
         /// </summary>
-        public string Name { get; set; }
+        public string Name {
+            get
+            {
+                if (Unavailable)
+                    return "#" + Id;
+                return _name;
+            }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// Тип документа (RU)
@@ -152,19 +161,24 @@ namespace Kesco.Lib.Entities
 
         /// <summary>
         /// Конструктор базовой сущности
+        /// При использовании данного конструктора, сущность автоматически становиться доступной
+        /// еще до заполнения всех свойств, т.е. подразумевается, что программист заполнит все необходимые ему свойства 
+        /// самостоятельно
         /// </summary>
         protected Entity()
         {
-            // по умолчанию сущность не доступна
-            Unavailable = true;
+            Unavailable = false;
         }
 
         /// <summary>
         /// Конструктор базовой сущности с параметрами
+        /// При использовании данного конструктора, сущность является НЕ доступной по-умолчанию
+        /// Свойство Unavailable устанавливается в наследнике в методе Load, только после успешной загрузки свойств объекта
         /// </summary>
         /// <param name="id">Код сущности</param>
         protected Entity(string id) :this()
         {
+            Unavailable = true;
             Id = id;
         }
     }

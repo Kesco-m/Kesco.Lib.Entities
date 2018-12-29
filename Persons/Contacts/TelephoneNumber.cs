@@ -62,7 +62,6 @@ namespace Kesco.Lib.Entities.Contacts
         /// Конструктор сущности Телефонный номер
         /// </summary>
         public TelephoneNumber()
-            : base(null)
         {
             FillData(new DataTable());
         }
@@ -71,7 +70,7 @@ namespace Kesco.Lib.Entities.Contacts
         /// Конструктор сущности Телефонный номер
         /// </summary>
         public TelephoneNumber(string phoneNumber)
-            : base(null)
+            
         {
             PhoneNumber = phoneNumber;
             LoadWithPhoneNumber();

@@ -134,9 +134,8 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         /// Конструктор
         /// </summary>
-        public PersonBase(
-            )
-            : base(null)
+        public PersonBase()
+            
         {
             PersonAttributes = new List<Attribute>();
             ResponsibleEmployes = new List<Employee>();

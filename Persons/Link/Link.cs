@@ -97,7 +97,7 @@ namespace Kesco.Lib.Entities.Link
         /// Конструктор по умолчанию
         /// </summary>
         public Link()
-            : base(null)
+            
         {
             ClearModel();
         }

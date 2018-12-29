@@ -48,7 +48,7 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         /// Конструктор сущности Орг.-прав. форма
         /// </summary>
-        public PersonIncorporationForm():base(null){}
+        public PersonIncorporationForm(){}
 
         /// <summary>
         /// Конструктор сущности Орг.-прав. форма

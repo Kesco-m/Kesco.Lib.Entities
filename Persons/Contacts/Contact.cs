@@ -22,7 +22,6 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         ///     Конструктор сущности Контакт
         /// </summary>
         public Contact()
-            : base(null)
         {
             FillData(new DataTable());
         }

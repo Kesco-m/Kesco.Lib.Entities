@@ -30,7 +30,7 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         ///     Конструктор
         /// </summary>
-        public PersonTheme() : base(null)
+        public PersonTheme()
         {
         }
 

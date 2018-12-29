@@ -68,12 +68,12 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         /// Конструктор
         /// </summary>
-        public PersonType() : base(null) { }
+        public PersonType() { }
 
         /// <summary>
         /// Конструктор
         /// </summary>
-        public PersonType(DataRow dr) : base(null)
+        public PersonType(DataRow dr)
         {
             FillDataFromDataRow(dr);
         }

@@ -60,7 +60,6 @@ namespace Kesco.Lib.Entities.Contacts
         /// Конструктор сущности Тип контакта
         /// </summary>
         public ContactType()
-            : base(null)
         {
             FillData(new DataTable());
         }

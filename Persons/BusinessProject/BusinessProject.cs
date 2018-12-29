@@ -44,7 +44,6 @@ namespace Kesco.Lib.Entities.Persons.BusinessProject
         /// Конструктор сущности Бизнес проект
         /// </summary>
         public BusinessProject()
-            : base(null)
         {
             
         }

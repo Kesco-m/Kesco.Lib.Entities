@@ -66,7 +66,7 @@ namespace Kesco.Lib.Entities.Link
         /// <summary>
         /// Изменено
         /// </summary>
-        public DateTime? Changed { get; set; }
+        public new DateTime? Changed { get; set; }
         /// <summary>
         /// Изменил
         /// </summary>

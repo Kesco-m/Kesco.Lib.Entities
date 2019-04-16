@@ -167,7 +167,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
         /// <summary>
         /// 
         /// </summary>
-        public List<EmployeeWorkPlace> WorkPlaces { get; set; }
+        public List<Location> WorkPlaces { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -222,7 +222,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
             EmployeeID = userID;
             Contacts = new List<EmployeeContact>();
             Positions = new List<EmployeePosition>();
-            WorkPlaces = new List<EmployeeWorkPlace>();
+            WorkPlaces = new List<Location>();
             CoWorkers = new List<EmployeeCoWorker>();
             Roles = new List<EmployeeRole>();
             
@@ -298,9 +298,9 @@ namespace Kesco.Lib.Entities.Persons.Dossier
 
        
 
-        private List<EmployeeCoWorker> GetEmployeeCoWorkersByWorkPlace(string userID, string workPlaceID)
+        private List<Employee> GetEmployeeCoWorkersByWorkPlace(string userID, string workPlaceID)
         {
-            var userUserCoWorkerList = new List<EmployeeCoWorker>();
+            var userUserCoWorkerList = new List<Employee>();
             var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", userID }, { "@КодРасположения", workPlaceID } };
             using (var dbReader = new DBReader(SQLQueries.SELECT_СовместнаяРаботаНаРабочемМесте, CommandType.Text, CN, sqlParams))
             {
@@ -308,7 +308,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
                 {
                     while (dbReader.Read())
                     {
-                        var tempUserCoWorker = new EmployeeCoWorker();
+                        var tempUserCoWorker = new Employee();
                         tempUserCoWorker.LoadFromDbReader(dbReader);
                         userUserCoWorkerList.Add(tempUserCoWorker);
                     }
@@ -317,9 +317,9 @@ namespace Kesco.Lib.Entities.Persons.Dossier
             return userUserCoWorkerList;
         }
 
-        private List<EmployeeWorkPlace> GetEmployeeWorkPlaces(string userID)
+        private List<Location> GetEmployeeWorkPlaces(string userID)
         {
-            var userUserWorkPlacesList = new List<EmployeeWorkPlace>();
+            var userUserWorkPlacesList = new List<Location>();
             var sqlParams = new Dictionary<string, object> { { "@Id", userID } };
             using (var dbReader = new DBReader(SQLQueries.SELECT_РабочиеМестаСотрудника, CommandType.Text, CN, sqlParams))
             {
@@ -327,7 +327,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
                 {
                     while (dbReader.Read())
                     {
-                        var tempUserWorkPlace = new EmployeeWorkPlace();
+                        var tempUserWorkPlace = new Location();
                         tempUserWorkPlace.LoadFromDbReader(dbReader);
                         userUserWorkPlacesList.Add(tempUserWorkPlace);
                     }

@@ -459,5 +459,7 @@ namespace Kesco.Lib.Entities.Documents
         {
             return (DocLink) MemberwiseClone();
         }
+
+      
     }
 }

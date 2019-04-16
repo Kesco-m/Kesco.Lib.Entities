@@ -31,16 +31,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
         }
 
         /// <summary>
-        /// 
+        /// КодПозицииДоговора
         /// </summary>
         /// <value>
         /// КодПозицииДоговора (int, not null)
         /// </value>
         [DBField("КодПозицииДоговора",0)] 
-        public int PositionId { get; set; }
+        public override int? PositionId { get; set; }
 
         /// <summary>
-        /// 
+        /// КодРесурса
         /// </summary>
         /// <value>
         /// КодРесурса (int, not null)

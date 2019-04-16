@@ -132,7 +132,7 @@ public class StavkaNDS : Entity
                         if (!dbReader.IsDBNull(colСпецНДС)) { СпецНДС = dbReader.GetByte(colСпецНДС); }
                         if (!dbReader.IsDBNull(colКодТерритории)) { КодТерритории = dbReader.GetInt32(colКодТерритории); }
 
-                        Действует = dbReader.GetByte(colДействует);
+                        Действует = dbReader.GetInt32(colДействует);
 
                     }
                 }

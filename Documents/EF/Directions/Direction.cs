@@ -485,6 +485,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         public DataTable GetDirectionEquipment()
         {
             var dt = new DataTable("Equipments");
+            if (IsNew) return dt;
             var sqlParams = new Dictionary<string, object>
             {
                 {"@КодДокумента", int.Parse(Id)}

@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.RegularExpressions;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.BaseExtention.Enums.Docs;
@@ -516,7 +514,9 @@ ORDER BY Изменено DESC
         {
             BaseDocs.RemoveAll(b => b.BaseDocId == docId && b.DocFieldId == fieldId);
         }
-        
+
+        private List<DocLink> _baseDocs;
+
         /// <summary>
         ///  Базовые документы
         /// </summary>
@@ -525,7 +525,40 @@ ORDER BY Изменено DESC
             get { return _baseDocs ?? (_baseDocs = DocLink.LoadBasisDocsByChildId(DocId)); }
         }
 
-        private List<DocLink> _baseDocs;
+        private bool BaseDocsComparer(List<DocLink> originalList)
+        {
+            if ((_baseDocs == null || _baseDocs.Count == 0) && (originalList == null || originalList.Count == 0))
+                return true;
+
+            if (_baseDocs == null && originalList != null || _baseDocs!=null && originalList==null)
+                return false;
+
+            var ret = true;
+            if (_baseDocs != null)
+                _baseDocs.ForEach(bd =>
+                {
+                    if (originalList == null || !ret || bd.DocFieldId == 0) return;
+                    var obj = originalList.FirstOrDefault(x =>
+                        x.DocFieldId == bd.DocFieldId && x.SequelDocId == bd.SequelDocId &&
+                        x.BaseDocId == bd.BaseDocId);
+                    if (obj == null) ret = false;
+                });
+
+            if (!ret) return false;
+
+            if (originalList != null)
+                originalList.ForEach(bd =>
+                {
+                    if (_baseDocs == null || !ret || bd.DocFieldId == 0) return;
+                    var obj = _baseDocs.FirstOrDefault(x =>
+                        x.DocFieldId == bd.DocFieldId && x.SequelDocId == bd.SequelDocId &&
+                        x.BaseDocId == bd.BaseDocId);
+                    if (obj == null) ret = false;
+                });
+
+            return ret;
+        }
+
 
         /// <summary>
         ///  Сохранение базовых документов
@@ -1512,6 +1545,9 @@ ORDER BY ДатаДокумента DESC
             if (DocumentData.CompareToChanges(original.DocumentData))
                 return true;
 
+            if(!BaseDocsComparer(original.BaseDocs))
+                return true;
+
             // если дошло до конца, значит документ не менялся
             return false;
         }
@@ -1598,6 +1634,16 @@ ORDER BY ДатаДокумента DESC
             }
         }
 
+        /// <summary>
+        /// Функция сохранения описания документа 
+        /// </summary>
+        public void SaveDescription()
+        {
+            var sqlParams = new Dictionary<string, object>();
+            sqlParams.Add("@Описание", string.IsNullOrWhiteSpace(Description) ? "" : Description);
+            sqlParams.Add("@id", DocId);
 
+            DBManager.ExecuteNonQuery(SQLQueries.UPDATE_ID_Документы_Описание, CommandType.Text, CN, sqlParams);
+        }
     }
 }

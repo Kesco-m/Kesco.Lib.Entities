@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Kesco.Lib.BaseExtention;
-using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
-using Kesco.Lib.Entities.Contacts;
 using Kesco.Lib.Entities.Persons.Contacts;
 using Kesco.Lib.Web.Settings;
 
@@ -986,7 +983,7 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
             var dt = DBManager.GetData(@"
                 DECLARE @ФамилияДательный nvarchar(300)
                 EXEC sp_ФамилияВДательномПадеже  @ФамилияИменительный,1, @ФамилияДательный OUT
-                SELECT @ФамилияДательный Фамилия", Config.DS_person, CommandType.StoredProcedure, param);
+                SELECT @ФамилияДательный Фамилия", Config.DS_person, CommandType.Text, param);
 
             ret = dt.Rows[0][0].ToString();
             ret += ret.Length > 0 ? " " : "";

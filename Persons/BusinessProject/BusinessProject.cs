@@ -87,5 +87,17 @@ namespace Kesco.Lib.Entities.Persons.BusinessProject
                 BusinessProjectName = null;
             }
         }
+
+        /// <summary>
+        ///     Процедура удаления бизнес-проекта
+        /// </summary>
+        public void Delete()
+        {
+            var sqlParams = new Dictionary<string, object>
+            {
+                {"@КодБизнесПроекта", Id}
+            };
+            DBManager.ExecuteNonQuery(SQLQueries.DELETE_БизнесПроект, CommandType.Text, CN, sqlParams);
+        }
     }
 }

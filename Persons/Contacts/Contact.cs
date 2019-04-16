@@ -114,7 +114,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// <summary>
         ///     Изменено
         /// </summary>
-        public DateTime? Changed { get; set; }
+        public new DateTime? Changed { get; set; }
 
         /// <summary>
         ///     Телефонный номер

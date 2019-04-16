@@ -47,9 +47,9 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// 
+        /// Инициализация сущности "Роли" на основе таблицы данных
         /// </summary>
-        /// <param name="dt"></param>
+        /// <param name="dt">Таблица данных Роли</param>
         protected override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)

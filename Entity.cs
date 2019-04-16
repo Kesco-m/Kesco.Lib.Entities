@@ -48,7 +48,7 @@ namespace Kesco.Lib.Entities
         /// Строка подключения к БД. 
         /// Обязательно к переопределению для классов подключающихся к БД
         /// </summary>
-        public virtual string CN { get { throw new NotImplementedException("Строка подключения не перопределена для класса наследника"); } }
+        public virtual string CN { get { throw new NotImplementedException("Строка подключения не переопределена для класса наследника"); } }
 
         /// <summary>
         /// Код объекта
@@ -97,7 +97,7 @@ namespace Kesco.Lib.Entities
 
       
         /// <summary>
-        /// 
+        /// Используется для кэширования объектов базы данных(Entity) в рамках одного поста
         /// </summary>
         /// <value>
         /// Устанавливаем при каждом post-запросе для определения необходимости кеширования объектов

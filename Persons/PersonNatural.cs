@@ -169,44 +169,6 @@ namespace Kesco.Lib.Entities.Persons
             //}
         }
 
-        /// <summary>
-        /// Получение списка лиц из таблицы данных
-        /// </summary>
-        /// <param name="dt">Таблица данных лиц</param>
-        //public static List<Person> GetPersonsList(DataTable dt)
-        //{
-        //    List<Person> personsList = new List<Person>();
-
-        //    for (int i = 0; i < dt.Rows.Count; i++)
-        //    {
-        //        personsList.Add(
-        //            new Person()
-        //            {
-        //                Unavailable = false,
-        //                Id = dt.Rows[i]["КодЛица"].ToString(),
-        //                Name = dt.Rows[i]["Кличка"].ToString(),
-        //                Type = Convert.ToInt32(dt.Rows[i]["ТипЛица"]),
-        //                BusinessProjectID = dt.Rows[i]["КодБизнесПроекта"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[i]["КодБизнесПроекта"]),
-        //                IsChecked = Convert.ToBoolean(dt.Rows[i]["Проверено"]),
-        //                NickRL = dt.Rows[i]["КличкаRL"].ToString(),
-        //                NameRL = dt.Rows[i]["НазваниеRL"].ToString(),
-        //                RegionID = Convert.ToInt32(dt.Rows[i]["КодТерритории"]),
-        //                IsStateCompany = Convert.ToBoolean(dt.Rows[i]["ГосОрганизация"]),
-        //                INN = dt.Rows[i]["ИНН"] == DBNull.Value ? string.Empty : dt.Rows[i]["ИНН"].ToString(),
-        //                OGRN = dt.Rows[i]["ОГРН"] == DBNull.Value ? string.Empty : dt.Rows[i]["ОГРН"].ToString(),
-        //                OKPO = dt.Rows[i]["ОКПО"] == DBNull.Value ? string.Empty : dt.Rows[i]["ОКПО"].ToString(),
-        //                BIK = dt.Rows[i]["БИК"] == DBNull.Value ? string.Empty : dt.Rows[i]["БИК"].ToString(),
-        //                CorrAccount = dt.Rows[i]["КорСчет"] == DBNull.Value ? string.Empty : dt.Rows[i]["КорСчет"].ToString(),
-        //                BIKRKC = dt.Rows[i]["БИКРКЦ"] == DBNull.Value ? string.Empty : dt.Rows[i]["БИКРКЦ"].ToString(),
-        //                SWIFT = dt.Rows[i]["SWIFT"] == DBNull.Value ? string.Empty : dt.Rows[i]["SWIFT"].ToString(),
-        //                BirthDate = dt.Rows[i]["ДатаРождения"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[i]["ДатаРождения"]),
-        //                EndDate = dt.Rows[i]["ДатаКонца"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(dt.Rows[i]["ДатаКонца"]),
-        //                Note = dt.Rows[i]["Примечание"] == DBNull.Value ? string.Empty : dt.Rows[i]["Примечание"].ToString(),
-        //            }
-        //        );
-        //    }
-        //    return personsList;
-        //}
 
         /// <summary>
         /// Метод загрузки данных сущности "Лицо"

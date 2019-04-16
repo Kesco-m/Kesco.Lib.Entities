@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
+using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Corporate;
 using Kesco.Lib.DALC;
+using Kesco.Lib.Entities.Corporate;
+using Kesco.Lib.Entities.Corporate.Equipments;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities
@@ -102,6 +105,8 @@ namespace Kesco.Lib.Entities
         /// </summary>
         protected string _connectionString;
 
+        private List<Equipment> _equipmentsIt;
+
         /// <summary>
         /// Инициализация сущности "Расположения" на основе таблицы данных
         /// </summary>
@@ -127,6 +132,37 @@ namespace Kesco.Lib.Entities
             {
                 Unavailable = true;
             }
+        }
+
+        /// <summary>
+        /// Создание объекта через datareader
+        /// </summary>
+        /// <param name="dbReader">Объект-DBReader</param>
+        public void LoadFromDbReader(DBReader dbReader)
+        {
+            var colId = dbReader.GetOrdinal("КодРасположения");
+            var colShortName = dbReader.GetOrdinal("Расположение");
+            var colName = dbReader.GetOrdinal("РасположениеPath1");
+            var colWorkPlace = dbReader.GetOrdinal("РабочееМесто");
+            var colOffice = dbReader.GetOrdinal("Офис");
+            var colLocationClose = dbReader.GetOrdinal("Закрыто");
+            var colNamePath0 = dbReader.GetOrdinal("РасположениеPath0");
+            var colNamePath1 = dbReader.GetOrdinal("РасположениеPath1");
+            var colL = dbReader.GetOrdinal("L");
+            var colR = dbReader.GetOrdinal("R");
+
+            if (!dbReader.IsDBNull(colId)) Id = dbReader.GetInt32(colId).ToString();
+            if (!dbReader.IsDBNull(colShortName)) ShortName = dbReader.GetString(colShortName);
+            if (!dbReader.IsDBNull(colName)) Name = dbReader.GetString(colName);
+            if (!dbReader.IsDBNull(colWorkPlace)) WorkPlace = dbReader.GetByte(colWorkPlace);
+            if (!dbReader.IsDBNull(colOffice)) Office = dbReader.GetByte(colOffice);
+            if (!dbReader.IsDBNull(colLocationClose)) LocationClose = dbReader.GetByte(colLocationClose);
+            if (!dbReader.IsDBNull(colNamePath0)) NamePath0 = dbReader.GetString(colNamePath0);
+            if (!dbReader.IsDBNull(colNamePath1)) NamePath1 = dbReader.GetString(colNamePath1);
+            if (!dbReader.IsDBNull(colL)) L = dbReader.GetInt32(colL);
+            if (!dbReader.IsDBNull(colR)) R = dbReader.GetInt32(colR);
+            
+            Unavailable = false;
         }
 
         /// <summary>
@@ -184,6 +220,11 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
+        /// Сотрудники на расположении
+        /// </summary>
+        public List<Employee> CoWorkers { get; set; }
+
+        /// <summary>
         /// Компьютеризированное рабочее место
         /// </summary>
         public bool IsComputeredWorkPlace { get { return ((WorkPlace.Equals((int)ТипыРабочихМест.КомпьютеризированноеРабочееМесто))); } }
@@ -193,7 +234,7 @@ namespace Kesco.Lib.Entities
         /// </summary>
         public bool IsGuestWorkPlace { get { return ((WorkPlace.Equals((int)ТипыРабочихМест.ГостевоеРабочееМесто))); } }
 
-        private bool? isOffice = null;
+        private bool? _isOffice = null;
 
         /// <summary>
         /// Расположение находится в офисе
@@ -202,21 +243,107 @@ namespace Kesco.Lib.Entities
         {
             get
             {
-                if (isOffice.HasValue && !RequiredRefreshInfo)
-                    return isOffice.Value;
+                if (_isOffice.HasValue && !RequiredRefreshInfo)
+                    return _isOffice.Value;
 
-                isOffice = false;
+                _isOffice = false;
                 var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
                 using (var dbReader = new DBReader(SQLQueries.SELECT_РасположениеВОфисе, CommandType.Text, CN, sqlParams))
                 {
-                    if (dbReader.HasRows) isOffice = true;
+                    if (dbReader.HasRows) _isOffice = true;
                 }
-                return isOffice.Value;
+                return _isOffice.Value;
 
             }
         }
 
+        /// <summary>
+        /// Получение ИТ-оборудования на данном расположении
+        /// </summary>
+        public List<Equipment> EquipmentsIt
+        {
+            get
+            {
+                if (RequiredRefreshInfo || _equipmentsIt == null)
+                {
+                    _equipmentsIt = new List<Equipment>();
+                    var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) }, {"@IT", 1}  };
+                    using (
+                        var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеНаРасположении, CommandType.Text, CN,
+                            sqlParams))
+                    {
+                        _equipmentsIt = Equipment.GetEquipmentList(dbReader);
+                    }
+                }
+                return _equipmentsIt;
+            }
+        }
 
+        private bool? _isOrganized = null;
+
+        /// <summary>
+        /// Оганизовано рабочее место
+        /// </summary>
+        public bool IsOrganized
+        {
+            get
+            {
+                if (_isOrganized.HasValue && !RequiredRefreshInfo)
+                    return _isOrganized.Value;
+
+                _isOrganized = false;
+                var sqlParams = new Dictionary<string, object> { { "@КодРасположения", Id.ToInt() } };
+                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста, CommandType.Text, CN, sqlParams))
+                {
+                    if (dbReader.HasRows) _isOrganized = true;
+                }
+                return _isOrganized.Value;
+            }
+        }
+
+        /// <summary>
+        /// Расположение
+        /// </summary>
+        /// <param name="icon">иконка</param>
+        /// <param name="title">описание</param>
+        public void GetLocationSpecifications(out string icon, out string title)
+        {
+            switch (WorkPlace)
+            {
+                case (int)ТипыРабочихМест.КомпьютеризированноеРабочееМесто:
+                    if (IsOrganized)
+                    {
+                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                        title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name + " - организовано";
+                    }
+                    else
+                    {
+                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().IconGrayed;
+                        title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().NameGrayed;
+                    }
+                    break;
+                case (int)ТипыРабочихМест.НомерГостиницы:
+                    icon = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int)ТипыРабочихМест.Оборудование:
+                    icon = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int)ТипыРабочихМест.CкладОборудования:
+                    icon = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                case (int)ТипыРабочихМест.ГостевоеРабочееМесто:
+                    icon = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                    title = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    break;
+                default:
+                    icon = "";
+                    title = "";
+                    break;
+            }
+        }
 
     }
 }

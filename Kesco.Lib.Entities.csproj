@@ -136,9 +136,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CashFlowItem\CashFlowItem.cs" />
     <Compile Include="Corporate\CommonFolder.cs" />
     <Compile Include="Corporate\DomainName.cs" />
     <Compile Include="Corporate\EmployeePersonType.cs" />
+    <Compile Include="Corporate\Equipments\Equipment.cs" />
+    <Compile Include="Corporate\Equipments\ModelEquipment.cs" />
+    <Compile Include="Corporate\Equipments\TypeEquipment.cs" />
     <Compile Include="Corporate\Language.cs" />
     <Compile Include="Corporate\Location.cs" />
     <Compile Include="Corporate\Phones\Phone.cs" />
@@ -150,7 +154,6 @@
     <Compile Include="Corporate\EmployeePosition.cs" />
     <Compile Include="Corporate\EmployeeReplacement.cs" />
     <Compile Include="Corporate\EmployeeRole.cs" />
-    <Compile Include="Corporate\EmployeeWorkPlace.cs" />
     <Compile Include="Corporate\Role.cs" />
     <Compile Include="Corporate\AdvancedGrant.cs" />
     <Compile Include="Corporate\VacationType.cs" />
@@ -223,6 +226,7 @@
     <Compile Include="Resources\Unit.cs" />
     <Compile Include="Resources\UnitAdv.cs" />
     <Compile Include="Resources\StavkaNDS.cs" />
+    <Compile Include="Resources\CashFlowType.cs" />
     <Compile Include="Transactions\Transaction.cs" />
     <Compile Include="Transactions\TransactionType.cs" />
     <Compile Include="Entity.cs" />

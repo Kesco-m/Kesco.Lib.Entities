@@ -41,12 +41,12 @@ namespace Kesco.Lib.Entities.Documents
         /// <summary>
         /// Описание типа документа RU. Поле ТипДокумента
         /// </summary>
-        public string TypeDocRu { get { return Name; } }
+        public new string TypeDocRu { get { return Name; } }
 
         /// <summary>
         /// Описание типа документа EN. Поле TypeDoc
         /// </summary>
-        public string TypeDocEn { get; set; }
+        public new string TypeDocEn { get; set; }
 
         /// <summary>
         /// Поле ТОписание

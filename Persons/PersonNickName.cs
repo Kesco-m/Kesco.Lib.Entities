@@ -14,6 +14,6 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         /// Псевдоним лица
         /// </summary>
-        public string Name { get; set; }
+        public new string Name { get; set; }
     }
 }

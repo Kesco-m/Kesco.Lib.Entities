@@ -62,7 +62,7 @@ namespace Kesco.Lib.Entities.Persons.Attributes
         /// <summary>
         /// Изменено
         /// </summary>
-        public DateTime? Changed { get; set; }
+        public new DateTime? Changed { get; set; }
         /// <summary>
         /// Изменил
         /// </summary>

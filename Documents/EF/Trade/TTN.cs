@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data;
-using System.Data.SqlClient;
-using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Kesco.Lib.BaseExtention;
-using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Documents.EF.Dogovora;

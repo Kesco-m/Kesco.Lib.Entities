@@ -97,11 +97,7 @@ namespace Kesco.Lib.Entities.Stores
         /// </summary>
         public string ChangeBy { get; set; }
 
-        /// <summary>
-        /// Действует
-        /// </summary>
-        public bool Alive { get; set; }
-        
+   
         /// <summary>
 		/// От
 		/// </summary>
@@ -226,7 +222,6 @@ namespace Kesco.Lib.Entities.Stores
                 Note = dt.Rows[0]["Примечание"].ToString();
                 Changed = Convert.ToDateTime(dt.Rows[0]["Изменено"]);
                 ChangeBy = dt.Rows[0]["Изменил"].ToString();
-                Alive = Convert.ToBoolean(dt.Rows[0]["Действует"]);
 				From = dt.Rows[0]["От"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["От"];
 				To = dt.Rows[0]["До"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["До"];
             }
@@ -264,7 +259,6 @@ namespace Kesco.Lib.Entities.Stores
                         Note = dt.Rows[i]["Примечание"].ToString(),
                         Changed = Convert.ToDateTime(dt.Rows[i]["Изменено"]),
                         ChangeBy = dt.Rows[i]["Изменил"].ToString(),
-                        Alive = Convert.ToBoolean(dt.Rows[0]["Действует"]),
 						From = dt.Rows[0]["От"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["От"],
 						To = dt.Rows[0]["До"] == DBNull.Value ? null : (DateTime?)dt.Rows[0]["До"]
                     }
@@ -298,14 +292,12 @@ namespace Kesco.Lib.Entities.Stores
         /// <summary>
         /// Действует
         /// </summary>
-        /// <param name="d"></param>
-        /// <returns></returns>
+        /// <param name="d">На дату</param>
+        /// <returns>Действует | Не действует</returns>
         public bool IsAlive(DateTime d)
         {
             if (From.HasValue && d.Date < From) return false;
-            if (To.HasValue && d.Date >= To) return false;
-            if (!Alive) return false;
-            return true;
+            return !To.HasValue || !(d.Date >= To);
         }
 
         /// <summary>

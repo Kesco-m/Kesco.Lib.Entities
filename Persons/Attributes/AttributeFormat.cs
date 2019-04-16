@@ -66,7 +66,7 @@ namespace Kesco.Lib.Entities.Persons.Attributes
         /// <summary>
         /// Изменено
         /// </summary>
-        public string Changed { get; set; }
+        public new string Changed { get; set; }
         /// <summary>
         /// Изменил
         /// </summary>

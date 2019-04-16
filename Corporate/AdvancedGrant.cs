@@ -48,6 +48,10 @@ namespace Kesco.Lib.Entities.Corporate
         /// Описание права на английском
         /// </summary>
         public string NameEn { get; set; }
+        /// <summary>
+        /// Можно выбирать
+        /// </summary>
+        public string NotAlive { get; set; }
 
         /// <summary>
         ///  Инкапсулирует и сохраняет в себе строку подключения
@@ -70,11 +74,13 @@ namespace Kesco.Lib.Entities.Corporate
             var colКод = dbReader.GetOrdinal("КодПраваДляУказанийIT");
             var colОписание = dbReader.GetOrdinal("Описание");
             var colNameEn = dbReader.GetOrdinal("ОписаниеЛат");
+            var colNotAlive = dbReader.GetOrdinal("НельзяВыбрать");
             Unavailable = false;
 
             if (!dbReader.IsDBNull(colКод)) Id = dbReader.GetInt32(colКод).ToString();
             if (!dbReader.IsDBNull(colОписание)) Name = dbReader.GetString(colОписание);
             if (!dbReader.IsDBNull(colNameEn)) NameEn = dbReader.GetString(colNameEn);
+            if (!dbReader.IsDBNull(colNotAlive)) NotAlive = dbReader.GetByte(colNotAlive).ToString();
             
         }
     }

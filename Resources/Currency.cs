@@ -37,8 +37,17 @@ namespace Kesco.Lib.Entities.Resources
         /// </summary>
         public enum Code
         {
+            /// <summary>
+            /// RUR
+            /// </summary>
             RUR = 183,
+            /// <summary>
+            /// USD
+            /// </summary>
             USD = 184,
+            /// <summary>
+            /// EUR
+            /// </summary>
             EUR = 193
         }
 
@@ -63,7 +72,7 @@ namespace Kesco.Lib.Entities.Resources
         /// <summary>
         ///  Точность
         /// </summary>
-        public int UnitScale { get; set; }
+        public new int UnitScale { get; set; }
 
         #endregion
 
@@ -118,6 +127,7 @@ namespace Kesco.Lib.Entities.Resources
 
                     int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
                     int colРесурсРус = dbReader.GetOrdinal("РесурсРус");
+                    int colРесурсЛат = dbReader.GetOrdinal("РесурсЛат");
                     int colЕдиницаРус = dbReader.GetOrdinal("ЕдиницаРус");
                     int colЕдиницаЛат = dbReader.GetOrdinal("ЕдиницаЛат");
                     int colТочность = dbReader.GetOrdinal("Точность");
@@ -131,7 +141,8 @@ namespace Kesco.Lib.Entities.Resources
                         {
                             Unavailable = false,
                             Id = id.ToString(),
-                            Name = dbReader.GetString(colРесурсРус)
+                            Name = dbReader.GetString(colРесурсРус),
+                            ResourceLat = dbReader.GetString(colРесурсЛат)
                         };
                         if (!dbReader.IsDBNull(colЕдиницаРус)) { row.UnitRus = dbReader.GetString(colЕдиницаРус); }
                         if (!dbReader.IsDBNull(colЕдиницаЛат)) { row.UnitEng = dbReader.GetString(colЕдиницаЛат); }
@@ -143,6 +154,11 @@ namespace Kesco.Lib.Entities.Resources
             return list;
         }
 
+        /// <summary>
+        /// Получить код валюты по имени
+        /// </summary>
+        /// <param name="ShortName">короткое наименование</param>
+        /// <returns>Код валюты</returns>
         public static int GetCurrencyByName(string ShortName)
         {
             var sqlParams = new Dictionary<string, object> { { "@КодКлассификатораБукв", ShortName }};
@@ -151,6 +167,12 @@ namespace Kesco.Lib.Entities.Resources
             return dt.Rows.Count == 1 ? Convert.ToInt32(dt.Rows[0]["КодВалюты"].ToString()) : 0;
         }
 
+        /// <summary>
+        /// Курс валюты на дату
+        /// </summary>
+        /// <param name="curId">Код валюты</param>
+        /// <param name="d">Дата</param>
+        /// <returns></returns>
         public static decimal GetKursCbrf(int curId, DateTime d)
         {
             decimal kurs;
@@ -159,6 +181,14 @@ namespace Kesco.Lib.Entities.Resources
             return GetKursCbrf(curId, d, out kurs, out scale);
         }
 
+        /// <summary>
+        /// Курс валюты на дату
+        /// </summary>
+        /// <param name="curId">Код валюты</param>
+        /// <param name="d">Дата</param>
+        /// <param name="kurs">Курс</param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
         public static decimal GetKursCbrf(int curId, DateTime d, out decimal kurs, out decimal scale)
         {
             var query = string.Format(SQLQueries.SELECT_LoadKursCbrf, curId, d.ToString("yyyyMMdd"));
@@ -179,6 +209,5 @@ namespace Kesco.Lib.Entities.Resources
 
             return kurs / scale;
         }
-
     }
 }

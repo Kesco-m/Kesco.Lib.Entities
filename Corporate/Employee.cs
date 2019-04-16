@@ -9,6 +9,7 @@ using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Persons.PersonOld;
 using Kesco.Lib.Web.Settings;
+using Kesco.Lib.Entities.Corporate.Equipments;
 
 namespace Kesco.Lib.Entities.Corporate
 {
@@ -29,16 +30,18 @@ namespace Kesco.Lib.Entities.Corporate
 
         private List<CommonFolder> _commonFolders;
         private List<Employee> _employeesOnWorkPlace;
+        private List<Equipment> _employeeEquipmentsAnotherWorkPlaces;
         private PersonOld _employer;
         private PersonOld _organization;
         private PersonOld _personEmployee;
         private List<EmployeePhoto> _photos;
         private List<EmployeeRole> _roles;
+        private List<EmployeeRole> _rolesСurrentEmployes;
         private bool? _simGprsPackage;
         private string _simPost = "";
         private bool? _simRequired;
         private List<EmployeePersonType> _types;
-        private List<EmployeeWorkPlace> _workPlaces;
+        private List<Location> _workPlaces;
         private DataTable supervisorsData;
 
         /// <summary>
@@ -59,6 +62,14 @@ namespace Kesco.Lib.Entities.Corporate
         public Employee(bool fillCurrentUser)
         {
             if (fillCurrentUser) GetCurrentUser();
+        }
+
+        /// <summary>
+        /// Для заполнения через datareader
+        /// </summary>
+        public Employee()
+        {
+           
         }
 
 
@@ -117,7 +128,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Изменено
         /// </summary>
-        public DateTime? Changed { get; set; }
+        public new DateTime? Changed { get; set; }
 
         /// <summary>
         ///     Изменил
@@ -416,13 +427,13 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Список рабочих мест сотрудника
         /// </summary>
-        public List<EmployeeWorkPlace> Workplaces
+        public List<Location> Workplaces
         {
             get
             {
                 if (RequiredRefreshInfo || _workPlaces == null)
                 {
-                    _workPlaces = new List<EmployeeWorkPlace>();
+                    _workPlaces = new List<Location>();
                     var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) } };
                     using (
                         var dbReader = new DBReader(SQLQueries.SELECT_РабочиеМестаСотрудника, CommandType.Text, CN,
@@ -432,7 +443,7 @@ namespace Kesco.Lib.Entities.Corporate
                         {
                             while (dbReader.Read())
                             {
-                                var wp = new EmployeeWorkPlace();
+                                var wp = new Location();
                                 wp.LoadFromDbReader(dbReader);
                                 _workPlaces.Add(wp);
                             }
@@ -565,6 +576,36 @@ namespace Kesco.Lib.Entities.Corporate
                 }
 
                 return _roles;
+            }
+        }
+
+        /// <summary>
+        ///     Роли текущего сотрудника(с замещениями)
+        /// </summary>
+        public List<EmployeeRole> RolesCurrentEmployes
+        {
+            get
+            {
+                if (!(RequiredRefreshInfo || _rolesСurrentEmployes == null)) return _rolesСurrentEmployes;
+
+                _rolesСurrentEmployes = new List<EmployeeRole>();
+                var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", int.Parse(Id) } };
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_РолиТекущегоСотрудника, CommandType.Text, CN,
+                        sqlParams))
+                {
+                    if (dbReader.HasRows)
+                    {
+                        while (dbReader.Read())
+                        {
+                            var tempUserRole = new EmployeeRole();
+                            tempUserRole.LoadFromDbReader(dbReader);
+                            _rolesСurrentEmployes.Add(tempUserRole);
+                        }
+                    }
+                }
+
+                return _rolesСurrentEmployes;
             }
         }
 
@@ -1004,10 +1045,26 @@ namespace Kesco.Lib.Entities.Corporate
             sqlParams.Add("@КодСотрудника", int.Parse(Id));
 
 
-            supervisorsData = DBManager.GetData(SQLQueries.SELECT_НепосредственныйРуководитель, CN, CommandType.Text,
+            supervisorsData = DBManager.GetData(SQLQueries.SELECT_НепосредственныйРуководитель_Данные, CN, CommandType.Text,
                 sqlParams);
 
             return supervisorsData;
+        }
+
+        /// <summary>
+        /// Непосредственный руководитель
+        /// </summary>
+        public Employee Supervisor {
+            get
+            {
+                var sqlParams = new Dictionary<string, object> { { "@КодСотрудника", int.Parse(Id) } };
+
+                var superObj = DBManager.ExecuteScalar(SQLQueries.SELECT_НепосредственныйРуководитель, CommandType.Text, CN, sqlParams);
+                if( superObj is Int32)
+                    return new Employee(superObj.ToString());
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -1069,7 +1126,7 @@ namespace Kesco.Lib.Entities.Corporate
         public List<Employee> EmployeesOnWorkPlace(int wp)
         {
             _employeesOnWorkPlace = new List<Employee>();
-            var sqlParams = new Dictionary<string, object> { { "@Id", wp }, { "@idEmpl", int.Parse(Id) }, { "@state", 0 } };
+            var sqlParams = new Dictionary<string, object> { { "@Id", wp }, { "@idEmpl", int.Parse(Id) }, { "@state", -1 } };
             using (
                 var dbReader = new DBReader(SQLQueries.SELECT_СотрудникиНаРабочемМесте, CommandType.Text, CN,
                     sqlParams))
@@ -1086,6 +1143,36 @@ namespace Kesco.Lib.Entities.Corporate
             }
 
             return _employeesOnWorkPlace;
+        }
+
+        /// <summary>
+        /// Получение списка обордования на рабчих местах, где не работает указанный сотрудник
+        /// </summary>
+        /// <returns></returns>
+        public List<Equipment> EmployeeEquipmentsAnotherWorkPlaces()
+        {
+            if (_employeeEquipmentsAnotherWorkPlaces != null)
+                return _employeeEquipmentsAnotherWorkPlaces;
+
+            _employeeEquipmentsAnotherWorkPlaces = new List<Equipment>();
+            var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id)}, {"@IT", 1 }};
+            using (
+                var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеСотрудникаНаДругихРабочихМестах, CommandType.Text, CN,sqlParams))
+            {
+                _employeeEquipmentsAnotherWorkPlaces = Equipment.GetEquipmentList(dbReader);
+            }
+
+            return _employeeEquipmentsAnotherWorkPlaces;
+        }
+
+        /// <summary>
+        /// Определить имеет ли сотрудник роль
+        /// </summary>
+        /// <param name="roleId">Идентификатор роли</param>
+        /// <returns>Возвращает значение, указывающее, имеет ли сотрудник роль</returns>
+        public bool HasRole(int roleId)
+        {
+            return Roles.Exists(x => x.RoleId.Equals(roleId)); ;
         }
     }
 }

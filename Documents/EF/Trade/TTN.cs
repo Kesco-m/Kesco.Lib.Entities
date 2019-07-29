@@ -13,192 +13,113 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Documents.EF.Trade
 {
     /// <summary>
-    /// Документ Товарно-транспортная накладная
+    ///     Документ Товарно-транспортная накладная
     /// </summary>
     [Serializable]
     public class TTN : Document, IDocumentWithPositions
     {
         /// <summary>
-        ///  Конструктор
+        ///     Конструктор
         /// </summary>
         public TTN()
         {
             Initialization();
-            BasisDocLinks = new List<DocLink>();
             PositionFactUsl = new List<FactUsl>();
             PositionMris = new List<Mris>();
         }
 
         /// <summary>
-        ///  Конструктор c инициализацией документа
+        ///     Конструктор c инициализацией документа
         /// </summary>
         public TTN(string id)
         {
             LoadDocument(id, true);
+            LoadDocumentPositions();
             Initialization();
         }
 
         /// <summary>
-        ///  Связанные документы-основания
-        /// </summary>
-        public List<DocLink> BasisDocLinks { get; set; }
-
-        /// <summary>
-        /// Инициализация документа ТТН
-        /// </summary>
-        private void Initialization()
-        {
-            Type = DocTypeEnum.ТоварноТранспортнаяНакладная;
-            PostavschikField            = GetDocField("589");
-            PlatelschikField            = GetDocField("590");
-            GOPersonField               = GetDocField("689");
-            GPPersonField               = GetDocField("690");
-            PostavschikDataField        = GetDocField("691");
-            PlatelschikDataField        = GetDocField("692");
-            GOPersonDataField           = GetDocField("693");
-            GPPersonDataField           = GetDocField("694");
-            PostavschikOKPOField        = GetDocField("695");
-            PostavschikBSField          = GetDocField("696");
-            PostavschikBSDataField      = GetDocField("698");
-            SignSupervisorField         = GetDocField("700");
-            SignBuhgalterField          = GetDocField("701");
-            PlatelschikOKPOField        = GetDocField("702");
-            PlatelschikBSField          = GetDocField("703");
-            PlatelschikBSDataField      = GetDocField("704");
-            DogovorField                = GetDocField("707"); // договор
-            PrilozhenieField            = GetDocField("708"); // приложение
-            DogovorTextField            = GetDocField("709");
-            GOPersonOKPOField           = GetDocField("710");
-            GOPersonBSField             = GetDocField("711");
-            GOPersonBSDataField         = GetDocField("713");
-            GOPersonWeselField          = GetDocField("715");
-            GPPersonOKPOField           = GetDocField("716");
-            GPPersonBSField             = GetDocField("717");
-            GPPersonBSDataField         = GetDocField("719");
-            GPPersonWeselField          = GetDocField("721");
-            CurrencyField               = GetDocField("722");
-            PrimechanieField            = GetDocField("723");
-            DateProvodkiField           = GetDocField("758");
-            MrisSaleField               = GetDocField("760");
-            PostavschikAddressField     = GetDocField("779");
-            PlatelschikAddressField     = GetDocField("780");
-            UslField                    = GetDocField("792");
-            GPPersonNoteField           = GetDocField("930");
-            GOPersonNoteField           = GetDocField("931");
-            KursField                   = GetDocField("1044");
-            FormulaDescrField           = GetDocField("1064");
-            DoverennostField            = GetDocField("1270");
-            VoditelField                = GetDocField("1271");
-            AvtomobilField              = GetDocField("1272");
-            AvtomobilNomerField         = GetDocField("1273");
-            PritsepNomerField           = GetDocField("1274");
-            SchetPredField              = GetDocField("1579"); // счета
-            TTNTrField                  = GetDocField("1584");
-            ZvkBField                   = GetDocField("1598"); //заявки
-            SignSupervisorPostField     = GetDocField("1604");
-            SignBuhgalterPostField      = GetDocField("1605");
-            SignOtpustilField           = GetDocField("1618");
-            SignOtpustilPostField       = GetDocField("1619");
-            PlatezhkiField              = GetDocField("1631"); // платежки
-            BillOfLadingField           = GetDocField("1632"); // киносамент
-            AkkredField                 = GetDocField("1707"); // аккредитив
-            MonthResourceField          = GetDocField("1718");
-            CorrectingDocField          = GetDocField("1744");
-            CorrectingFlagField         = GetDocField("1747");
-            FinOperationRule            = GetDocField("1787");
-            Amount                      = GetDocField("1425");
-            ChoosePowerOfAttorney       = GetDocField("1585");
-
-            DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);            // договор
-            PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);    // приложение
-            CorrectingDocBind = new BaseDocFacade(this, CorrectingDocField, BaseSetBehavior.RemoveAllAndAddDoc);//корректировочный документ
-            BillOfLadingBind = new BaseDocFacade(this, BillOfLadingField, BaseSetBehavior.RemoveAllAndAddDoc);  // коносамент
-            SchetPredBind = new BaseDocFacade(this, SchetPredField);                                            // счета
-            PlatezhkiBind = new BaseDocFacade(this, PlatezhkiField);                                            // платежки
-        }
-
-        /// <summary>
-        /// Поставщик
+        ///     Поставщик
         /// </summary>
         public DocField PostavschikField { get; set; }
 
         /// <summary>
-        ///  Плательщик
+        ///     Плательщик
         /// </summary>
         public DocField PlatelschikField { get; set; }
 
         /// <summary>
-        ///  Грузоотправитель
+        ///     Грузоотправитель
         /// </summary>
         public DocField GOPersonField { get; set; }
 
         /// <summary>
-        ///  Грузополучатель
+        ///     Грузополучатель
         /// </summary>
         public DocField GPPersonField { get; set; }
 
         /// <summary>
-        ///  Название поставщика
+        ///     Название поставщика
         /// </summary>
         public DocField PostavschikDataField { get; set; }
 
         /// <summary>
-        ///  Название плательщика
+        ///     Название плательщика
         /// </summary>
         public DocField PlatelschikDataField { get; set; }
 
         /// <summary>
-        ///  Реквизиты грузоотправителя
+        ///     Реквизиты грузоотправителя
         /// </summary>
         public DocField GOPersonDataField { get; set; }
 
         /// <summary>
-        ///  Реквизиты грузополучателя
+        ///     Реквизиты грузополучателя
         /// </summary>
         public DocField GPPersonDataField { get; set; }
 
         /// <summary>
-        ///  ОКПО поставщика
+        ///     ОКПО поставщика
         /// </summary>
         public DocField PostavschikOKPOField { get; set; }
 
         /// <summary>
-        ///  Р/С поставщика
+        ///     Р/С поставщика
         /// </summary>
         public DocField PostavschikBSField { get; set; }
 
         /// <summary>
-        /// Банковские реквизиты поставщика
+        ///     Банковские реквизиты поставщика
         /// </summary>
         public DocField PostavschikBSDataField { get; set; }
 
         /// <summary>
-        /// ФИО руководителя
+        ///     ФИО руководителя
         /// </summary>
         public DocField SignSupervisorField { get; set; }
 
         /// <summary>
-        /// ФИО бухгалтера
+        ///     ФИО бухгалтера
         /// </summary>
         public DocField SignBuhgalterField { get; set; }
 
         /// <summary>
-        /// ОКПО плательщика
+        ///     ОКПО плательщика
         /// </summary>
         public DocField PlatelschikOKPOField { get; set; }
 
         /// <summary>
-        ///  Р/С плательщика
+        ///     Р/С плательщика
         /// </summary>
         public DocField PlatelschikBSField { get; set; }
 
         /// <summary>
-        ///  Банковские реквизиты плательщика
+        ///     Банковские реквизиты плательщика
         /// </summary>
         public DocField PlatelschikBSDataField { get; set; }
 
         /// <summary>
-        /// Id документов "Платежные документы"
+        ///     Id документов "Платежные документы"
         /// </summary>
         public string _Platezhki
         {
@@ -207,7 +128,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Получить id договора
+        ///     Получить id договора
         /// </summary>
         private string _Dogovor
         {
@@ -216,45 +137,26 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Договор
+        ///     Договор
         /// </summary>
         public DocField DogovorField { get; set; }
 
-        private Dogovor _dogovor { get; set; }
-        /// <summary>
-        /// Договор
-        /// </summary>
-        public Dogovor Dogovor
-        {
-            get
-            {
-                if (_dogovor != null && _Dogovor == _dogovor.Id)
-                {
-                    return _dogovor;
-                }
-
-                _dogovor = new Dogovor(_Dogovor);
-                return _dogovor;
-            }
-        }
 
         /// <summary>
-        ///  Приложение
+        ///     Приложение
         /// </summary>
         public DocField PrilozhenieField { get; set; }
 
         private Prilozhenie _prilozhenie { get; set; }
+
         /// <summary>
-        /// Приложение
+        ///     Приложение
         /// </summary>
         public Prilozhenie Prilozhenie
         {
             get
             {
-                if (_prilozhenie != null && _Prilozhenie == _prilozhenie.Id)
-                {
-                    return _prilozhenie;
-                }
+                if (_prilozhenie != null && _Prilozhenie == _prilozhenie.Id) return _prilozhenie;
 
                 _prilozhenie = new Prilozhenie(_Prilozhenie);
                 return _prilozhenie;
@@ -262,247 +164,212 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Основание накладной
+        ///     Основание накладной
         /// </summary>
         public DocField DogovorTextField { get; set; }
 
         /// <summary>
-        ///  ОКПО грузоотправителя
+        ///     ОКПО грузоотправителя
         /// </summary>
         public DocField GOPersonOKPOField { get; set; }
 
         /// <summary>
-        ///  Р/С грузоотправителя
+        ///     Р/С грузоотправителя
         /// </summary>
         public DocField GOPersonBSField { get; set; }
 
         /// <summary>
-        ///  Банковские реквизиты грузоотправителя
+        ///     Банковские реквизиты грузоотправителя
         /// </summary>
         public DocField GOPersonBSDataField { get; set; }
 
         /// <summary>
-        ///  Пункт отправления
+        ///     Пункт отправления
         /// </summary>
         public DocField GOPersonWeselField { get; set; }
 
         /// <summary>
-        ///  ОКПО грузополучателя
+        ///     ОКПО грузополучателя
         /// </summary>
         public DocField GPPersonOKPOField { get; set; }
 
         /// <summary>
-        ///  Р/С грузополучателя
+        ///     Р/С грузополучателя
         /// </summary>
         public DocField GPPersonBSField { get; set; }
 
         /// <summary>
-        /// Банковские реквизиты грузополучателя
+        ///     Банковские реквизиты грузополучателя
         /// </summary>
         public DocField GPPersonBSDataField { get; set; }
 
         /// <summary>
-        /// Пункт назначения
+        ///     Пункт назначения
         /// </summary>
         public DocField GPPersonWeselField { get; set; }
 
         /// <summary>
-        /// Валюта оплаты
+        ///     Валюта оплаты
         /// </summary>
         public DocField CurrencyField { get; set; }
 
         /// <summary>
-        /// Примечание
+        ///     Примечание
         /// </summary>
         public DocField PrimechanieField { get; set; }
 
         /// <summary>
-        /// Дата проводки
+        ///     Дата проводки
         /// </summary>
         public DocField DateProvodkiField { get; set; }
 
         /// <summary>
-        /// Продукты
+        ///     Продукты
         /// </summary>
         public DocField MrisSaleField { get; set; }
 
         /// <summary>
-        /// Адрес поставщика
+        ///     Адрес поставщика
         /// </summary>
         public DocField PostavschikAddressField { get; set; }
 
         /// <summary>
-        /// Адрес плательщика
+        ///     Адрес плательщика
         /// </summary>
         public DocField PlatelschikAddressField { get; set; }
 
         /// <summary>
-        /// Услуги
+        ///     Услуги
         /// </summary>
         public DocField UslField { get; set; }
 
         /// <summary>
-        /// Отметки грузополучателя
+        ///     Отметки грузополучателя
         /// </summary>
         public DocField GPPersonNoteField { get; set; }
-         
+
         /// <summary>
-        /// Отметки грузоотправителя
+        ///     Отметки грузоотправителя
         /// </summary>
         public DocField GOPersonNoteField { get; set; }
-         
+
         /// <summary>
-        /// Курс
+        ///     Курс
         /// </summary>
         public DocField KursField { get; set; }
 
         /// <summary>
-        /// Описание формулы расчета у.е.
+        ///     Описание формулы расчета у.е.
         /// </summary>
         public DocField FormulaDescrField { get; set; }
-         
+
         /// <summary>
-        ///  Довереность
+        ///     Довереность
         /// </summary>
         public DocField DoverennostField { get; set; }
 
         /// <summary>
-        ///  Водитель
+        ///     Водитель
         /// </summary>
         public DocField VoditelField { get; set; }
 
         /// <summary>
-        /// Автомобиль
+        ///     Автомобиль
         /// </summary>
         public DocField AvtomobilField { get; set; }
 
         /// <summary>
-        /// Номер автомобиля
+        ///     Номер автомобиля
         /// </summary>
         public DocField AvtomobilNomerField { get; set; }
 
         /// <summary>
-        /// Номер прицепа
+        ///     Номер прицепа
         /// </summary>
         public DocField PritsepNomerField { get; set; }
-         
+
         /// <summary>
-        /// Сумма
+        ///     Сумма
         /// </summary>
         public DocField Amount { get; set; }
 
         /// <summary>
-        /// Счет, Инвойс проформа
+        ///     Счет, Инвойс проформа
         /// </summary>
         public DocField SchetPredField { get; set; }
 
         /// <summary>
-        /// Транспортная накладная
+        ///     Транспортная накладная
         /// </summary>
         public DocField TTNTrField { get; set; }
 
         /// <summary>
-        /// Выбор доверенности
+        ///     Выбор доверенности
         /// </summary>
         public DocField ChoosePowerOfAttorney { get; set; }
 
         /// <summary>
-        /// Заявка на покупку
+        ///     Заявка на покупку
         /// </summary>
         public DocField ZvkBField { get; set; }
 
         /// <summary>
-        /// Должность руководителя
+        ///     Должность руководителя
         /// </summary>
         public DocField SignSupervisorPostField { get; set; }
-         
+
         /// <summary>
-        /// Должность бухгалтера
+        ///     Должность бухгалтера
         /// </summary>
         public DocField SignBuhgalterPostField { get; set; }
-         
+
         /// <summary>
-        /// Отпуск груза произвел
+        ///     Отпуск груза произвел
         /// </summary>
         public DocField SignOtpustilField { get; set; }
-         
+
         /// <summary>
-        /// Отпуск груза произвел должность
+        ///     Отпуск груза произвел должность
         /// </summary>
         public DocField SignOtpustilPostField { get; set; }
 
         /// <summary>
-        /// Платежные документы
+        ///     Платежные документы
         /// </summary>
         public DocField PlatezhkiField { get; set; }
 
         /// <summary>
-        /// Коносамент
+        ///     Коносамент
         /// </summary>
         public DocField BillOfLadingField { get; set; }
 
         /// <summary>
-        ///  Аккредитив
+        ///     Аккредитив
         /// </summary>
-        public DocField AkkredField { get; set; } 
+        public DocField AkkredField { get; set; }
 
         /// <summary>
-        ///  Месяц ресурсов
+        ///     Месяц ресурсов
         /// </summary>
         public DocField MonthResourceField { get; set; }
 
         /// <summary>
-        ///  Корректируемый документ
+        ///     Корректируемый документ
         /// </summary>
         public DocField CorrectingDocField { get; set; }
-         
+
         /// <summary>
-        ///  Документ корректировочный
+        ///     Документ корректировочный
         /// </summary>
-        public DocField CorrectingFlagField  { get; set; }
-         
+        public DocField CorrectingFlagField { get; set; }
+
         /// <summary>
-        ///  Правило формирования фин. операций
+        ///     Правило формирования фин. операций
         /// </summary>
-        public DocField FinOperationRule  { get; set; }
-
-
-        #region Значения связыватели
+        public DocField FinOperationRule { get; set; }
 
         /// <summary>
-        ///  Договор
-        /// </summary>
-        public BaseDocFacade DogovorBind { get; private set; }
-
-        /// <summary>
-        ///  Приложение
-        /// </summary>
-        public BaseDocFacade PrilozhenieBind { get; private set; }
-
-        /// <summary>
-        /// Корректируемый документ
-        /// </summary>
-        public BaseDocFacade CorrectingDocBind { get; private set; }
-
-        /// <summary>
-        ///   Коносамент
-        /// </summary>
-        public BaseDocFacade BillOfLadingBind { get; private set; }
-
-        /// <summary>
-        /// Id документов "Счет, инвойс-проформа"
-        /// </summary>
-        public BaseDocFacade SchetPredBind { get; private set; }
-
-        /// <summary>
-        /// Id документов "Платежные документы"
-        /// </summary>
-        public BaseDocFacade PlatezhkiBind { get; private set; }
-
-        #endregion
-
-        /// <summary>
-        ///  Валюта накладной
+        ///     Валюта накладной
         /// </summary>
         public override Currency Currency
         {
@@ -515,7 +382,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Получить Id приложения
+        ///     Получить Id приложения
         /// </summary>
         public string _Prilozhenie
         {
@@ -524,7 +391,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Id документа "Коносамент"
+        ///     Id документа "Коносамент"
         /// </summary>
         public string _BillOfLading
         {
@@ -533,7 +400,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// ID корректируемого документа
+        ///     ID корректируемого документа
         /// </summary>
         public string _CorrectingDoc
         {
@@ -542,27 +409,25 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Id корректирующего документа (ТТН)
+        ///     Id корректирующего документа (ТТН)
         /// </summary>
         public string _CorrectingSequelDoc
         {
             get
             {
                 var col = GetSequelDocs(CorrectingDocField.DocFieldId);
-                return (col.Count > 0) ? col[0].Id : "";
+                return col.Count > 0 ? col[0].Id : "";
             }
         }
 
         /// <summary>
-        /// Корректирующий документ (ТТН)
+        ///     Корректирующий документ (ТТН)
         /// </summary>
-        public Document CorrectingSequelDoc
-        {
-            get { return (_CorrectingSequelDoc.Length > 0) ? new Document(_CorrectingSequelDoc) : null; }
-        }
+        public Document CorrectingSequelDoc =>
+            _CorrectingSequelDoc.Length > 0 ? new Document(_CorrectingSequelDoc) : null;
 
         /// <summary>
-        /// Id документов "Счет, инвойс-проформа"
+        ///     Id документов "Счет, инвойс-проформа"
         /// </summary>
         public string _SchetPred
         {
@@ -571,7 +436,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Документ откорректирован
+        ///     Документ откорректирован
         /// </summary>
         public bool IsCorrected
         {
@@ -587,45 +452,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             }
         }
 
+
         /// <summary>
         ///     Позиции документа: ДвиженияНаСкладах
         /// </summary>
         public List<Mris> PositionMris { get; set; }
-        
-        /// <summary>
-        ///    ДвиженияНаСкладах
-        /// </summary>
-        public void LoadPositionMris(string copyId = "")
-        {
-            if (Id.IsNullEmptyOrZero())
-            {
-                if (copyId.IsNullEmptyOrZero())
-                    PositionMris = new List<Mris>();
-                else
-                {
-                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
-                    foreach (var item in PositionMris)
-                    {
-                        item.Id = null;
-                        item.DocumentId = 0;
-                    }
-                }
-            }
-            else
-            {
-                if (copyId.IsNullEmptyOrZero())
-                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
-                else
-                {
-                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
-                    foreach (var item in PositionMris)
-                    {
-                        item.Id = null;
-                        item.DocumentId = 0;
-                    }
-                }
-            }
-        }
 
         /// <summary>
         ///     Позиции документа: ОказанныеУслуги
@@ -633,69 +464,27 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         public List<FactUsl> PositionFactUsl { get; set; }
 
         /// <summary>
-        ///    ОказанныеУслуги
-        /// </summary>
-        public void LoadPositionFactUsl(string copyId = "")
-        {
-            if (Id.IsNullEmptyOrZero())
-                if (copyId.IsNullEmptyOrZero())
-                    PositionFactUsl = new List<FactUsl>();
-                else
-                {
-                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
-                    foreach (var item in PositionFactUsl)
-                    {
-                        item.Id = null;
-                        item.DocumentId = 0;
-                    }
-                }
-            else
-            {
-                if (copyId.IsNullEmptyOrZero())
-                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
-                else
-                {
-                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
-                    foreach (var item in PositionFactUsl)
-                    {
-                        item.Id = null;
-                        item.DocumentId = 0;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        ///  Сумма без НДС
+        ///     Сумма без НДС
         /// </summary>
         public decimal SummaOutNDSAll_Mris
         {
-            get
-            {
-                return PositionMris.Sum(sl => sl.SummaOutNDS);
-            }
+            get { return PositionMris.Sum(sl => sl.SummaOutNDS); }
         }
 
         /// <summary>
-        /// Возвращает сумму всех позиций товаров по накладной по полю сумма НДС
-        /// </summary>        
+        ///     Возвращает сумму всех позиций товаров по накладной по полю сумма НДС
+        /// </summary>
         public decimal SummaNDSAll_Mris
         {
-            get
-            {
-                return PositionMris.Sum(sl => sl.SummaNDS);
-            }
+            get { return PositionMris.Sum(sl => sl.SummaNDS); }
         }
 
         /// <summary>
-        /// Возвращает сумму всех позиций товаров по накладной по полю всего
+        ///     Возвращает сумму всех позиций товаров по накладной по полю всего
         /// </summary>
         public decimal VsegoAll_Mris
         {
-            get
-            {
-                return PositionMris.Sum(sl => sl.Vsego);
-            }
+            get { return PositionMris.Sum(sl => sl.Vsego); }
         }
         /*
         private List<FactUsl> _usls;
@@ -749,7 +538,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         */
 
         /// <summary>
-        /// Загрузка табличных данный позиций документа (товары и услуги)
+        ///     Загрузка табличных данный позиций документа (товары и услуги)
         /// </summary>
         public void LoadDocumentPositions()
         {
@@ -757,20 +546,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             LoadPositionFactUsl();
         }
 
-        /// <summary>
-        /// Создает новый объект, являющийся копией текущего экземпляра.
-        /// </summary>
-        public override Document Clone()
-        {
-            var ttnDoc = (TTN)base.Clone();
-            ttnDoc.BasisDocLinks.CloneList(BasisDocLinks);
-            ttnDoc.PositionMris.CloneList(PositionMris);
-            ttnDoc.PositionFactUsl.CloneList(PositionFactUsl);
-            return ttnDoc;
-        }
 
         /// <summary>
-        /// Сохранение табличных данных
+        ///     Сохранение табличных данных
         /// </summary>
         /// <param name="reloadPostions"></param>
         /// <param name="cmds"></param>
@@ -795,9 +573,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                         p.Save(reloadPostions, cmds);
                         return;
                     }
+
                     var p0 =
                         positionMris.FirstOrDefault(
-                            x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                            x => x.Id == p.Id && x.PositionId != p.PositionId);
                     if (p0 != null) p.Save(reloadPostions, cmds);
                 });
             }
@@ -821,18 +600,174 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
                         p.Save(reloadPostions, cmds);
                         return;
                     }
+
                     var p0 =
                         positionFactUsl.FirstOrDefault(
-                            x => x.Id == p.Id && (x.PositionId != p.PositionId));
+                            x => x.Id == p.Id && x.PositionId != p.PositionId);
                     if (p0 != null) p.Save(reloadPostions, cmds);
                 });
             }
-
         }
 
         /// <summary>
-        /// Заполнение позиций ТТН на основании выгружаемых отправок
-        /// Вызываетяс из диалога "AddSumm" - после выбора ставки НДС, стоимости и цены.
+        ///     Инициализация документа ТТН
+        /// </summary>
+        private void Initialization()
+        {
+            Type = DocTypeEnum.ТоварноТранспортнаяНакладная;
+            PostavschikField = GetDocField("589");
+            PlatelschikField = GetDocField("590");
+            GOPersonField = GetDocField("689");
+            GPPersonField = GetDocField("690");
+            PostavschikDataField = GetDocField("691");
+            PlatelschikDataField = GetDocField("692");
+            GOPersonDataField = GetDocField("693");
+            GPPersonDataField = GetDocField("694");
+            PostavschikOKPOField = GetDocField("695");
+            PostavschikBSField = GetDocField("696");
+            PostavschikBSDataField = GetDocField("698");
+            SignSupervisorField = GetDocField("700");
+            SignBuhgalterField = GetDocField("701");
+            PlatelschikOKPOField = GetDocField("702");
+            PlatelschikBSField = GetDocField("703");
+            PlatelschikBSDataField = GetDocField("704");
+            DogovorField = GetDocField("707"); // договор
+            PrilozhenieField = GetDocField("708"); // приложение
+            DogovorTextField = GetDocField("709");
+            GOPersonOKPOField = GetDocField("710");
+            GOPersonBSField = GetDocField("711");
+            GOPersonBSDataField = GetDocField("713");
+            GOPersonWeselField = GetDocField("715");
+            GPPersonOKPOField = GetDocField("716");
+            GPPersonBSField = GetDocField("717");
+            GPPersonBSDataField = GetDocField("719");
+            GPPersonWeselField = GetDocField("721");
+            CurrencyField = GetDocField("722");
+            PrimechanieField = GetDocField("723");
+            DateProvodkiField = GetDocField("758");
+            MrisSaleField = GetDocField("760");
+            PostavschikAddressField = GetDocField("779");
+            PlatelschikAddressField = GetDocField("780");
+            UslField = GetDocField("792");
+            GPPersonNoteField = GetDocField("930");
+            GOPersonNoteField = GetDocField("931");
+            KursField = GetDocField("1044");
+            FormulaDescrField = GetDocField("1064");
+            DoverennostField = GetDocField("1270");
+            VoditelField = GetDocField("1271");
+            AvtomobilField = GetDocField("1272");
+            AvtomobilNomerField = GetDocField("1273");
+            PritsepNomerField = GetDocField("1274");
+            SchetPredField = GetDocField("1579"); // счета
+            TTNTrField = GetDocField("1584");
+            ZvkBField = GetDocField("1598"); //заявки
+            SignSupervisorPostField = GetDocField("1604");
+            SignBuhgalterPostField = GetDocField("1605");
+            SignOtpustilField = GetDocField("1618");
+            SignOtpustilPostField = GetDocField("1619");
+            PlatezhkiField = GetDocField("1631"); // платежки
+            BillOfLadingField = GetDocField("1632"); // киносамент
+            AkkredField = GetDocField("1707"); // аккредитив
+            MonthResourceField = GetDocField("1718");
+            CorrectingDocField = GetDocField("1744");
+            CorrectingFlagField = GetDocField("1747");
+            FinOperationRule = GetDocField("1787");
+            Amount = GetDocField("1425");
+            ChoosePowerOfAttorney = GetDocField("1585");
+
+            DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc); // договор
+            PrilozhenieBind =
+                new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc); // приложение
+            CorrectingDocBind =
+                new BaseDocFacade(this, CorrectingDocField,
+                    BaseSetBehavior.RemoveAllAndAddDoc); //корректировочный документ
+            BillOfLadingBind =
+                new BaseDocFacade(this, BillOfLadingField, BaseSetBehavior.RemoveAllAndAddDoc); // коносамент
+            SchetPredBind = new BaseDocFacade(this, SchetPredField); // счета
+            PlatezhkiBind = new BaseDocFacade(this, PlatezhkiField); // платежки
+        }
+
+        /// <summary>
+        ///     ДвиженияНаСкладах
+        /// </summary>
+        public void LoadPositionMris(string copyId = "")
+        {
+            if (Id.IsNullEmptyOrZero())
+            {
+                if (copyId.IsNullEmptyOrZero())
+                {
+                    PositionMris = new List<Mris>();
+                }
+                else
+                {
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionMris)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
+            else
+            {
+                if (copyId.IsNullEmptyOrZero())
+                {
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(Id));
+                }
+                else
+                {
+                    PositionMris = DocumentPosition<Mris>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionMris)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     ОказанныеУслуги
+        /// </summary>
+        public void LoadPositionFactUsl(string copyId = "")
+        {
+            if (Id.IsNullEmptyOrZero())
+            {
+                if (copyId.IsNullEmptyOrZero())
+                {
+                    PositionFactUsl = new List<FactUsl>();
+                }
+                else
+                {
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionFactUsl)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
+            else
+            {
+                if (copyId.IsNullEmptyOrZero())
+                {
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(Id));
+                }
+                else
+                {
+                    PositionFactUsl = DocumentPosition<FactUsl>.LoadByDocId(int.Parse(copyId));
+                    foreach (var item in PositionFactUsl)
+                    {
+                        item.Id = null;
+                        item.DocumentId = 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Заполнение позиций ТТН на основании выгружаемых отправок
+        ///     Вызываетяс из диалога "AddSumm" - после выбора ставки НДС, стоимости и цены.
         /// </summary>
         /// <param name="guid">GUID, используемый при выгрузке</param>
         /// <param name="stavkaId">Код ставки НДС</param>
@@ -848,18 +783,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
 	            INNER JOIN Справочники.dbo.Ресурсы res on v.КодРесурса = res.КодРесурса
                 WHERE guid='{0}'
 	            AND NOT EXISTS(SELECT * FROM vwДвиженияНаСкладах WHERE vwДвиженияНаСкладах.КодДокумента = {1}
-				AND vwДвиженияНаСкладах.КодОтправкиВагона = v.КодОтправкиВагона )", guid, this.Id);
+				AND vwДвиженияНаСкладах.КодОтправкиВагона = v.КодОтправкиВагона )", guid, Id);
 
             var dt = DBManager.GetData(sql, Config.DS_document);
 
-            for (int i = 0; i < dt.Rows.Count; i++)
+            for (var i = 0; i < dt.Rows.Count; i++)
             {
-                DataRow row = dt.Rows[i];
+                var row = dt.Rows[i];
 
-                decimal kol = Convert.ToDecimal(row["Количество"]);
-                decimal summaOutNDS = kol * price;
-                decimal vsego = summaOutNDS * (1 + stavka);
-                decimal summaNDS = vsego - summaOutNDS;
+                var kol = Convert.ToDecimal(row["Количество"]);
+                var summaOutNDS = kol * price;
+                var vsego = summaOutNDS * (1 + stavka);
+                var summaNDS = vsego - summaOutNDS;
 
                 var mris = new Mris();
                 mris.DocumentId = int.Parse(Id);
@@ -887,25 +822,29 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Отправки: уникальные значения ГО/ГП, транспортные узлы  и др. в выбранных отправках
+        ///     Отправки: уникальные значения ГО/ГП, транспортные узлы  и др. в выбранных отправках
         /// </summary>
         /// <param name="dt">Набор данных</param>
         /// <param name="values">Массив значений</param>
         public void FillGPersonsDictionary(DataTable dt, ref StringDictionary values)
         {
-            StringCollection GOs = new StringCollection();
-            StringCollection GPs = new StringCollection();
-            StringCollection GOWesels = new StringCollection();
-            StringCollection GPWesels = new StringCollection();
+            var GOs = new StringCollection();
+            var GPs = new StringCollection();
+            var GOWesels = new StringCollection();
+            var GPWesels = new StringCollection();
             string GONotes = "", GPNotes = "", GOData = "", GPData = "";
 
             foreach (DataRow row in dt.Rows)
             {
-                if (row["кодго"].ToString() != "" && !GOs.Contains(row["кодго"].ToString())) GOs.Add(row["кодго"].ToString());
-                if (row["кодгп"].ToString() != "" && !GPs.Contains(row["кодгп"].ToString())) GPs.Add(row["кодгп"].ToString());
+                if (row["кодго"].ToString() != "" && !GOs.Contains(row["кодго"].ToString()))
+                    GOs.Add(row["кодго"].ToString());
+                if (row["кодгп"].ToString() != "" && !GPs.Contains(row["кодгп"].ToString()))
+                    GPs.Add(row["кодгп"].ToString());
 
-                if (row["узелотправления"].ToString() != "" && !GOWesels.Contains(row["узелотправления"].ToString())) GOWesels.Add(row["узелотправления"].ToString());
-                if (row["узелназначения"].ToString() != "" && !GPWesels.Contains(row["узелназначения"].ToString())) GPWesels.Add(row["узелназначения"].ToString());
+                if (row["узелотправления"].ToString() != "" && !GOWesels.Contains(row["узелотправления"].ToString()))
+                    GOWesels.Add(row["узелотправления"].ToString());
+                if (row["узелназначения"].ToString() != "" && !GPWesels.Contains(row["узелназначения"].ToString()))
+                    GPWesels.Add(row["узелназначения"].ToString());
 
                 if (GONotes == "" && row["отметкиго"].ToString() != "") GONotes = row["отметкиго"].ToString();
                 if (GPNotes == "" && row["отметкигп"].ToString() != "") GPNotes = row["отметкигп"].ToString();
@@ -929,7 +868,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Сохранение ТТН
+        ///     Сохранение ТТН
         /// </summary>
         /// <param name="evalLoad"></param>
         /// <param name="cmds"></param>
@@ -941,25 +880,60 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             if (!IsNew)
             {
                 // сохраняем связи документа
+                foreach (var l in BaseDocsLinks)
+                {
+                    l.SequelDocId = DocId;
+                    if (l.DocLinkId == 0)
+                        l.Create();
+                }
+
                 foreach (var l in PositionMris)
                 {
                     l.DocumentId = DocId;
-                    if (l.Id.IsNullEmptyOrZero())
-                    {
-                        l.Save(false);
-                    }
+                    if (l.Id.IsNullEmptyOrZero()) l.Save(false);
                 }
 
                 foreach (var l in PositionFactUsl)
                 {
                     l.DocumentId = DocId;
-                    if (l.Id.IsNullEmptyOrZero())
-                    {
-                        l.Save(false);
-                    }
+                    if (l.Id.IsNullEmptyOrZero()) l.Save(false);
                 }
             }
         }
 
+
+        #region Значения связыватели
+
+        /// <summary>
+        ///     Договор
+        /// </summary>
+        public BaseDocFacade DogovorBind { get; private set; }
+
+        /// <summary>
+        ///     Приложение
+        /// </summary>
+        public BaseDocFacade PrilozhenieBind { get; private set; }
+
+        /// <summary>
+        ///     Корректируемый документ
+        /// </summary>
+        public BaseDocFacade CorrectingDocBind { get; private set; }
+
+        /// <summary>
+        ///     Коносамент
+        /// </summary>
+        public BaseDocFacade BillOfLadingBind { get; private set; }
+
+        /// <summary>
+        ///     Id документов "Счет, инвойс-проформа"
+        /// </summary>
+        public BaseDocFacade SchetPredBind { get; private set; }
+
+        /// <summary>
+        ///     Id документов "Платежные документы"
+        /// </summary>
+        public BaseDocFacade PlatezhkiBind { get; private set; }
+
+        #endregion
     }
 }

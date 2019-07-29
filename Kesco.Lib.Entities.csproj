@@ -136,7 +136,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CashFlowItem\CashFlowItem.cs" />
+    <Compile Include="CashFlow\CashFlowItem.cs" />
     <Compile Include="Corporate\CommonFolder.cs" />
     <Compile Include="Corporate\DomainName.cs" />
     <Compile Include="Corporate\EmployeePersonType.cs" />
@@ -180,11 +180,14 @@
     <Compile Include="Documents\EF\Trade\FactUsl.cs" />
     <Compile Include="Documents\EF\Trade\Predoplata.cs" />
     <Compile Include="Documents\EF\Trade\Mris.cs" />
+    <Compile Include="Documents\EF\Trade\PrepaymentInvoice.cs" />
     <Compile Include="Documents\EF\Trade\SchetFactura.cs" />
     <Compile Include="Documents\EF\Trade\TTN.cs" />
     <Compile Include="Documents\DocTypeLink.cs" />
+    <Compile Include="Documents\DocSequels.cs" />
     <Compile Include="Documents\IDocumentWithPositions.cs" />
     <Compile Include="Documents\Gtd.cs" />
+    <Compile Include="Notification.cs" />
     <Compile Include="Persons\Attributes\AttributeFormatBase.cs" />
     <Compile Include="Persons\Attributes\Attribute.cs" />
     <Compile Include="Persons\Attributes\AttributeFormatType.cs" />
@@ -226,7 +229,7 @@
     <Compile Include="Resources\Unit.cs" />
     <Compile Include="Resources\UnitAdv.cs" />
     <Compile Include="Resources\StavkaNDS.cs" />
-    <Compile Include="Resources\CashFlowType.cs" />
+    <Compile Include="CashFlow\CashFlowType.cs" />
     <Compile Include="Transactions\Transaction.cs" />
     <Compile Include="Transactions\TransactionType.cs" />
     <Compile Include="Entity.cs" />
@@ -240,7 +243,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLQueries.cs" />
     <Compile Include="Stores\Store.cs" />
-    <Compile Include="Residence.cs" />
+    <Compile Include="Stores\Residence.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Stores\StoreType.cs" />
     <Compile Include="Territories\Territory.cs" />

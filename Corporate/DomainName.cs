@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
@@ -8,6 +9,7 @@ namespace Kesco.Lib.Entities.Corporate
     /// <summary>
     ///     Класс сущности Доменное имя
     /// </summary>
+    [Serializable]
     public class DomainName : Entity
     {
         /// <summary>
@@ -35,7 +37,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
+        public sealed override string CN
         {
             get
             {
@@ -61,7 +63,8 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public override void Load()
         {
-            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.String}}};
+            var sqlParams = new Dictionary<string, object>
+                {{"@id", new object[] {Id, DBManager.ParameterTypes.String}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_DomainName, CN, CommandType.Text, sqlParams));
         }
 
@@ -77,7 +80,8 @@ namespace Kesco.Lib.Entities.Corporate
             Unavailable = false;
 
             if (!dbReader.IsDBNull(colDomainName)) Id = dbReader.GetString(colDomainName);
-            if (!dbReader.IsDBNull(colКодыЛиц)) Name = dbReader.GetString(colКодыЛиц);
+            if (!dbReader.IsDBNull(colDomainName)) Name = dbReader.GetString(colDomainName);
+            if (!dbReader.IsDBNull(colКодыЛиц)) PersonIds = dbReader.GetString(colКодыЛиц);
             if (!dbReader.IsDBNull(colТип)) Type = dbReader.GetByte(colТип);
         }
     }

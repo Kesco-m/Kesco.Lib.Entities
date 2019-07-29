@@ -13,10 +13,10 @@ namespace Kesco.Lib.Entities.Documents
         /// </summary>
         /// <param name="reloadPostions">Нужно ли заново получить позиции после сохранения</param>
         /// <param name="cmds">Объект sql-команд для анализа запроса</param>
-        void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null );
+        void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null);
 
         /// <summary>
-        /// Загрузка всех позиций документа
+        ///     Загрузка всех позиций документа
         /// </summary>
         void LoadDocumentPositions();
     }

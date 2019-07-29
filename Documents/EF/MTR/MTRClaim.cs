@@ -66,7 +66,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         /// <summary>
         ///     Позиции заявки
         /// </summary>
-        public DocField RequestItems { get; private set; }
+        public DocField RequestItems { get; }
 
         /// <summary>
         ///     Позиции заяки
@@ -104,7 +104,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                 }
             }
 
-            mtrDoc.BaseDocs.CloneList(BaseDocs);
+            mtrDoc.BaseDocsLinks.CloneList(BaseDocsLinks);
 
             return mtrDoc;
         }

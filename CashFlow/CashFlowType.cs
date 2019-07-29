@@ -6,7 +6,7 @@ using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
-namespace Kesco.Lib.Entities.Resources
+namespace Kesco.Lib.Entities.CashFlow
 {
     /// <summary>
     ///     Вид движения денежных средств
@@ -56,15 +56,10 @@ namespace Kesco.Lib.Entities.Resources
         /// <summary>
         ///     Статическое поле для получения строки подключения документа
         /// </summary>
-        public static string ConnString
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_connectionString)
-                    ? _connectionString = Config.DS_resource
-                    : _connectionString;
-            }
-        }
+        public static string ConnString =>
+            string.IsNullOrEmpty(_connectionString)
+                ? _connectionString = Config.DS_resource
+                : _connectionString;
 
         /// <summary>
         ///     Заполнить данные текущего

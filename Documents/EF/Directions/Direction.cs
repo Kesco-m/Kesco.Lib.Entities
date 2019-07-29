@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -16,9 +17,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
     /// <summary>
     ///     Класс документа Указание на организацию рабочего места
     /// </summary>
+    [Serializable]
     public class Direction : Document, IDocumentWithPositions
     {
         private List<AdvancedGrant> _advancedGrants;
+        private List<AdvancedGrant> _advancedGrantsAvailable;
         private List<CommonFolder> _commonFolders;
         private List<DomainName> _domainNames;
         private List<Language> _languages;
@@ -29,7 +32,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         private DataTable _supervisorData;
 
         /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         public Direction()
         {
@@ -68,138 +71,175 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             PersonZakazchikField = GetDocField("1788");
             PersonEmployerField = GetDocField("1789");
             PersonEmployerHeadField = GetDocField("1790");
-            
+
             OsnovanieLinks = new List<DocLink>();
 
             PositionCommonFoldersField = GetDocField("1404");
             PositionAdvancedGrantsField = GetDocField("1808");
             PositionRolesField = GetDocField("1405");
             PositionTypesField = GetDocField("1406");
-            
         }
 
         /// <summary>
-        /// Сотрудник
+        ///     Сотрудник
         /// </summary>
-        public DocField SotrudnikField { get; private set; }
+        public DocField SotrudnikField { get; }
+
         /// <summary>
-        /// Должность
+        ///     Должность
         /// </summary>
-        public DocField SotrudnikPostField { get; private set; }
+        public DocField SotrudnikPostField { get; }
+
         /// <summary>
-        /// Непосредственный руководитель
+        ///     Непосредственный руководитель
         /// </summary>
-        public DocField SupervisorField { get; private set; }
+        public DocField SupervisorField { get; }
+
         /// <summary>
-        /// Мобильный телефон сотрудника
+        ///     Мобильный телефон сотрудника
         /// </summary>
-        public DocField RedirectNumField { get; private set; }
+        public DocField RedirectNumField { get; }
+
         /// <summary>
-        /// Организовать сотруднику
+        ///     Организовать сотруднику
         /// </summary>
-        public DocField WorkPlaceTypeField { get; private set; }
+        public DocField WorkPlaceTypeField { get; }
+
         /// <summary>
-        /// Организовать рабочее место
+        ///     Организовать рабочее место
         /// </summary>
-        public DocField WorkPlaceField { get; private set; }
+        public DocField WorkPlaceField { get; }
+
         /// <summary>
-        /// Телефон
+        ///     Телефон
         /// </summary>
-        public DocField PhoneEquipField { get; private set; }
+        public DocField PhoneEquipField { get; }
+
         /// <summary>
-        /// Телефонная связь
+        ///     Телефонная связь
         /// </summary>
-        public DocField PhoneLinkField { get; private set; }
+        public DocField PhoneLinkField { get; }
+
         /// <summary>
-        /// Компьютер
+        ///     Компьютер
         /// </summary>
-        public DocField CompTypeField { get; private set; }
+        public DocField CompTypeField { get; }
+
         /// <summary>
-        /// Дополнительное оборудование на рабочем месте
+        ///     Дополнительное оборудование на рабочем месте
         /// </summary>
-        public DocField AdvEquipField { get; private set; }
+        public DocField AdvEquipField { get; }
+
         /// <summary>
-        /// Доступ к корпоративной сети
+        ///     Доступ к корпоративной сети
         /// </summary>
-        public DocField AccessEthernetField { get; private set; }
+        public DocField AccessEthernetField { get; }
+
         /// <summary>
-        /// Логин
+        ///     Логин
         /// </summary>
-        public DocField LoginField { get; private set; }
+        public DocField LoginField { get; }
+
         /// <summary>
-        /// Доп. информация по организации рабочего места
+        ///     Доп. информация по организации рабочего места
         /// </summary>
-        public DocField AdvInfoField { get; private set; }
+        public DocField AdvInfoField { get; }
+
         /// <summary>
-        /// Вид доступа к данным
+        ///     Вид доступа к данным
         /// </summary>
-        public DocField SotrudnikParentCheckField { get; private set; }
+        public DocField SotrudnikParentCheckField { get; }
+
         /// <summary>
-        /// Вместо, как у сотрудника
+        ///     Вместо, как у сотрудника
         /// </summary>
-        public DocField SotrudnikParentField { get; private set; }
+        public DocField SotrudnikParentField { get; }
+
         /// <summary>
-        /// E-mail
+        ///     E-mail
         /// </summary>
-        public DocField MailNameField { get; private set; }
+        public DocField MailNameField { get; }
+
         /// <summary>
-        /// Domain
+        ///     Domain
         /// </summary>
-        public DocField DomainField { get; private set; }
+        public DocField DomainField { get; }
+
         /// <summary>
-        /// DisplayName
+        ///     DisplayName
         /// </summary>
-        public DocField DisplayNameField { get; private set; }
+        public DocField DisplayNameField { get; }
+
         /// <summary>
-        /// Предпочитаемый язык
+        ///     Предпочитаемый язык
         /// </summary>
-        public DocField SotrudnikLanguageField { get; private set; }
+        public DocField SotrudnikLanguageField { get; }
+
         /// <summary>
-        /// Код лица сотрудника
+        ///     Код лица сотрудника
         /// </summary>
-        public DocField SotrudnikPersonField { get; private set; }
+        public DocField SotrudnikPersonField { get; }
+
         /// <summary>
-        /// Код лица заказчика
+        ///     Код лица заказчика
         /// </summary>
-        public DocField PersonZakazchikField { get; private set; }
+        public DocField PersonZakazchikField { get; }
+
         /// <summary>
-        /// Код лица работодателя
+        ///     Код лица работодателя
         /// </summary>
-        public DocField PersonEmployerField { get; private set; }
+        public DocField PersonEmployerField { get; }
+
         /// <summary>
-        /// Код лица работодателя руководителя
+        ///     Код лица работодателя руководителя
         /// </summary>
-        public DocField PersonEmployerHeadField { get; private set; }
+        public DocField PersonEmployerHeadField { get; }
+
         /// <summary>
-        /// Документ о приеме на работу
+        ///     Документ о приеме на работу
         /// </summary>
-        public DocField OsnovanieField { get; private set; }
+        public DocField OsnovanieField { get; }
+
         /// <summary>
-        /// Доступ к общим папкам
+        ///     Доступ к общим папкам
         /// </summary>
-        public DocField PositionCommonFoldersField { get; private set; }
+        public DocField PositionCommonFoldersField { get; }
+
         /// <summary>
-        /// Дополнительные права
+        ///     Дополнительные права
         /// </summary>
-        public DocField PositionAdvancedGrantsField { get; private set; }
+        public DocField PositionAdvancedGrantsField { get; }
+
         /// <summary>
-        /// Выполняемые роли
+        ///     Выполняемые роли
         /// </summary>
-        public DocField PositionRolesField { get; private set; }
+        public DocField PositionRolesField { get; }
+
         /// <summary>
-        /// Доступ к типам лиц
+        ///     Доступ к типам лиц
         /// </summary>
-        public DocField PositionTypesField { get; private set; }
+        public DocField PositionTypesField { get; }
+
         /// <summary>
-        /// Документ о приеме на работу
+        ///     Документ о приеме на работу
         /// </summary>
-        public BaseDocFacade OsnovanieBind { get; private set; }
+        public BaseDocFacade OsnovanieBind { get; }
+
         /// <summary>
-        /// Список документов
+        ///     Список документов
         /// </summary>
         public List<DocLink> OsnovanieLinks { get; set; }
 
-       
+        /// <summary>
+        ///     обновить информацию о сотруднике
+        /// </summary>
+        public bool SotrudnikRequiredRefreshInfo { get; set; }
+
+        /// <summary>
+        ///     обновить информацию о сотруднике родителя
+        /// </summary>
+        public bool SotrudnikParentRequiredRefreshInfo { get; set; }
+
         /// <summary>
         ///     Возвращает объект User по значению поля SotrudnikField
         /// </summary>
@@ -208,12 +248,17 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             get
             {
                 if (SotrudnikField.ValueString.Length == 0)
+                {
                     _sotrudnik = null;
+                }
                 else
                 {
                     if (_sotrudnik == null || _sotrudnik.Unavailable ||
-                        !_sotrudnik.Id.Equals(SotrudnikField.ValueString))
+                        !_sotrudnik.Id.Equals(SotrudnikField.ValueString) || SotrudnikRequiredRefreshInfo)
+                    {
                         _sotrudnik = new Employee(SotrudnikField.ValueString);
+                        SotrudnikRequiredRefreshInfo = false;
+                    }
                 }
 
                 return _sotrudnik;
@@ -228,12 +273,18 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             get
             {
                 if (SotrudnikParentField.ValueString.Length == 0)
+                {
                     _sotrudnikParent = null;
+                }
                 else
                 {
                     if (_sotrudnikParent == null || _sotrudnikParent.Unavailable ||
-                        !_sotrudnikParent.Id.Equals(SotrudnikParentField.ValueString))
+                        !_sotrudnikParent.Id.Equals(SotrudnikParentField.ValueString) ||
+                        SotrudnikParentRequiredRefreshInfo)
+                    {
                         _sotrudnikParent = new Employee(SotrudnikParentField.ValueString);
+                        SotrudnikParentRequiredRefreshInfo = false;
+                    }
                 }
 
                 return _sotrudnikParent;
@@ -248,7 +299,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             get
             {
                 if (SupervisorField.ValueString.Length == 0)
+                {
                     _supervisor = null;
+                }
                 else
                 {
                     if (_supervisor == null || _supervisor.Unavailable ||
@@ -276,7 +329,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 if (_supervisorData != null && SupervisorField.ValueString.Length > 0 && !RequiredRefreshInfo)
                     return _supervisorData;
 
-                _supervisorData = Sotrudnik.GetSupervisorsData();
+                _supervisorData = Sotrudnik.SupervisorsData();
 
                 return _supervisorData;
             }
@@ -290,7 +343,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             get
             {
                 if (WorkPlaceField.ValueString.Length == 0)
+                {
                     _locationWorkPlace = null;
+                }
                 else
                 {
                     if (_locationWorkPlace == null || _locationWorkPlace.Unavailable ||
@@ -303,6 +358,156 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         }
 
         /// <summary>
+        ///     Получение списка языков
+        /// </summary>
+        /// <returns></returns>
+        public List<Language> Languages
+        {
+            get
+            {
+                if (_languages != null && !RequiredRefreshInfo) return _languages;
+                _languages = new List<Language>();
+                using (var dbReader = new DBReader(SQLQueries.SELECT_Языки, CommandType.Text, Config.DS_user))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var lang = new Language();
+                            lang.LoadFromDbReader(dbReader);
+                            _languages.Add(lang);
+                        }
+                }
+
+                return _languages;
+            }
+        }
+
+        /// <summary>
+        ///     Получение доменных имен
+        /// </summary>
+        /// <returns></returns>
+        public List<DomainName> DomainNames
+        {
+            get
+            {
+                if (_domainNames != null && !RequiredRefreshInfo) return _domainNames;
+                _domainNames = new List<DomainName>();
+                using (var dbReader = new DBReader(SQLQueries.SELECT_DomainNames, CommandType.Text, Config.DS_user))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var dname = new DomainName();
+                            dname.LoadFromDbReader(dbReader);
+                            _domainNames.Add(dname);
+                        }
+                }
+
+                return _domainNames;
+            }
+        }
+
+        /// <summary>
+        ///     Получение списка общих папок
+        /// </summary>
+        /// <returns></returns>
+        public List<CommonFolder> CommonFolders
+        {
+            get
+            {
+                if (_commonFolders != null && !RequiredRefreshInfo) return _commonFolders;
+                _commonFolders = new List<CommonFolder>();
+                using (var dbReader = new DBReader(SQLQueries.SELECT_CommonFolders, CommandType.Text, Config.DS_user))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var cf = new CommonFolder();
+                            cf.LoadFromDbReader(dbReader);
+                            _commonFolders.Add(cf);
+                        }
+                }
+
+                return _commonFolders;
+            }
+        }
+
+        /// <summary>
+        ///     Получение дополнительных прав
+        /// </summary>
+        /// <returns></returns>
+        public List<AdvancedGrant> AdvancedGrants
+        {
+            get
+            {
+                if (_advancedGrants != null && !RequiredRefreshInfo) return _advancedGrants;
+                _advancedGrants = new List<AdvancedGrant>();
+                using (var dbReader = new DBReader(SQLQueries.SELECT_AdvancedGrants, CommandType.Text, Config.DS_user))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var cf = new AdvancedGrant();
+                            cf.LoadFromDbReader(dbReader);
+                            _advancedGrants.Add(cf);
+                        }
+                }
+
+                return _advancedGrants;
+            }
+        }
+
+        /// <summary>
+        ///     Список дополнительных прав для вывода на форме
+        /// </summary>
+        /// <returns>Список объектов</returns>
+        public List<AdvancedGrant> AdvancedGrantsAvailable
+        {
+            get
+            {
+                if (_advancedGrantsAvailable != null && !RequiredRefreshInfo) return _advancedGrantsAvailable;
+                _advancedGrantsAvailable = new List<AdvancedGrant>();
+
+                PositionAdvancedGrants.ForEach(delegate(PositionAdvancedGrant p)
+                {
+                    _advancedGrantsAvailable.Add(new AdvancedGrant
+                        {Id = p.GrantId.ToString(), Name = p.GrantDescription, NameEn = p.GrantDescriptionEn});
+                });
+
+                AdvancedGrants.ForEach(delegate(AdvancedGrant grant)
+                {
+                    var g = _advancedGrantsAvailable.FirstOrDefault(x => x.Id == grant.Id);
+                    if (g != null)
+                    {
+                        g.NotAlive = grant.NotAlive;
+                        g.OrderOutput = grant.OrderOutput;
+                        g.RefersTo = grant.RefersTo;
+                    }
+                    else if (!grant.NotAlive)
+                    {
+                        _advancedGrantsAvailable.Add(grant);
+                    }
+                });
+
+                return _advancedGrantsAvailable;
+            }
+        }
+
+        /// <summary>
+        ///     Сотрудник указания имеет логин
+        /// </summary>
+        public bool SotrudnikExistLogin
+        {
+            get
+            {
+                if (SotrudnikField.ValueString.Length == 0) return false;
+                if (Sotrudnik.Unavailable) return false;
+
+                return Sotrudnik.Login.Length > 0;
+            }
+        }
+
+        /// <summary>
         ///     Сохранение позиций документа
         /// </summary>
         /// <param name="reloadPostions"></param>
@@ -310,12 +515,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         public void SaveDocumentPositions(bool reloadPostions, List<DBCommand> cmds = null)
         {
             if (cmds == null && Id.IsNullEmptyOrZero())
-            {
                 throw new LogicalException(
                     "Ошибка вызова процедур сохранения позиций документа, т.к. документ еще не сохранен!", "",
                     Assembly.GetExecutingAssembly().GetName(),
                     MethodBase.GetCurrentMethod().Name, Priority.Error);
-            }
             SavePositionsCommonFolders(reloadPostions, cmds);
             SavePositionsRoles(reloadPostions, cmds);
             SavePositionsTypes(reloadPostions, cmds);
@@ -352,113 +555,19 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     Config.DS_user, sqlParams))
             {
                 if (dbReader.HasRows)
-                {
                     while (dbReader.Read())
                     {
                         var user = new Employee(false);
                         user.LoadFromDbReader(dbReader, true);
                         userList.Add(user);
                     }
-                }
             }
+
             return userList;
         }
 
         /// <summary>
-        ///     Получение списка языков
-        /// </summary>
-        /// <returns></returns>
-        public List<Language> Languages()
-        {
-            if (_languages != null && !RequiredRefreshInfo) return _languages;
-            _languages = new List<Language>();
-            using (var dbReader = new DBReader(SQLQueries.SELECT_Языки, CommandType.Text, Config.DS_user))
-            {
-                if (dbReader.HasRows)
-                {
-                    while (dbReader.Read())
-                    {
-                        var lang = new Language();
-                        lang.LoadFromDbReader(dbReader);
-                        _languages.Add(lang);
-                    }
-                }
-            }
-            return _languages;
-        }
-
-        /// <summary>
-        ///     Получение доменных имен
-        /// </summary>
-        /// <returns></returns>
-        public List<DomainName> DomainNames()
-        {
-            if (_domainNames != null && !RequiredRefreshInfo) return _domainNames;
-            _domainNames = new List<DomainName>();
-            using (var dbReader = new DBReader(SQLQueries.SELECT_DomainNames, CommandType.Text, Config.DS_user))
-            {
-                if (dbReader.HasRows)
-                {
-                    while (dbReader.Read())
-                    {
-                        var dname = new DomainName();
-                        dname.LoadFromDbReader(dbReader);
-                        _domainNames.Add(dname);
-                    }
-                }
-            }
-            return _domainNames;
-        }
-
-        /// <summary>
-        ///     Получение списка общих папок
-        /// </summary>
-        /// <returns></returns>
-        public List<CommonFolder> CommonFolders()
-        {
-            if (_commonFolders != null && !RequiredRefreshInfo) return _commonFolders;
-            _commonFolders = new List<CommonFolder>();
-            using (var dbReader = new DBReader(SQLQueries.SELECT_CommonFolders, CommandType.Text, Config.DS_user))
-            {
-                if (dbReader.HasRows)
-                {
-                    while (dbReader.Read())
-                    {
-                        var cf = new CommonFolder();
-                        cf.LoadFromDbReader(dbReader);
-                        _commonFolders.Add(cf);
-                    }
-                }
-            }
-            return _commonFolders;
-        }
-
-        /// <summary>
-        ///     Получение дополнительных прав
-        /// </summary>
-        /// <returns></returns>
-        public List<AdvancedGrant> AdvancedGrants()
-        {
-            if (_advancedGrants != null && !RequiredRefreshInfo) return _advancedGrants;
-            _advancedGrants = new List<AdvancedGrant>();
-            using (var dbReader = new DBReader(SQLQueries.SELECT_AdvancedGrants, CommandType.Text, Config.DS_user))
-            {
-                if (dbReader.HasRows)
-                {
-                    while (dbReader.Read())
-                    {
-                        var cf = new AdvancedGrant();
-                        cf.LoadFromDbReader(dbReader);
-                        _advancedGrants.Add(cf);
-                    }
-                }
-            }
-            return _advancedGrants;
-        }
-
-
-        /// <summary>
-        /// Форматирование номера мобильно телефона
+        ///     Форматирование номера мобильно телефона
         /// </summary>
         /// <param name="phoneNum">Номер телефона</param>
         /// <returns>Направление</returns>
@@ -547,12 +656,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     .FirstOrDefault()
                 where f == null
                 select p)
-            {
                 if (string.IsNullOrEmpty(p.Id))
                     positionForClear.Add(p);
                 else
                     p.Delete(false);
-            }
 
             positionForClear.ForEach(
                 delegate(PositionCommonFolder p) { PositionCommonFolders.RemoveAll(x => x.GuidId == p.GuidId); });
@@ -570,6 +677,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                         var cf = cfSaved.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
                         if (cf != null) return;
                     }
+
                     p.DocumentId = int.Parse(Id);
                     p.Save(false);
                 });
@@ -590,6 +698,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     var cf = cfSaved.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
                     if (cf != null) continue;
                 }
+
                 p.Save(false);
                 PositionCommonFolders.Add(p);
             }
@@ -598,7 +707,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             cfSaved.ForEach(delegate(PositionCommonFolder p)
             {
                 var delP = PositionCommonFolders.FirstOrDefault(x => x.CommonFolderId == p.CommonFolderId);
-                if (delP==null)
+                if (delP == null)
                     p.Delete(false);
             });
 
@@ -627,6 +736,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     p.Save(reloadPostions, cmds);
                     return;
                 }
+
                 var p0 = positionCommonFolders0.FirstOrDefault(x => x.Id == p.Id && x.ChangedTime != p.ChangedTime);
                 if (p0 != null) p.Save(reloadPostions, cmds);
             });
@@ -660,9 +770,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     .FirstOrDefault()
                 where f == null
                 select p)
-            {
                 p.Delete(false);
-            }
 
             foreach (var p in from f in grants
                 let p = PositionAdvancedGrants.FirstOrDefault(x => x.GrantId.ToString() == f.Key)
@@ -705,6 +813,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     p.Save(reloadPostions, cmds);
                     return;
                 }
+
                 var p0 = positionAG0.FirstOrDefault(x => x.Id == p.Id && x.ChangedTime != p.ChangedTime);
                 if (p0 != null) p.Save(reloadPostions, cmds);
             });
@@ -747,6 +856,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     p.Save(reloadPostions, cmds);
                     return;
                 }
+
                 var p0 =
                     positionRoles0.FirstOrDefault(
                         x => x.Id == p.Id && (x.RoleId != p.RoleId || x.PersonId != p.PersonId));
@@ -791,6 +901,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     p.Save(reloadPostions, cmds);
                     return;
                 }
+
                 var p0 = positionTypes0.FirstOrDefault(x => x.Id == p.Id && x.ChangedTime != p.ChangedTime);
                 if (p0 != null) p.Save(reloadPostions, cmds);
             });

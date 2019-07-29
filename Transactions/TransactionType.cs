@@ -8,89 +8,18 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Transactions
 {
     /// <summary>
-    /// Бизнес-объект - типы транзакций
+    ///     Бизнес-объект - типы транзакций
     /// </summary>
     [DebuggerDisplay("ID = {Id}, Name = {TransactionNameRu}")]
     public class TransactionType : Entity
     {
-        #region Поля сущности
         /// <summary>
-        /// Поле КодТипаТранзакции
-        /// </summary>
-        /// <value>
-        /// КодТипаТранзакции (int, not null)
-        /// </value>
-        /// <remarks>
-        ///  Типизированный псевданим для ID
-        /// </remarks>
-        public int CodeType { get { return Convert.ToInt32(Id); } }
-        /// <summary>
-        /// Поле ТипТранзакции
-        /// </summary>
-        /// <value>
-        /// ТипТранзакции (varchar(50), not null)
-        /// </value>
-        public string TransactionNameRu { get { return Name; } }
-        /// <summary>
-        /// Поле ТипТранзакцииEN
-        /// </summary>
-        /// <value>
-        /// ТипТранзакцииEN (varchar(50), not null)
-        /// </value>
-        public string TransactionNameEN { get; set; }
-        /// <summary>
-        /// Поле КодГруппыТиповТранзакций
-        /// </summary>
-        /// <value>
-        /// КодГруппыТиповТранзакций (int, not null)
-        /// </value>
-        public int CodeTypeGroup { get; set; }
-        /// <summary>
-        /// Поле ГруппаАктаСверки
-        /// </summary>
-        /// <value>
-        /// ГруппаАктаСверки (int, not null)
-        /// </value>
-        public int ReviseActGroup { get; set; }
-        /// <summary>
-        /// Поле ПорядокАктаСверки
-        /// </summary>
-        /// <value>
-        /// ПорядокАктаСверки (int, not null)
-        /// </value>
-        public int ReviseActOrder { get; set; }
-        /// <summary>
-        /// Поле ОписаниеАктаСверки
-        /// </summary>
-        /// <value>
-        /// ОписаниеАктаСверки (varchar(100), not null)
-        /// </value>
-        public string ReviseActDescr { get; set; }
-        #endregion
-
-        /// <summary>
-        /// Строка подключения к БД.
-        /// </summary>
-        public sealed override string CN
-        {
-            get { return ConnString; }
-        }
-
-        /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
 
         /// <summary>
-        ///  Статическое поле для получения строки подключения
-        /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
-        }
-
-        /// <summary>
-        ///  Конструктор с параметром для сущности "типы транзакций"
+        ///     Конструктор с параметром для сущности "типы транзакций"
         /// </summary>
         /// <param name="id">КодТипаТранзакции</param>
         public TransactionType(string id) : base(id)
@@ -99,12 +28,26 @@ namespace Kesco.Lib.Entities.Transactions
         }
 
         /// <summary>
-        ///  Конструктор по умолчанию для сущности "типы транзакций"
+        ///     Конструктор по умолчанию для сущности "типы транзакций"
         /// </summary>
-        public TransactionType(){}
+        public TransactionType()
+        {
+        }
 
         /// <summary>
-        /// Метод загрузки данных сущности "типы транзакций"
+        ///     Строка подключения к БД.
+        /// </summary>
+        public sealed override string CN => ConnString;
+
+        /// <summary>
+        ///     Статическое поле для получения строки подключения
+        /// </summary>
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_document
+            : _connectionString;
+
+        /// <summary>
+        ///     Метод загрузки данных сущности "типы транзакций"
         /// </summary>
         public sealed override void Load()
         {
@@ -113,12 +56,12 @@ namespace Kesco.Lib.Entities.Transactions
 
 
         /// <summary>
-        /// Метод загрузки и заполнения данных сущности "типы транзакций"
+        ///     Метод загрузки и заполнения данных сущности "типы транзакций"
         /// </summary>
         /// <param name="id">КодТипаТранзакции</param>
         public void FillData(int id)
         {
-            if(id == 0) return;
+            if (id == 0) return;
 
             using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ТипТранзакции, id, CommandType.Text, CN))
             {
@@ -126,13 +69,14 @@ namespace Kesco.Lib.Entities.Transactions
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
-                    int colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
-                    int colТипТранзакцииEN = dbReader.GetOrdinal("ТипТранзакцииEN");
-                    int colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
-                    int colГруппаАктаСверки = dbReader.GetOrdinal("ГруппаАктаСверки");
-                    int colПорядокАктаСверки = dbReader.GetOrdinal("ПорядокАктаСверки");
-                    int colОписаниеАктаСверки = dbReader.GetOrdinal("ОписаниеАктаСверки");
+                    var colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
+                    var colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
+                    var colТипТранзакцииEN = dbReader.GetOrdinal("ТипТранзакцииEN");
+                    var colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
+                    var colГруппаАктаСверки = dbReader.GetOrdinal("ГруппаАктаСверки");
+                    var colПорядокАктаСверки = dbReader.GetOrdinal("ПорядокАктаСверки");
+                    var colОписаниеАктаСверки = dbReader.GetOrdinal("ОписаниеАктаСверки");
+
                     #endregion
 
                     if (dbReader.Read())
@@ -146,13 +90,16 @@ namespace Kesco.Lib.Entities.Transactions
                         ReviseActOrder = dbReader.GetInt32(colПорядокАктаСверки);
                         ReviseActDescr = dbReader.GetString(colОписаниеАктаСверки);
                     }
-                    else { Unavailable = true; }
+                    else
+                    {
+                        Unavailable = true;
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Получить типы транзакций по строке запроса
+        ///     Получить типы транзакций по строке запроса
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
@@ -165,13 +112,14 @@ namespace Kesco.Lib.Entities.Transactions
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
-                    int colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
-                    int colТипТранзакцииEN = dbReader.GetOrdinal("ТипТранзакцииEN");
-                    int colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
-                    int colГруппаАктаСверки = dbReader.GetOrdinal("ГруппаАктаСверки");
-                    int colПорядокАктаСверки = dbReader.GetOrdinal("ПорядокАктаСверки");
-                    int colОписаниеАктаСверки = dbReader.GetOrdinal("ОписаниеАктаСверки");
+                    var colКодТипаТранзакции = dbReader.GetOrdinal("КодТипаТранзакции");
+                    var colТипТранзакции = dbReader.GetOrdinal("ТипТранзакции");
+                    var colТипТранзакцииEN = dbReader.GetOrdinal("ТипТранзакцииEN");
+                    var colКодГруппыТиповТранзакций = dbReader.GetOrdinal("КодГруппыТиповТранзакций");
+                    var colГруппаАктаСверки = dbReader.GetOrdinal("ГруппаАктаСверки");
+                    var colПорядокАктаСверки = dbReader.GetOrdinal("ПорядокАктаСверки");
+                    var colОписаниеАктаСверки = dbReader.GetOrdinal("ОписаниеАктаСверки");
+
                     #endregion
 
                     while (dbReader.Read())
@@ -189,9 +137,71 @@ namespace Kesco.Lib.Entities.Transactions
                     }
                 }
             }
+
             return list;
         }
 
-    }
+        #region Поля сущности
 
+        /// <summary>
+        ///     Поле КодТипаТранзакции
+        /// </summary>
+        /// <value>
+        ///     КодТипаТранзакции (int, not null)
+        /// </value>
+        /// <remarks>
+        ///     Типизированный псевданим для ID
+        /// </remarks>
+        public int CodeType => Convert.ToInt32(Id);
+
+        /// <summary>
+        ///     Поле ТипТранзакции
+        /// </summary>
+        /// <value>
+        ///     ТипТранзакции (varchar(50), not null)
+        /// </value>
+        public string TransactionNameRu => Name;
+
+        /// <summary>
+        ///     Поле ТипТранзакцииEN
+        /// </summary>
+        /// <value>
+        ///     ТипТранзакцииEN (varchar(50), not null)
+        /// </value>
+        public string TransactionNameEN { get; set; }
+
+        /// <summary>
+        ///     Поле КодГруппыТиповТранзакций
+        /// </summary>
+        /// <value>
+        ///     КодГруппыТиповТранзакций (int, not null)
+        /// </value>
+        public int CodeTypeGroup { get; set; }
+
+        /// <summary>
+        ///     Поле ГруппаАктаСверки
+        /// </summary>
+        /// <value>
+        ///     ГруппаАктаСверки (int, not null)
+        /// </value>
+        public int ReviseActGroup { get; set; }
+
+        /// <summary>
+        ///     Поле ПорядокАктаСверки
+        /// </summary>
+        /// <value>
+        ///     ПорядокАктаСверки (int, not null)
+        /// </value>
+        public int ReviseActOrder { get; set; }
+
+        /// <summary>
+        ///     Поле ОписаниеАктаСверки
+        /// </summary>
+        /// <value>
+        ///     ОписаниеАктаСверки (varchar(100), not null)
+        /// </value>
+        public string ReviseActDescr { get; set; }
+
+        #endregion
+    }
 }

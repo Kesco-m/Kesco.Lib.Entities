@@ -37,23 +37,15 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
-        {
-            get { return ConnString; }
-        }
+        public sealed override string CN => ConnString;
 
         /// <summary>
         ///     Статическое поле для получения строки подключения
         /// </summary>
-        public static string ConnString
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_connectionString)
-                    ? (_connectionString = Config.DS_person)
-                    : _connectionString;
-            }
-        }
+        public static string ConnString =>
+            string.IsNullOrEmpty(_connectionString)
+                ? _connectionString = Config.DS_person
+                : _connectionString;
 
         /// <summary>
         ///     Наименование темы лица.
@@ -97,19 +89,16 @@ namespace Kesco.Lib.Entities.Persons
         public static List<Item> GetParentAndChildThemes(int themeId, int catalogId)
         {
             var list = new List<Item>();
-            var sqlParams = new Dictionary<string, object> { { "@Id", themeId }, { "@КодКаталога", catalogId } };
+            var sqlParams = new Dictionary<string, object> {{"@Id", themeId}, {"@КодКаталога", catalogId}};
             using (
                 var dbReader = new DBReader(SQLQueries.SELECT_ID_ТемыЛиц_ПотомкиИПодчиненные, CommandType.Text,
                     ConnString, sqlParams))
             {
                 if (dbReader.HasRows)
-                {
                     while (dbReader.Read())
-                    {
                         list.Add(new Item {Id = dbReader.GetInt32(0).ToString(), Value = dbReader.GetString(1)});
-                    }
-                }
             }
+
             return list;
         }
     }

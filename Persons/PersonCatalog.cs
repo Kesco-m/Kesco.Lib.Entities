@@ -28,7 +28,6 @@ namespace Kesco.Lib.Entities.Persons
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name"></param>
@@ -48,7 +47,7 @@ namespace Kesco.Lib.Entities.Persons
         /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
+        public sealed override string CN
         {
             get
             {
@@ -64,12 +63,12 @@ namespace Kesco.Lib.Entities.Persons
         /// </summary>
         public override void Load()
         {
-            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.String}}};
+            var sqlParams = new Dictionary<string, object>
+                {{"@id", new object[] {Id, DBManager.ParameterTypes.String}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_Каталог, CN, CommandType.Text, sqlParams));
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="dt"></param>
         protected override void FillData(DataTable dt)

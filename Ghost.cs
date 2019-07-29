@@ -3,18 +3,18 @@
 namespace Kesco.Lib.Entities
 {
     /// <summary>
-    /// Класс для простых сущностей
+    ///     Класс для простых сущностей
     /// </summary>
     [Serializable]
-    public class Ghost: Entity
+    public class Ghost : Entity
     {
         /// <summary>
-        /// Статус сущности
+        ///     Статус сущности
         /// </summary>
         public string State { get; set; }
 
         /// <summary>
-        /// Код сотрудника
+        ///     Код сотрудника
         /// </summary>
         public string PersonId { get; set; }
     }

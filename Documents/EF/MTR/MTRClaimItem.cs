@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Kesco.Lib.BaseExtention;
-using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
@@ -16,120 +15,67 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Documents.EF.MTR
 {
     /// <summary>
-    /// Позиция заявки
+    ///     Позиция заявки
     /// </summary>
     [DebuggerDisplay("ID = {MtrPositionId}, Document = {DocumentId}, Order = {MtrOrder},  Name = {MtrName}")]
     [Serializable]
     public class MTRClaimItem : ICloneable<MTRClaimItem>
     {
-        #region Поля сущности
+        /// <summary>
+        ///     Инкапсулирует и сохраняет в себе строку подключения
+        /// </summary>
+        private static string _connectionString;
 
         /// <summary>
-        /// Код позиции заявок МТР
+        ///     Конструктор по умолчанию
         /// </summary>
-        /// <value>
-        /// КодПозицииЗаявокМТР (int, not null)
-        /// </value>
-        public int MtrPositionId { get; set; }
+        public MTRClaimItem()
+        {
+        }
 
         /// <summary>
-        ///  Код кокумента(Id)
+        ///     Конструктор по умолчанию
         /// </summary>
-        /// <value>
-        /// КодДокумента (int, not null)
-        /// </value>
-        public int DocumentId { get; set; }
+        public MTRClaimItem(int itemId)
+        {
+            FillData(itemId);
+        }
 
         /// <summary>
-        ///  Порядок документа, он же номер, в пределах одного документа уникальный
+        ///     Интерфейсное свойство,
+        ///     для диалога привязывания ссылок документов
         /// </summary>
-        public int MtrOrder { get; set; }
+        public bool Checked { get; set; }
 
         /// <summary>
-        ///  Наименование МТР
+        ///     Статическое поле для получения строки подключения
         /// </summary>
-        /// <value>
-        /// Наименование (nvarchar(300), not null)
-        /// </value>
-        public string MtrName { get; set; }
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_document
+            : _connectionString;
 
         /// <summary>
-        /// Технические характеристики
+        ///     Создает новый объект, являющийся копией текущего экземпляра.
         /// </summary>
-        /// <value>
-        /// ТехническиеХарактеристики (nvarchar(300), not null)
-        /// </value>
-        public string Specifications { get; set; }
-
-        /// <summary>
-        /// Цель приобретения
-        /// </summary>
-        /// <value>
-        /// ЦельПриобретения (nvarchar(500), not null)
-        /// </value>
-        public string PurposeOfAcquisition { get; set; }
-        /// <summary>
-        /// Срок закупки
-        /// </summary>
-        /// <value>
-        /// СрокЗакупки (datetime, not null)
-        /// </value>
-        public DateTime PurchasesTerm { get; set; }
-
-        /// <summary>
-        ///  Единица измерения
-        /// </summary>
-        /// <value>
-        /// ЕдиницаИзмерения (nvarchar(10), not null)
-        /// </value>
-        public string Unit { get; set; }
-
-        /// <summary>
-        /// Количество
-        /// </summary>
-        /// <value>
-        /// Количество (float, not null)
-        /// </value>
-        public decimal? Quantity { get; set; }
-
-        /// <summary>
-        ///  Примечание
-        /// </summary>
-        /// <value>
-        /// Примечание (nvarchar(500), not null)
-        /// </value>
-        public string Description { get; set; }
-
-        /// <summary>
-        ///  Изменил id пользователя
-        /// </summary>
-        /// <value>
-        /// Изменил (int, not null)
-        /// </value>
-        public int UserChangedId { get; set; }
-
-        /// <summary>
-        ///  Дата и время изменения
-        /// </summary>
-        /// <value>
-        /// Изменено (datetime, not null)
-        /// </value>
-        public DateTime ChangedDateTime { get; set; }
-        #endregion
+        public MTRClaimItem Clone()
+        {
+            return (MTRClaimItem) MemberwiseClone();
+        }
 
         #region Рендер
 
         /// <summary>
-        ///  Отрисовать связь позиции и документа
+        ///     Отрисовать связь позиции и документа
         /// </summary>
         public void RenderPositionDocLinks(TextWriter w, List<MtrChildDoc> childDocs, MtrChildType type)
         {
             foreach (var p in childDocs)
-            {
                 if (p.LinkType == type && p.MtrPositionId == MtrPositionId)
                 {
                     if (type == MtrChildType.ДокументОснованиеПлатежа)
-                        w.Write("<div class=\"holder\" draggable='true' ondragstart='SetDragInfo({0});'><a onclick='OpenDoc({0});' href='#'> <img border='0' src='/styles/DocMain.gif'>", p.DocId);
+                        w.Write(
+                            "<div class=\"holder\" draggable='true' ondragstart='SetDragInfo({0});'><a onclick='OpenDoc({0});' href='#'> <img border='0' src='/styles/DocMain.gif'>",
+                            p.DocId);
                     else
                         w.Write("<div><a href='javascript:OpenDoc({0});'> <img src='/styles/DocMain.gif'>", p.DocId);
 
@@ -141,7 +87,6 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                     {
                         if (p.PartialQuantity != 0 && p.PartialQuantity != Quantity.Value)
                         {
-
                             if (p.PartialQuantity > Quantity.Value)
                             {
                                 w.Write("<span style='color: red;' title='Количество в позиции меньше ожидаемого'>");
@@ -155,6 +100,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
 
                             w.Write("</span>");
                         }
+
                         w.Write(
                             "<img class=\"block\" src=\"../../STYLES/Delete.gif\" border=\"0\" style=\"cursor: pointer;\" onclick=\"cmd('cmd', 'RemoveLinkDoc','mtrPos', '{0}', 'LnkDocId', '{1}', 'ask', '1');\">",
                             p.MtrPositionId, p.DocId);
@@ -162,48 +108,12 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
 
                     w.Write("</div>");
                 }
-            }
-
         }
 
         #endregion
 
         /// <summary>
-        ///  Интерфейсное свойство, 
-        ///  для диалога привязывания ссылок документов
-        /// </summary>
-        public bool Checked { get; set; }
-
-        /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
-        /// </summary>
-        private static string _connectionString;
-
-        /// <summary>
-        ///  Статическое поле для получения строки подключения
-        /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
-        }
-
-        /// <summary>
-        ///  Конструктор по умолчанию
-        /// </summary>
-        public MTRClaimItem()
-        {
-        }
-
-        /// <summary>
-        ///  Конструктор по умолчанию
-        /// </summary>
-        public MTRClaimItem(int itemId)
-        {
-            FillData(itemId);
-        }
-
-        /// <summary>
-        ///  Получить одну позицию по ID
+        ///     Получить одну позицию по ID
         /// </summary>
         private void FillData(int id)
         {
@@ -213,17 +123,18 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
-                    int colПорядок = dbReader.GetOrdinal("Порядок");
-                    int colНаименование = dbReader.GetOrdinal("Наименование");
-                    int colТехническиеХарактеристики = dbReader.GetOrdinal("ТехническиеХарактеристики");
-                    int colЦельПриобретения = dbReader.GetOrdinal("ЦельПриобретения");
-                    int colСрокЗакупки = dbReader.GetOrdinal("СрокЗакупки");
-                    int colЕдиницаИзмерения = dbReader.GetOrdinal("ЕдиницаИзмерения");
-                    int colКоличество = dbReader.GetOrdinal("Количество");
-                    int colПримечание = dbReader.GetOrdinal("Примечание");
-                    int colИзменил = dbReader.GetOrdinal("Изменил");
-                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    var colКодДокумента = dbReader.GetOrdinal("КодДокумента");
+                    var colПорядок = dbReader.GetOrdinal("Порядок");
+                    var colНаименование = dbReader.GetOrdinal("Наименование");
+                    var colТехническиеХарактеристики = dbReader.GetOrdinal("ТехническиеХарактеристики");
+                    var colЦельПриобретения = dbReader.GetOrdinal("ЦельПриобретения");
+                    var colСрокЗакупки = dbReader.GetOrdinal("СрокЗакупки");
+                    var colЕдиницаИзмерения = dbReader.GetOrdinal("ЕдиницаИзмерения");
+                    var colКоличество = dbReader.GetOrdinal("Количество");
+                    var colПримечание = dbReader.GetOrdinal("Примечание");
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
                     #endregion
 
                     if (dbReader.Read())
@@ -246,7 +157,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         }
 
         /// <summary>
-        ///  Получить список позиций на преобретение МТР
+        ///     Получить список позиций на преобретение МТР
         /// </summary>
         public static List<MTRClaimItem> GetClaimItemList(int docid)
         {
@@ -261,17 +172,18 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодПозицииЗаявокМТР = dbReader.GetOrdinal("КодПозицииЗаявокМТР");
-                    int colПорядок = dbReader.GetOrdinal("Порядок");
-                    int colНаименование = dbReader.GetOrdinal("Наименование");
-                    int colТехническиеХарактеристики = dbReader.GetOrdinal("ТехническиеХарактеристики");
-                    int colЦельПриобретения = dbReader.GetOrdinal("ЦельПриобретения");
-                    int colСрокЗакупки = dbReader.GetOrdinal("СрокЗакупки");
-                    int colЕдиницаИзмерения = dbReader.GetOrdinal("ЕдиницаИзмерения");
-                    int colКоличество = dbReader.GetOrdinal("Количество");
-                    int colПримечание = dbReader.GetOrdinal("Примечание");
-                    int colИзменил = dbReader.GetOrdinal("Изменил");
-                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    var colКодПозицииЗаявокМТР = dbReader.GetOrdinal("КодПозицииЗаявокМТР");
+                    var colПорядок = dbReader.GetOrdinal("Порядок");
+                    var colНаименование = dbReader.GetOrdinal("Наименование");
+                    var colТехническиеХарактеристики = dbReader.GetOrdinal("ТехническиеХарактеристики");
+                    var colЦельПриобретения = dbReader.GetOrdinal("ЦельПриобретения");
+                    var colСрокЗакупки = dbReader.GetOrdinal("СрокЗакупки");
+                    var colЕдиницаИзмерения = dbReader.GetOrdinal("ЕдиницаИзмерения");
+                    var colКоличество = dbReader.GetOrdinal("Количество");
+                    var colПримечание = dbReader.GetOrdinal("Примечание");
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
                     #endregion
 
                     // нет смысла получать из базы, то что у нас уже есть
@@ -298,11 +210,12 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                     }
                 }
             }
+
             return list;
         }
 
         /// <summary>
-        ///  Сохранение позиции заявки
+        ///     Сохранение позиции заявки
         /// </summary>
         public void SavePosition()
         {
@@ -313,24 +226,24 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         }
 
         /// <summary>
-        ///  Сохранение (Insert)
+        ///     Сохранение (Insert)
         /// </summary>
         public void Create()
         {
             if (DocumentId == 0)
                 throw new ArgumentException("Документ не создан, дальнейшее сохранение не возможно");
 
-                var sqlParams = SetSqlParams(isNew: true);
+            var sqlParams = SetSqlParams(isNew: true);
 
-                var outputParams = new Dictionary<string, object> { { "@MtrPositionId", -1 } };
-                DBManager.ExecuteNonQuery(InsertClaimItem, CommandType.Text, ConnString, sqlParams, outputParams);
+            var outputParams = new Dictionary<string, object> {{"@MtrPositionId", -1}};
+            DBManager.ExecuteNonQuery(InsertClaimItem, CommandType.Text, ConnString, sqlParams, outputParams);
 
-                if (outputParams["@MtrPositionId"] is int)
-                    MtrPositionId = (int)outputParams["@MtrPositionId"];
+            if (outputParams["@MtrPositionId"] is int)
+                MtrPositionId = (int) outputParams["@MtrPositionId"];
         }
 
         /// <summary>
-        ///  Сохранение (Insert) c повтором в случае взаимоблокировки
+        ///     Сохранение (Insert) c повтором в случае взаимоблокировки
         /// </summary>
         public void CreateDeadlockSafety()
         {
@@ -338,7 +251,6 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
             var maxRetries = 3;
 
             while (retryCount < maxRetries)
-            {
                 try
                 {
                     Create();
@@ -346,19 +258,20 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
                 }
                 catch (SqlException ex)
                 {
-                    if (ex.Number == 1205)// Deadlock 
+                    if (ex.Number == 1205) // Deadlock 
                     {
                         retryCount++;
                         Thread.Sleep(5000);
-                    }                        
+                    }
                     else
-                       throw;
+                    {
+                        throw;
+                    }
                 }
-            }
         }
 
         /// <summary>
-        ///  Обновление существующих (Update)
+        ///     Обновление существующих (Update)
         /// </summary>
         public void UpdateData()
         {
@@ -370,19 +283,20 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         }
 
         /// <summary>
-        ///  Обновить порядок документа МТР
+        ///     Обновить порядок документа МТР
         /// </summary>
         public void UpdateRowOrder()
         {
             if (DocumentId == 0)
                 throw new ArgumentException("Документ не создан, дальнейшее сохранение не возможно");
 
-            var sqlParams = new Dictionary<string, object> {{"@КодПозицииЗаявокМТР", MtrPositionId}, {"@Порядок", MtrOrder}};
+            var sqlParams = new Dictionary<string, object>
+                {{"@КодПозицииЗаявокМТР", MtrPositionId}, {"@Порядок", MtrOrder}};
             DBManager.ExecuteNonQuery(SqlUpdateRowOrder, CommandType.Text, ConnString, sqlParams);
         }
 
         /// <summary>
-        ///  Удалить позицию МТР
+        ///     Удалить позицию МТР
         /// </summary>
         public void Delete()
         {
@@ -392,7 +306,7 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         }
 
         /// <summary>
-        ///  Установка параметров для записи в БД
+        ///     Установка параметров для записи в БД
         /// </summary>
         private Dictionary<string, object> SetSqlParams(bool isNew)
         {
@@ -414,79 +328,167 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
             return sqlParams;
         }
 
-        #region SQL запросы
+        #region Поля сущности
 
         /// <summary>
-        ///  Получить позицию МТР по Id
+        ///     Код позиции заявок МТР
         /// </summary>
-        const string GetMtrClaim = "SELECT [КодДокумента] " +
-                                         ",[Порядок] " +
-                                         ",[Наименование] " +
-                                         ",[ТехническиеХарактеристики] " +
-                                         ",[ЦельПриобретения] " +
-                                         ",[СрокЗакупки] " +
-                                         ",[ЕдиницаИзмерения] " +
-                                         ",[Количество] " +
-                                         ",[Примечание] " +
-                                         ",[Изменил] " +
-                                         ",[Изменено] " +
-                                         "FROM [dbo].[vwПозицииЗаявокМТР] (nolock) where [КодПозицииЗаявокМТР] = @id";
+        /// <value>
+        ///     КодПозицииЗаявокМТР (int, not null)
+        /// </value>
+        public int MtrPositionId { get; set; }
 
         /// <summary>
-        ///  Получить все позиции по id документа
+        ///     Код кокумента(Id)
         /// </summary>
-        const string GetClaimItems = "SELECT [КодПозицииЗаявокМТР] " +
-                                         ",[Порядок] " +
-                                         ",[Наименование] " +
-                                         ",[ТехническиеХарактеристики] " +
-                                         ",[ЦельПриобретения] " +
-                                         ",[СрокЗакупки] " +
-                                         ",[ЕдиницаИзмерения] " +
-                                         ",[Количество] " +
-                                         ",[Примечание] " +
-                                         ",[Изменил] " +
-                                         ",[Изменено] " +
-                                         "FROM [dbo].[vwПозицииЗаявокМТР] (nolock) where [КодДокумента] = @id";
+        /// <value>
+        ///     КодДокумента (int, not null)
+        /// </value>
+        public int DocumentId { get; set; }
 
         /// <summary>
-        ///  Добавить новую позицию
+        ///     Порядок документа, он же номер, в пределах одного документа уникальный
         /// </summary>
-        const string InsertClaimItem = "INSERT INTO dbo.vwПозицииЗаявокМТР " +
-                                       "(КодДокумента, Порядок, Наименование, ТехническиеХарактеристики, ЦельПриобретения, СрокЗакупки, ЕдиницаИзмерения, Количество, Примечание) " +
-                                       "VALUES  (@КодДокумента, @Порядок, @Наименование, @ТехническиеХарактеристики, @ЦельПриобретения, @СрокЗакупки,@ЕдиницаИзмерения,@Количество,@Примечание) " +
-                                       "SET @MtrPositionId = SCOPE_IDENTITY()";
+        public int MtrOrder { get; set; }
 
         /// <summary>
-        ///  Обновить действующую
+        ///     Наименование МТР
         /// </summary>
-        const string UpdateClaimItem = "UPDATE dbo.vwПозицииЗаявокМТР " +
-                                       "SET КодДокумента = @КодДокумента, Порядок = @Порядок, Наименование = @Наименование, ТехническиеХарактеристики = @ТехническиеХарактеристики, " +
-                                       "ЦельПриобретения = @ЦельПриобретения, СрокЗакупки = @СрокЗакупки, ЕдиницаИзмерения = @ЕдиницаИзмерения, Количество = @Количество, "+
-                                       "Примечание = @Примечание WHERE КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
+        /// <value>
+        ///     Наименование (nvarchar(300), not null)
+        /// </value>
+        public string MtrName { get; set; }
 
         /// <summary>
-        ///  Обновить порядок в позиции
+        ///     Технические характеристики
         /// </summary>
-        const string SqlUpdateRowOrder = "UPDATE dbo.vwПозицииЗаявокМТР " +
-                                        "SET Порядок = @Порядок WHERE КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
-
+        /// <value>
+        ///     ТехническиеХарактеристики (nvarchar(300), not null)
+        /// </value>
+        public string Specifications { get; set; }
 
         /// <summary>
-        ///  Удалить существующую позицию
+        ///     Цель приобретения
         /// </summary>
-        const string DeleteClaimItem = "DELETE " +
-                                       "FROM  dbo.vwПозицииЗаявокМТР " +
-                                       "WHERE  КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
+        /// <value>
+        ///     ЦельПриобретения (nvarchar(500), not null)
+        /// </value>
+        public string PurposeOfAcquisition { get; set; }
+
+        /// <summary>
+        ///     Срок закупки
+        /// </summary>
+        /// <value>
+        ///     СрокЗакупки (datetime, not null)
+        /// </value>
+        public DateTime PurchasesTerm { get; set; }
+
+        /// <summary>
+        ///     Единица измерения
+        /// </summary>
+        /// <value>
+        ///     ЕдиницаИзмерения (nvarchar(10), not null)
+        /// </value>
+        public string Unit { get; set; }
+
+        /// <summary>
+        ///     Количество
+        /// </summary>
+        /// <value>
+        ///     Количество (float, not null)
+        /// </value>
+        public decimal? Quantity { get; set; }
+
+        /// <summary>
+        ///     Примечание
+        /// </summary>
+        /// <value>
+        ///     Примечание (nvarchar(500), not null)
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        ///     Изменил id пользователя
+        /// </summary>
+        /// <value>
+        ///     Изменил (int, not null)
+        /// </value>
+        public int UserChangedId { get; set; }
+
+        /// <summary>
+        ///     Дата и время изменения
+        /// </summary>
+        /// <value>
+        ///     Изменено (datetime, not null)
+        /// </value>
+        public DateTime ChangedDateTime { get; set; }
 
         #endregion
 
-        /// <summary>
-        /// Создает новый объект, являющийся копией текущего экземпляра.
-        /// </summary>
-        public MTRClaimItem Clone()
-        {
-            return (MTRClaimItem)MemberwiseClone();
-        }
-    }
+        #region SQL запросы
 
+        /// <summary>
+        ///     Получить позицию МТР по Id
+        /// </summary>
+        private const string GetMtrClaim = "SELECT [КодДокумента] " +
+                                           ",[Порядок] " +
+                                           ",[Наименование] " +
+                                           ",[ТехническиеХарактеристики] " +
+                                           ",[ЦельПриобретения] " +
+                                           ",[СрокЗакупки] " +
+                                           ",[ЕдиницаИзмерения] " +
+                                           ",[Количество] " +
+                                           ",[Примечание] " +
+                                           ",[Изменил] " +
+                                           ",[Изменено] " +
+                                           "FROM [dbo].[vwПозицииЗаявокМТР] (nolock) where [КодПозицииЗаявокМТР] = @id";
+
+        /// <summary>
+        ///     Получить все позиции по id документа
+        /// </summary>
+        private const string GetClaimItems = "SELECT [КодПозицииЗаявокМТР] " +
+                                             ",[Порядок] " +
+                                             ",[Наименование] " +
+                                             ",[ТехническиеХарактеристики] " +
+                                             ",[ЦельПриобретения] " +
+                                             ",[СрокЗакупки] " +
+                                             ",[ЕдиницаИзмерения] " +
+                                             ",[Количество] " +
+                                             ",[Примечание] " +
+                                             ",[Изменил] " +
+                                             ",[Изменено] " +
+                                             "FROM [dbo].[vwПозицииЗаявокМТР] (nolock) where [КодДокумента] = @id";
+
+        /// <summary>
+        ///     Добавить новую позицию
+        /// </summary>
+        private const string InsertClaimItem = "INSERT INTO dbo.vwПозицииЗаявокМТР " +
+                                               "(КодДокумента, Порядок, Наименование, ТехническиеХарактеристики, ЦельПриобретения, СрокЗакупки, ЕдиницаИзмерения, Количество, Примечание) " +
+                                               "VALUES  (@КодДокумента, @Порядок, @Наименование, @ТехническиеХарактеристики, @ЦельПриобретения, @СрокЗакупки,@ЕдиницаИзмерения,@Количество,@Примечание) " +
+                                               "SET @MtrPositionId = SCOPE_IDENTITY()";
+
+        /// <summary>
+        ///     Обновить действующую
+        /// </summary>
+        private const string UpdateClaimItem = "UPDATE dbo.vwПозицииЗаявокМТР " +
+                                               "SET КодДокумента = @КодДокумента, Порядок = @Порядок, Наименование = @Наименование, ТехническиеХарактеристики = @ТехническиеХарактеристики, " +
+                                               "ЦельПриобретения = @ЦельПриобретения, СрокЗакупки = @СрокЗакупки, ЕдиницаИзмерения = @ЕдиницаИзмерения, Количество = @Количество, " +
+                                               "Примечание = @Примечание WHERE КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
+
+        /// <summary>
+        ///     Обновить порядок в позиции
+        /// </summary>
+        private const string SqlUpdateRowOrder = "UPDATE dbo.vwПозицииЗаявокМТР " +
+                                                 "SET Порядок = @Порядок WHERE КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
+
+
+        /// <summary>
+        ///     Удалить существующую позицию
+        /// </summary>
+        private const string DeleteClaimItem = "DELETE " +
+                                               "FROM  dbo.vwПозицииЗаявокМТР " +
+                                               "WHERE  КодПозицииЗаявокМТР = @КодПозицииЗаявокМТР";
+
+        #endregion
+    }
 }

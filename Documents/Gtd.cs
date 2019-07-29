@@ -2,31 +2,42 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.BindModels;
-using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
-using Kesco.Lib.Log;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Gtd
 {
     /// <summary>
-    /// Класс сущности "ГТД"
+    ///     Класс сущности "ГТД"
     /// </summary>
     [Serializable]
     [DebuggerDisplay("ID = {Id}, Number = {Number}, Desc = {Description}")]
     public class Gtd : Entity
     {
         /// <summary>
-        ///  ID. Поле КодДокумента
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        public int DocId { get { return Id.ToInt(); } }
+        private static string _connectionString;
 
         /// <summary>
-        /// Номер документа
+        ///     Байдинг поля "Description"
+        /// </summary>
+        public BinderValue DescriptionBinder = new BinderValue();
+
+        /// <summary>
+        ///     Документ основание
+        /// </summary>
+        public BinderValue NumberBind = new BinderValue();
+
+        /// <summary>
+        ///     ID. Поле КодДокумента
+        /// </summary>
+        public int DocId => Id.ToInt();
+
+        /// <summary>
+        ///     Номер документа
         /// </summary>
         public string Number
         {
@@ -35,17 +46,12 @@ namespace Kesco.Lib.Entities.Gtd
         }
 
         /// <summary>
-        ///  Документ основание
-        /// </summary>
-        public BinderValue NumberBind = new BinderValue();
-
-        /// <summary>
-        /// Дата документа
+        ///     Дата документа
         /// </summary>
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// Описание
+        ///     Описание
         /// </summary>
         public string Description
         {
@@ -54,35 +60,24 @@ namespace Kesco.Lib.Entities.Gtd
         }
 
         /// <summary>
-        ///  Байдинг поля "Description"
-        /// </summary>
-        public BinderValue DescriptionBinder = new BinderValue();
-
-        /// <summary>
-        /// Изменил
+        ///     Изменил
         /// </summary>
         public int ChangePersonID { get; set; }
 
         /// <summary>
-        /// Дата изменения
+        ///     Дата изменения
         /// </summary>
         public DateTime ChangeDate { get; set; }
 
         /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
+        ///     Статическое поле для получения строки подключения документа
         /// </summary>
-        private static string _connectionString;
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_document
+            : _connectionString;
 
         /// <summary>
-        ///  Статическое поле для получения строки подключения документа
-        /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
-        }
-
-        /// <summary>
-        /// Получение списка документов из таблицы данных
+        ///     Получение списка документов из таблицы данных
         /// </summary>
         /// <param name="query">Запрос на множество строк Document</param>
         public static List<Gtd> GetGTDList(string query)
@@ -95,12 +90,13 @@ namespace Kesco.Lib.Entities.Gtd
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодДокумента = dbReader.GetOrdinal("КодДокумента");
-                    int colНомерДокумента = dbReader.GetOrdinal("НомерДокумента");
-                    int colДатаДокумента = dbReader.GetOrdinal("ДатаДокумента");
-                    int colОписание = dbReader.GetOrdinal("Описание");
-                    int colИзменил = dbReader.GetOrdinal("Изменил");
-                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    var colКодДокумента = dbReader.GetOrdinal("КодДокумента");
+                    var colНомерДокумента = dbReader.GetOrdinal("НомерДокумента");
+                    var colДатаДокумента = dbReader.GetOrdinal("ДатаДокумента");
+                    var colОписание = dbReader.GetOrdinal("Описание");
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
                     #endregion
 
                     while (dbReader.Read())
@@ -115,7 +111,7 @@ namespace Kesco.Lib.Entities.Gtd
                             ChangeDate = dbReader.GetDateTime(colИзменено)
                         };
 
-                        if (!dbReader.IsDBNull(colДатаДокумента)) { docRow.Date = dbReader.GetDateTime(colДатаДокумента); }
+                        if (!dbReader.IsDBNull(colДатаДокумента)) docRow.Date = dbReader.GetDateTime(colДатаДокумента);
 
                         docsList.Add(docRow);
                     }
@@ -124,6 +120,5 @@ namespace Kesco.Lib.Entities.Gtd
 
             return docsList;
         }
-
     }
 }

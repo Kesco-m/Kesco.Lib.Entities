@@ -13,6 +13,161 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
     [Serializable]
     public class Equipment : Entity
     {
+        /// <summary>
+        ///     Инкапсулирует и сохраняет в себе строку подключения
+        /// </summary>
+        protected string _connectionString;
+
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        /// <param name="id">ID</param>
+        public Equipment(string id) : base(id)
+        {
+            Load();
+        }
+
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        public Equipment()
+        {
+        }
+
+        /// <summary>
+        ///     Строка подключения к БД.
+        /// </summary>
+        public sealed override string CN
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_connectionString))
+                    return _connectionString = Config.DS_user;
+
+                return _connectionString;
+            }
+        }
+
+        /// <summary>
+        ///     Инициализация сущности "Оборудование" на основе таблицы данных
+        /// </summary>
+        /// <param name="dt">Таблица данных Оборудование</param>
+        protected override void FillData(DataTable dt)
+        {
+            if (dt.Rows.Count == 1)
+            {
+                Unavailable = false;
+                Id = (string) dt.Rows[0]["colКодОборудования"];
+                SN = (string) dt.Rows[0]["colSN"];
+                ModelId = (int) dt.Rows[0]["colКодМоделиОборудования"];
+                MacAddress = (string) dt.Rows[0]["colMACадрес"];
+                MacAddress2 = (string) dt.Rows[0]["colMACадрес2"];
+                MacAddressIlo = (string) dt.Rows[0]["colMACадресILO"];
+                NetworkName = (string) dt.Rows[0]["colСетевоеИмя"];
+                CameraIsConnected = (byte) dt.Rows[0]["colПодключенаКамера"];
+                Description = (string) dt.Rows[0]["colПримечания"];
+
+                WriteOff = (DateTime?) dt.Rows[0]["Списано"];
+                DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"];
+                PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"];
+                PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"];
+                PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"];
+
+                ChangeEmployeeId = (int) dt.Rows[0]["colИзменил"];
+                ChangedDate = (DateTime) dt.Rows[0]["colИзменено"];
+            }
+            else
+            {
+                Unavailable = true;
+            }
+        }
+
+        /// <summary>
+        ///     Инициализация сущности "Оборудование" на основе таблицы данных о складе
+        /// </summary>
+        /// <param name="dt">Таблица данных склада</param>
+        public static List<Equipment> GetEquipmentList(DataTable dt)
+        {
+            return (from object t in dt.Rows
+                select new Equipment
+                {
+                    Unavailable = false,
+                    Id = (string) dt.Rows[0]["КодОборудования"],
+                    SN = (string) dt.Rows[0]["SN"],
+                    ModelId = (int) dt.Rows[0]["КодМоделиОборудования"],
+                    MacAddress = (string) dt.Rows[0]["MACадрес"],
+                    MacAddress2 = (string) dt.Rows[0]["MACадрес2"],
+                    MacAddressIlo = (string) dt.Rows[0]["MACадресILO"],
+                    NetworkName = (string) dt.Rows[0]["СетевоеИмя"],
+                    CameraIsConnected = (byte) dt.Rows[0]["ПодключенаКамера"],
+                    Description = (string) dt.Rows[0]["Примечания"],
+                    WriteOff = (DateTime?) dt.Rows[0]["Списано"],
+                    DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"],
+                    PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"],
+                    PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"],
+                    PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"],
+                    ChangeEmployeeId = (int) dt.Rows[0]["Изменил"],
+                    ChangedDate = (DateTime) dt.Rows[0]["Изменено"]
+                }).ToList();
+        }
+
+        /// <summary>
+        ///     Инициализация сущности "Оборудование" на основе DBReader
+        /// </summary>
+        /// <param name="dbReader">Объект типа DBReader</param>
+        /// <returns>Список оборудования</returns>
+        public static List<Equipment> GetEquipmentList(DBReader dbReader)
+        {
+            var list = new List<Equipment>();
+            if (!dbReader.HasRows) return list;
+
+            var colКодОборудования = dbReader.GetOrdinal("КодОборудования");
+            var colКодТипаОборудования = dbReader.GetOrdinal("КодТипаОборудования");
+            var colТипОборудования = dbReader.GetOrdinal("ТипОборудования");
+            var colКодМоделиОборудования = dbReader.GetOrdinal("КодМоделиОборудования");
+            var colМодельОборудования = dbReader.GetOrdinal("МодельОборудования");
+            var colКодРасположения = dbReader.GetOrdinal("КодРасположения");
+            var colРасположениеPath = dbReader.GetOrdinal("РасположениеPath");
+            var colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
+            var colСотрудник = dbReader.GetOrdinal("Сотрудник");
+
+            while (dbReader.Read())
+            {
+                var row = new Equipment();
+                row.Unavailable = false;
+                row.Id = dbReader.GetInt32(colКодОборудования).ToString();
+                row.TypeId = dbReader.GetInt32(colКодТипаОборудования);
+                row.TypeName = dbReader.GetString(colТипОборудования);
+                row.ModelId = dbReader.GetInt32(colКодМоделиОборудования);
+                row.ModelName = dbReader.GetString(colМодельОборудования);
+                if (!dbReader.IsDBNull(colКодРасположения))
+                {
+                    row.LocationId = dbReader.GetInt32(colКодРасположения);
+                    row.LocationName = dbReader.GetString(colРасположениеPath);
+                }
+
+                if (!dbReader.IsDBNull(colКодСотрудника))
+                {
+                    row.EmployeeId = dbReader.GetInt32(colКодСотрудника);
+                    row.EmployeeName = dbReader.GetString(colСотрудник);
+                }
+
+                list.Add(row);
+            }
+
+            return list;
+        }
+
+
+        /// <summary>
+        ///     Метод загрузки данных сущности "Оборудование"
+        /// </summary>
+        public sealed override void Load()
+        {
+            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
+            FillData(DBManager.GetData(SQLQueries.SELECT_ID_Оборудование, CN, CommandType.Text, sqlParams));
+        }
+
         #region Поля сущности
 
         /// <summary>
@@ -134,196 +289,44 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         public DateTime ChangedDate { get; set; }
 
         #endregion
-        
-#region Дополнительные поля
+
+        #region Дополнительные поля
+
         /// <summary>
-        /// Наименование модели оборудования
+        ///     Наименование модели оборудования
         /// </summary>
         public string ModelName { get; set; }
 
         /// <summary>
-        /// Код типа оборудования
+        ///     Код типа оборудования
         /// </summary>
         public int TypeId { get; set; }
-        
+
         /// <summary>
-        /// Наименование типа оборудования
+        ///     Наименование типа оборудования
         /// </summary>
         public string TypeName { get; set; }
 
         /// <summary>
-        /// Код последнего расположения оборудования
+        ///     Код последнего расположения оборудования
         /// </summary>
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Полный путь к последнему расположению оборудования
+        ///     Полный путь к последнему расположению оборудования
         /// </summary>
         public string LocationName { get; set; }
 
         /// <summary>
-        /// Код ответственного за оборудования
+        ///     Код ответственного за оборудования
         /// </summary>
         public int EmployeeId { get; set; }
 
         /// <summary>
-        /// ФИО ответственного за оборудования
+        ///     ФИО ответственного за оборудования
         /// </summary>
         public string EmployeeName { get; set; }
 
-#endregion
-
-        /// <summary>
-        ///     Конструктор
-        /// </summary>
-        /// <param name="id">ID</param>
-        public Equipment(string id) : base(id)
-        {
-            Load();
-        }
-
-        /// <summary>
-        ///     Конструктор
-        /// </summary>
-        public Equipment() { }
-
-        /// <summary>
-        ///     Инкапсулирует и сохраняет в себе строку подключения
-        /// </summary>
-        protected string _connectionString;
-
-        /// <summary>
-        ///     Строка подключения к БД.
-        /// </summary>
-        public override sealed string CN
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_connectionString))
-                    return _connectionString = Config.DS_user;
-
-                return _connectionString;
-            }
-        }
-
-        /// <summary>
-        ///     Инициализация сущности "Оборудование" на основе таблицы данных
-        /// </summary>
-        /// <param name="dt">Таблица данных Оборудование</param>
-        protected override void FillData(DataTable dt)
-        {
-            if (dt.Rows.Count == 1)
-            {
-                Unavailable = false;
-                Id = (string) dt.Rows[0]["colКодОборудования"];
-                SN = (string) dt.Rows[0]["colSN"];
-                ModelId = (int) dt.Rows[0]["colКодМоделиОборудования"];
-                MacAddress = (string) dt.Rows[0]["colMACадрес"];
-                MacAddress2 = (string) dt.Rows[0]["colMACадрес2"];
-                MacAddressIlo = (string) dt.Rows[0]["colMACадресILO"];
-                NetworkName = (string) dt.Rows[0]["colСетевоеИмя"];
-                CameraIsConnected = (byte) dt.Rows[0]["colПодключенаКамера"];
-                Description = (string) dt.Rows[0]["colПримечания"];
-
-                WriteOff = (DateTime?) dt.Rows[0]["Списано"];
-                DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"];
-                PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"];
-                PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"];
-                PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"];
-
-                ChangeEmployeeId = (int) dt.Rows[0]["colИзменил"];
-                ChangedDate = (DateTime) dt.Rows[0]["colИзменено"];
-            }
-            else
-            {
-                Unavailable = true;
-            }
-        }
-
-        /// <summary>
-        /// Инициализация сущности "Оборудование" на основе таблицы данных о складе
-        /// </summary>
-        /// <param name="dt">Таблица данных склада</param>
-        public static List<Equipment> GetEquipmentList(DataTable dt)
-        {
-            return (from object t in dt.Rows
-                select new Equipment()
-                {
-                    Unavailable = false,
-                    Id = (string) dt.Rows[0]["КодОборудования"],
-                    SN = (string) dt.Rows[0]["SN"],
-                    ModelId = (int) dt.Rows[0]["КодМоделиОборудования"],
-                    MacAddress = (string) dt.Rows[0]["MACадрес"],
-                    MacAddress2 = (string) dt.Rows[0]["MACадрес2"],
-                    MacAddressIlo = (string) dt.Rows[0]["MACадресILO"],
-                    NetworkName = (string) dt.Rows[0]["СетевоеИмя"],
-                    CameraIsConnected = (byte) dt.Rows[0]["ПодключенаКамера"],
-                    Description = (string) dt.Rows[0]["Примечания"],
-                    WriteOff = (DateTime?) dt.Rows[0]["Списано"],
-                    DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"],
-                    PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"],
-                    PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"],
-                    PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"],
-                    ChangeEmployeeId = (int) dt.Rows[0]["Изменил"],
-                    ChangedDate = (DateTime) dt.Rows[0]["Изменено"]
-                }).ToList();
-        }
-
-        /// <summary>
-        /// Инициализация сущности "Оборудование" на основе DBReader
-        /// </summary>
-        /// <param name="dbReader">Объект типа DBReader</param>
-        /// <returns>Список оборудования</returns>
-        public static List<Equipment> GetEquipmentList(DBReader dbReader)
-        {
-            var list = new List<Equipment>();
-            if (!dbReader.HasRows) return list;
-
-            var colКодОборудования = dbReader.GetOrdinal("КодОборудования");
-            var colКодТипаОборудования = dbReader.GetOrdinal("КодТипаОборудования");
-            var colТипОборудования = dbReader.GetOrdinal("ТипОборудования");
-            var colКодМоделиОборудования = dbReader.GetOrdinal("КодМоделиОборудования");
-            var colМодельОборудования = dbReader.GetOrdinal("МодельОборудования");
-            var colКодРасположения = dbReader.GetOrdinal("КодРасположения");
-            var colРасположениеPath = dbReader.GetOrdinal("РасположениеPath");
-            var colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
-            var colСотрудник = dbReader.GetOrdinal("Сотрудник");
-            
-            while (dbReader.Read())
-            {
-                var row = new Equipment();
-                row.Unavailable = false;
-                row.Id = dbReader.GetInt32(colКодОборудования).ToString();
-                row.TypeId = dbReader.GetInt32(colКодТипаОборудования);
-                row.TypeName = dbReader.GetString(colТипОборудования);
-                row.ModelId = dbReader.GetInt32(colКодМоделиОборудования);
-                row.ModelName = dbReader.GetString(colМодельОборудования);
-                if (!dbReader.IsDBNull(colКодРасположения))
-                {
-                    row.LocationId = dbReader.GetInt32(colКодРасположения);
-                    row.LocationName = dbReader.GetString(colРасположениеPath);
-                }
-                if (!dbReader.IsDBNull(colКодСотрудника))
-                {
-                    row.EmployeeId = dbReader.GetInt32(colКодСотрудника);
-                    row.EmployeeName = dbReader.GetString(colСотрудник);
-                }
-                list.Add(row);
-            }
-
-            return list;
-        }
-
-
-        /// <summary>
-        ///     Метод загрузки данных сущности "Оборудование"
-        /// </summary>
-        public override sealed void Load()
-        {
-            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
-            FillData(DBManager.GetData(SQLQueries.SELECT_ID_Оборудование, CN, CommandType.Text, sqlParams));
-        }
-
-        
+        #endregion
     }
 }

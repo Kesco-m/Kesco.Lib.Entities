@@ -11,66 +11,25 @@ using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities
 {
-    
-
     /// <summary>
-    /// Бизнес-объект - Расположения
+    ///     Бизнес-объект - Расположения
     /// </summary>
     [Serializable]
     public class Location : Entity
     {
-        #region Поля сущности "Расположения"
-
         /// <summary>
-        /// Признак РабочееМесто
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        public int WorkPlace { get; set; }
+        protected string _connectionString;
+
+        private List<Equipment> _equipmentsIt;
+
+        private bool? _isOffice;
+
+        private bool? _isOrganized;
 
         /// <summary>
-        /// Признак Офис
-        /// </summary>
-        public int Office { get; set; }
-
-        /// <summary>
-        /// Признак Закрыто
-        /// </summary>
-        public int LocationClose { get; set; }
-
-
-        /// <summary>
-        /// Расположение
-        /// </summary>
-        public string ShortName { get; set; }
-
-        /// <summary>
-        /// РасположениеPath0
-        /// </summary>
-        public string NamePath0 { get; set; }
-
-        /// <summary>
-        /// РасположениеPath1
-        /// </summary>
-        public string NamePath1 { get; set; }
-
-        /// <summary>
-        /// Родительский ID
-        /// </summary>
-        public string Parent { get; set; }
-
-        /// <summary>
-        /// Левый ключ
-        /// </summary>
-        public int L { get; set; }
-
-        /// <summary>
-        /// Правый ключ
-        /// </summary>
-        public int R { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         /// <param name="id">ID расположения</param>
         public Location(string id)
@@ -80,16 +39,16 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         public Location()
         {
         }
 
         /// <summary>
-        /// Строка подключения к БД.
+        ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
+        public sealed override string CN
         {
             get
             {
@@ -101,14 +60,107 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
+        ///     Сотрудники на расположении
         /// </summary>
-        protected string _connectionString;
-
-        private List<Equipment> _equipmentsIt;
+        public List<Employee> CoWorkers { get; set; }
 
         /// <summary>
-        /// Инициализация сущности "Расположения" на основе таблицы данных
+        ///     Компьютеризированное рабочее место
+        /// </summary>
+        public bool IsComputeredWorkPlace => WorkPlace.Equals((int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто);
+
+        /// <summary>
+        ///     Гостевое рабочее место
+        /// </summary>
+        public bool IsGuestWorkPlace => WorkPlace.Equals((int) ТипыРабочихМест.ГостевоеРабочееМесто);
+
+        /// <summary>
+        ///     Расположение находится в офисе
+        /// </summary>
+        public bool IsOffice
+        {
+            get
+            {
+                if (_isOffice.HasValue && !RequiredRefreshInfo)
+                    return _isOffice.Value;
+
+                _isOffice = false;
+                var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
+                using (var dbReader =
+                    new DBReader(SQLQueries.SELECT_РасположениеВОфисе, CommandType.Text, CN, sqlParams))
+                {
+                    if (dbReader.HasRows) _isOffice = true;
+                }
+
+                return _isOffice.Value;
+            }
+        }
+
+        /// <summary>
+        ///     Получение ИТ-оборудования на данном расположении
+        /// </summary>
+        public List<Equipment> EquipmentsIt
+        {
+            get
+            {
+                if (RequiredRefreshInfo || _equipmentsIt == null)
+                {
+                    _equipmentsIt = new List<Equipment>();
+                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}, {"@IT", 1}};
+                    using (
+                        var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеНаРасположении, CommandType.Text,
+                            CN,
+                            sqlParams))
+                    {
+                        _equipmentsIt = Equipment.GetEquipmentList(dbReader);
+                    }
+                }
+
+                return _equipmentsIt;
+            }
+        }
+
+        /// <summary>
+        ///     Существует ли It-оборудование на данном расположении
+        /// </summary>
+        public bool ExistEquipmentsIt
+        {
+            get
+            {
+                var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеITНаРасположении, CommandType.Text, CN,
+                        sqlParams))
+                {
+                    return dbReader.HasRows;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Оганизовано рабочее место
+        /// </summary>
+        public bool IsOrganized
+        {
+            get
+            {
+                if (_isOrganized.HasValue && !RequiredRefreshInfo)
+                    return _isOrganized.Value;
+
+                _isOrganized = false;
+                var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
+                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста,
+                    CommandType.Text, CN, sqlParams))
+                {
+                    if (dbReader.HasRows) _isOrganized = true;
+                }
+
+                return _isOrganized.Value;
+            }
+        }
+
+        /// <summary>
+        ///     Инициализация сущности "Расположения" на основе таблицы данных
         /// </summary>
         /// <param name="dt">Таблица данных места хранения</param>
         protected override void FillData(DataTable dt)
@@ -135,7 +187,7 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        /// Создание объекта через datareader
+        ///     Создание объекта через datareader
         /// </summary>
         /// <param name="dbReader">Объект-DBReader</param>
         public void LoadFromDbReader(DBReader dbReader)
@@ -161,22 +213,21 @@ namespace Kesco.Lib.Entities
             if (!dbReader.IsDBNull(colNamePath1)) NamePath1 = dbReader.GetString(colNamePath1);
             if (!dbReader.IsDBNull(colL)) L = dbReader.GetInt32(colL);
             if (!dbReader.IsDBNull(colR)) R = dbReader.GetInt32(colR);
-            
+
             Unavailable = false;
         }
 
         /// <summary>
-        /// Получение списка расположений из таблицы данных
+        ///     Получение списка расположений из таблицы данных
         /// </summary>
         /// <param name="dt">Таблица данных места хранения</param>
         public static List<Location> GetLocationsList(DataTable dt)
         {
-            List<Location> locatinList = new List<Location>();
+            var locatinList = new List<Location>();
 
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
+            for (var i = 0; i < dt.Rows.Count; i++)
                 locatinList.Add(
-                    new Location()
+                    new Location
                     {
                         Unavailable = false,
                         Id = dt.Rows[i]["КодРасположения"].ToString(),
@@ -191,27 +242,26 @@ namespace Kesco.Lib.Entities
                         L = Convert.ToInt16(dt.Rows[i]["L"]),
                         R = Convert.ToInt16(dt.Rows[i]["R"])
                     }
-                    );
-            }
+                );
             return locatinList;
         }
 
         /// <summary>
-        /// Получение списка подчиненных раположений
+        ///     Получение списка подчиненных раположений
         /// </summary>
         public List<Location> GetChildLocationsList()
         {
             var sqlParams = new Dictionary<string, object>();
             sqlParams.Add("@leftKey", new object[] {L, DBManager.ParameterTypes.Int32});
             sqlParams.Add("@rightKey", new object[] {R, DBManager.ParameterTypes.Int32});
-            DataTable dt = DBManager.GetData(string.Format(SQLQueries.SELECT_РасположенияПодчиненные), CN,
+            var dt = DBManager.GetData(string.Format(SQLQueries.SELECT_РасположенияПодчиненные), CN,
                 CommandType.Text, sqlParams);
 
             return GetLocationsList(dt);
         }
 
         /// <summary>
-        /// Метод загрузки данных сущности "Расположение"
+        ///     Метод загрузки данных сущности "Расположение"
         /// </summary>
         public override void Load()
         {
@@ -220,89 +270,7 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        /// Сотрудники на расположении
-        /// </summary>
-        public List<Employee> CoWorkers { get; set; }
-
-        /// <summary>
-        /// Компьютеризированное рабочее место
-        /// </summary>
-        public bool IsComputeredWorkPlace { get { return ((WorkPlace.Equals((int)ТипыРабочихМест.КомпьютеризированноеРабочееМесто))); } }
-
-        /// <summary>
-        /// Гостевое рабочее место
-        /// </summary>
-        public bool IsGuestWorkPlace { get { return ((WorkPlace.Equals((int)ТипыРабочихМест.ГостевоеРабочееМесто))); } }
-
-        private bool? _isOffice = null;
-
-        /// <summary>
-        /// Расположение находится в офисе
-        /// </summary>
-        public bool IsOffice
-        {
-            get
-            {
-                if (_isOffice.HasValue && !RequiredRefreshInfo)
-                    return _isOffice.Value;
-
-                _isOffice = false;
-                var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
-                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположениеВОфисе, CommandType.Text, CN, sqlParams))
-                {
-                    if (dbReader.HasRows) _isOffice = true;
-                }
-                return _isOffice.Value;
-
-            }
-        }
-
-        /// <summary>
-        /// Получение ИТ-оборудования на данном расположении
-        /// </summary>
-        public List<Equipment> EquipmentsIt
-        {
-            get
-            {
-                if (RequiredRefreshInfo || _equipmentsIt == null)
-                {
-                    _equipmentsIt = new List<Equipment>();
-                    var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) }, {"@IT", 1}  };
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеНаРасположении, CommandType.Text, CN,
-                            sqlParams))
-                    {
-                        _equipmentsIt = Equipment.GetEquipmentList(dbReader);
-                    }
-                }
-                return _equipmentsIt;
-            }
-        }
-
-        private bool? _isOrganized = null;
-
-        /// <summary>
-        /// Оганизовано рабочее место
-        /// </summary>
-        public bool IsOrganized
-        {
-            get
-            {
-                if (_isOrganized.HasValue && !RequiredRefreshInfo)
-                    return _isOrganized.Value;
-
-                _isOrganized = false;
-                var sqlParams = new Dictionary<string, object> { { "@КодРасположения", Id.ToInt() } };
-                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста, CommandType.Text, CN, sqlParams))
-                {
-                    if (dbReader.HasRows) _isOrganized = true;
-                }
-                return _isOrganized.Value;
-            }
-        }
-
-        /// <summary>
-        /// Расположение
+        ///     Расположение
         /// </summary>
         /// <param name="icon">иконка</param>
         /// <param name="title">описание</param>
@@ -310,31 +278,30 @@ namespace Kesco.Lib.Entities
         {
             switch (WorkPlace)
             {
-                case (int)ТипыРабочихМест.КомпьютеризированноеРабочееМесто:
+                case (int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто:
                     if (IsOrganized)
-                    {
-                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
-                        title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name + " - организовано";
-                    }
+                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
+                            .GetAttribute<ТипыРабочихМестSpecifications>().Icon;
                     else
-                    {
-                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().IconGrayed;
-                        title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().NameGrayed;
-                    }
+                        icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
+                            .GetAttribute<ТипыРабочихМестSpecifications>().IconGrayed;
+                    title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
+                        .GetAttribute<ТипыРабочихМестSpecifications>().Name;
+
                     break;
-                case (int)ТипыРабочихМест.НомерГостиницы:
+                case (int) ТипыРабочихМест.НомерГостиницы:
                     icon = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
                     title = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Name;
                     break;
-                case (int)ТипыРабочихМест.Оборудование:
+                case (int) ТипыРабочихМест.Оборудование:
                     icon = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
                     title = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Name;
                     break;
-                case (int)ТипыРабочихМест.CкладОборудования:
+                case (int) ТипыРабочихМест.CкладОборудования:
                     icon = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
                     title = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Name;
                     break;
-                case (int)ТипыРабочихМест.ГостевоеРабочееМесто:
+                case (int) ТипыРабочихМест.ГостевоеРабочееМесто:
                     icon = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
                     title = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name;
                     break;
@@ -345,5 +312,54 @@ namespace Kesco.Lib.Entities
             }
         }
 
+        #region Поля сущности "Расположения"
+
+        /// <summary>
+        ///     Признак РабочееМесто
+        /// </summary>
+        public int WorkPlace { get; set; }
+
+        /// <summary>
+        ///     Признак Офис
+        /// </summary>
+        public int Office { get; set; }
+
+        /// <summary>
+        ///     Признак Закрыто
+        /// </summary>
+        public int LocationClose { get; set; }
+
+
+        /// <summary>
+        ///     Расположение
+        /// </summary>
+        public string ShortName { get; set; }
+
+        /// <summary>
+        ///     РасположениеPath0
+        /// </summary>
+        public string NamePath0 { get; set; }
+
+        /// <summary>
+        ///     РасположениеPath1
+        /// </summary>
+        public string NamePath1 { get; set; }
+
+        /// <summary>
+        ///     Родительский ID
+        /// </summary>
+        public string Parent { get; set; }
+
+        /// <summary>
+        ///     Левый ключ
+        /// </summary>
+        public int L { get; set; }
+
+        /// <summary>
+        ///     Правый ключ
+        /// </summary>
+        public int R { get; set; }
+
+        #endregion
     }
 }

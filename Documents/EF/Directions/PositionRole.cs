@@ -1,4 +1,5 @@
-﻿using Kesco.Lib.DALC;
+﻿using System;
+using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Corporate;
 using Kesco.Lib.Entities.Persons;
 
@@ -7,7 +8,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
     /// <summary>
     ///     Класс позиций документа УказанияИТ: ПозицииУказанийИТРоли
     /// </summary>
-    [DBSource("vwПозицииУказанийИТРоли", SQLQueries.SUBQUERY_ID_ПозицииУказанийИТРоли, SQLQueries.SUBQUERY_ID_DOC_ПозицииУказанийИТРоли)]
+    [Serializable]
+    [DBSource("vwПозицииУказанийИТРоли", SQLQueries.SUBQUERY_ID_ПозицииУказанийИТРоли,
+        SQLQueries.SUBQUERY_ID_DOC_ПозицииУказанийИТРоли)]
     public class PositionRole : DocumentPosition<PositionRole>
     {
         /// <summary>
@@ -52,7 +55,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
 
 
         private Role _role;
-        private Persons.Person _person;
+        private Person _person;
 
         /// <summary>
         ///     Используем объект, т.к. vwРоли не реплицируются
@@ -80,7 +83,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// <summary>
         ///     Название лица заказчика
         /// </summary>
-        [DBField("НазваниеЛица","" , false)]
+        [DBField("НазваниеЛица", "", false)]
         public string PersonName { get; set; }
 
         /// <summary>

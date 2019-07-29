@@ -1,55 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using Kesco.Lib.BaseExtention;
-using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
-using Kesco.Lib.Entities.Documents;
 
 namespace Kesco.Lib.Entities
 {
     /// <summary>
-    ///  Базовый класс древовидных структур данных
+    ///     Базовый класс древовидных структур данных
     /// </summary>
     [Serializable]
     public abstract class TreeNodeEntity : Entity
     {
         /// <summary>
-        ///  Конструктор по умолчанию
+        ///     Конструктор по умолчанию
         /// </summary>
         protected TreeNodeEntity(string id) : base(id)
-        {}
+        {
+        }
 
 
         /// <summary>
-        /// Поле Parent, родительский элемент дерева
+        ///     Поле Parent, родительский элемент дерева
         /// </summary>
         public int Parent { get; set; }
 
         /// <summary>
-        /// Поле L, левый узел
+        ///     Поле L, левый узел
         /// </summary>
         public int L { get; set; }
 
         /// <summary>
-        /// Поле R, правый узел
+        ///     Поле R, правый узел
         /// </summary>
         public int R { get; set; }
 
         /// <summary>
-        /// Родительский элемент
+        ///     Родительский элемент
         /// </summary>
         public abstract TreeNodeEntity TreeNodeParent { get; }
 
         /// <summary>
-        /// Все подчиненные элементы
+        ///     Все подчиненные элементы
         /// </summary>
-        public List<TreeNodeEntity> TreeNodeChildren
-        {
-            get { return LoadChildren(); }
-        }
+        public List<TreeNodeEntity> TreeNodeChildren => LoadChildren();
 
         /// <summary>
-        ///  Проверка является ли данный элемент подчиненным для данного элемента
+        ///     Проверка является ли данный элемент подчиненным для данного элемента
         /// </summary>
         public bool ChildOf(DocTypeEnum type)
         {
@@ -58,7 +54,7 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        ///  Проверка является ли данный элемент подчиненным для данного элемента
+        ///     Проверка является ли данный элемент подчиненным для данного элемента
         /// </summary>
         public bool ChildOf(string ch)
         {
@@ -71,14 +67,13 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
-        ///  Загрузить подчиненные узлы
+        ///     Загрузить подчиненные узлы
         /// </summary>
         public abstract List<TreeNodeEntity> LoadChildren();
 
         /// <summary>
-        ///  Загрузить родительские узлы
+        ///     Загрузить родительские узлы
         /// </summary>
         public abstract List<TreeNodeEntity> LoadParents();
-
     }
 }

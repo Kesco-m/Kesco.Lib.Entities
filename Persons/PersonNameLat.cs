@@ -1,31 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Kesco.Lib.Entities.Persons
-{    
+{
     /// <summary>
-    /// Класс сущности ФИО лица на латинице
+    ///     Класс сущности ФИО лица на латинице
     /// </summary>
     [Serializable]
     public class PersonNameLat : Entity
     {
         /// <summary>
-        /// Имя
-        /// </summary>
-        public string FirstName { get; set; }
-        /// <summary>
-        /// Фамилия
-        /// </summary>
-        public string SecondName { get; set; }
-        /// <summary>
-        /// Отчество
-        /// </summary>
-        public string MiddleName { get; set; }
-
-        /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         public PersonNameLat(string secondName = "", string firstName = "", string middleName = "")
         {
@@ -33,5 +17,20 @@ namespace Kesco.Lib.Entities.Persons
             SecondName = secondName;
             MiddleName = middleName;
         }
+
+        /// <summary>
+        ///     Имя
+        /// </summary>
+        public string FirstName { get; set; }
+
+        /// <summary>
+        ///     Фамилия
+        /// </summary>
+        public string SecondName { get; set; }
+
+        /// <summary>
+        ///     Отчество
+        /// </summary>
+        public string MiddleName { get; set; }
     }
 }

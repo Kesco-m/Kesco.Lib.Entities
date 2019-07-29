@@ -1,169 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Kesco.Lib.DALC;
 using System.Diagnostics;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums.Docs;
+using Kesco.Lib.DALC;
 using Kesco.Lib.Log;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Documents
 {
     /// <summary>
-    /// Класс сущности "Поля документов"
+    ///     Класс сущности "Поля документов"
     /// </summary>
     /// <example>
-    /// Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
+    ///     Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
     /// </example>
     [Serializable]
     [DebuggerDisplay("ID = {Id}, Value = {Value}, Название поля = {DocumentField}")]
     public class DocField : Entity, ICloneable<DocField>
     {
-        #region Поля сущности "Поля документов"
-
         /// <summary>
-        ///  ID. Код поля документа
-        ///  Типизированный псевданим для Entity.Id
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        public int DocFieldId
-        {
-            get { return Id.ToInt(); }
-        }
+        private static string _connectionString;
 
         /// <summary>
-        ///  Связянный код типа документа из сущности "Тип документа"
-        /// </summary>
-        public int DocTypeId { get; set; }
-
-        /// <summary>
-        ///  Порядок поля документа для сортировки
-        /// </summary>
-        public int SortNumber { get; set; }
-
-        /// <summary>
-        ///  Поле документа - описание поля 
-        /// </summary>
-        public string DocumentField
-        {
-            get { return Name; }
-        }
-
-        /// <summary>
-        ///  Описание поля по английски
-        /// </summary>
-        public string DocumentFieldEN { get; set; }
-
-        /// <summary>
-        /// Описание поля по эстонски
-        /// </summary>
-        public string DocumentFieldET { get; set; }
-
-        /// <summary>
-        ///  Колонка таблицы из таблицы ДокументыДанные
-        /// </summary>
-        public string DataColomnName { get; set; }
-
-        /// <summary>
-        ///  Обязательность
-        /// </summary>
-        public bool IsRequired { get; set; }
-
-        /// <summary>
-        ///  Рассчетное, вычисляемое поле
-        /// </summary>
-        public bool IsCalculated { get; set; }
-
-        /// <summary>
-        ///  Код типа поля из таблицы "ТипыПолей"
-        /// </summary>
-        public int FieldTypeID { get; set; }
-
-        /// <summary>
-        ///  Число десятичных знаков
-        /// </summary>
-        public int Decimals { get; set; }
-
-        /// <summary>
-        ///  URL Поиска
-        /// </summary>
-        public string SearchURL { get; set; }
-
-        /// <summary>
-        ///  Множественный выбор
-        /// </summary>
-        public bool IsMultipleSelect { get; set; }
-
-        /// <summary>
-        ///  Строгий поиск
-        /// </summary>
-        public bool IsStrictSearch { get; set; }
-
-        /// <summary>
-        ///  Параметры поиска
-        /// </summary>
-        public string SearchParameters { get; set; }
-
-        /// <summary>
-        ///  Режим поиска типов
-        /// </summary>
-        public byte TypesSearchMode { get; set; }
-
-        /// <summary>
-        ///  Заголовок формы поиска
-        /// </summary>
-        public string SearchFormTitle { get; set; }
-
-        /// <summary>
-        ///  Строка подключения
-        /// </summary>
-        /// <example>
-        ///  @DS_resource
-        /// </example>
-        public string ConnectionString { get; set; }
-
-        /// <summary>
-        ///  SQL Запрос
-        /// </summary>
-        public string SQLquery { get; set; }
-
-        /// <summary>
-        ///  Описание
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        ///  ID сотрудника изменившего
-        /// </summary>
-        public int UserChangeID { get; set; }
-
-        /// <summary>
-        ///  Изменено
-        /// </summary>
-        public DateTime ChangedDate { get; set; }
-
-        #endregion
-
-        /// <summary>
-        ///  Ссылка на документы данные. Для возможности записи значения в класс DocumentData
-        /// </summary>
-        public DocumentData DocDataMapping
-        {
-            get { return _document.DocumentData; }
-       }
-
-        /// <summary>
-        ///  Ссылка на документ
+        ///     Ссылка на документ
         /// </summary>
         private readonly Document _document;
 
         /// <summary>
-        /// Если у поля нет маппинга значит значения сохраняются/берутся в СвязиДокументов, эту функцию берет на себя этот класс
+        ///     Передыдущее значение
         /// </summary>
-        public BaseDocFacade BaseDocSaver; 
+        public string _oldValue;
 
         /// <summary>
-        ///  Значение
+        ///     Если у поля нет маппинга значит значения сохраняются/берутся в СвязиДокументов, эту функцию берет на себя этот
+        ///     класс
+        /// </summary>
+        public BaseDocFacade BaseDocSaver;
+
+        /// <summary>
+        ///     Приватный конструктор - запрет для создания объекта без параметров(без ссылки на документ он будет работать
+        ///     неправильно)
+        /// </summary>
+        private DocField()
+        {
+        }
+
+        /// <summary>
+        ///     Конструктор класса DocField
+        /// </summary>
+        /// <param name="id">Параметр для немедленной загрузки из базы</param>
+        /// <param name="document">Ссылка на Document иначе маппинг будет некорректно работать</param>
+        public DocField(string id, Document document) : base(id)
+        {
+            _document = document;
+            Load();
+            BaseDocSaver = new BaseDocFacade(_document, this,
+                IsMultipleSelect ? BaseSetBehavior.SetBaseDoc : BaseSetBehavior.RemoveAllAndAddDoc);
+        }
+
+        /// <summary>
+        ///     Конструктор класса DocField
+        /// </summary>
+        /// <param name="document">Ссылка на Document иначе маппинг будет некорректно работать</param>
+        public DocField(Document document)
+        {
+            _document = document;
+        }
+
+        /// <summary>
+        ///     Ссылка на документы данные. Для возможности записи значения в класс DocumentData
+        /// </summary>
+        public DocumentData DocDataMapping => _document.DocumentData;
+
+        /// <summary>
+        ///     Значение
         /// </summary>
         public object Value
         {
@@ -183,13 +97,8 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Передыдущее значение
-        /// </summary>
-        public string _oldValue;
-
-        /// <summary>
-        ///  Получает строковое значение, либо пустое значение ("") 
-        ///  в случае неудачи или отсутсвия значения
+        ///     Получает строковое значение, либо пустое значение ("")
+        ///     в случае неудачи или отсутсвия значения
         /// </summary>
         public string ValueString
         {
@@ -198,28 +107,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Преобразование Value to string
-        /// </summary>
-        private string ValueToString(object objVal)
-        {
-            try
-            {
-                if (objVal != null)
-                    return objVal.ToString();
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        ///  Конвертирует в int значение, в случае неудачи возращает дефолтное значение для типа int - 0.
+        ///     Конвертирует в int значение, в случае неудачи возращает дефолтное значение для типа int - 0.
         /// </summary>
         /// <remarks>
-        ///  Это свойство со строгой типизацией. Если значение другого типа, то свойство может ничего не вернуть
+        ///     Это свойство со строгой типизацией. Если значение другого типа, то свойство может ничего не вернуть
         /// </remarks>
         public int ValueInt
         {
@@ -229,7 +120,7 @@ namespace Kesco.Lib.Entities.Documents
                     return 0;
 
                 if (Value is int)
-                    return (int)Value;
+                    return (int) Value;
 
                 int integer;
                 int.TryParse(Value.ToString(), out integer);
@@ -239,19 +130,16 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Конвертирует в DateTime значение Value
+        ///     Конвертирует в DateTime значение Value
         /// </summary>
-        public DateTime? DateTimeValue
-        {
-            get { return (DateTime?) Value; }
-        }
+        public DateTime? DateTimeValue => (DateTime?) Value;
 
         /// <summary>
-        ///  Указывает, является ли значение равным null или Empty
+        ///     Указывает, является ли значение равным null или Empty
         /// </summary>
         /// <remarks>
-        ///  Корректно может обрабатывать поля связанные с колонкой таблицы ДокументыДанные,
-        ///  Для остальных нужно исключать из проверки, либо доваить делегат
+        ///     Корректно может обрабатывать поля связанные с колонкой таблицы ДокументыДанные,
+        ///     Для остальных нужно исключать из проверки, либо доваить делегат
         /// </remarks>
         public bool IsValueEmpty
         {
@@ -275,7 +163,7 @@ namespace Kesco.Lib.Entities.Documents
                             return true;
                         break;
                     case "Decimal":
-                        var m = (decimal?)val;
+                        var m = (decimal?) val;
                         if (m == 0)
                             return true;
                         break;
@@ -303,11 +191,49 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        /// Стирает значение
+        ///     Строка подключения к БД.
+        /// </summary>
+        public sealed override string CN => ConnString;
+
+        /// <summary>
+        ///     Статическое поле для получения строки подключения
+        /// </summary>
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_document
+            : _connectionString;
+
+        /// <summary>
+        ///     Создает новый объект, являющийся копией текущего экземпляра.
+        /// </summary>
+        public DocField Clone()
+        {
+            return (DocField) MemberwiseClone();
+        }
+
+        /// <summary>
+        ///     Преобразование Value to string
+        /// </summary>
+        private string ValueToString(object objVal)
+        {
+            try
+            {
+                if (objVal != null)
+                    return objVal.ToString();
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        ///     Стирает значение
         /// </summary>
         public void ClearValue()
         {
-            if(Value == null) return;
+            if (Value == null) return;
 
             var type = Value.GetType();
 
@@ -337,56 +263,7 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Приватный конструктор - запрет для создания объекта без параметров(без ссылки на документ он будет работать неправильно) 
-        /// </summary>
-        private DocField()
-        {
-        }
-
-        /// <summary>
-        ///  Конструктор класса DocField
-        /// </summary>
-        /// <param name="id">Параметр для немедленной загрузки из базы</param>
-        /// <param name="document">Ссылка на Document иначе маппинг будет некорректно работать</param>
-        public DocField(string id, Document document) : base(id)
-        {
-            _document = document;
-            Load();
-            BaseDocSaver = new BaseDocFacade(_document, this, IsMultipleSelect ? BaseSetBehavior.SetBaseDoc : BaseSetBehavior.RemoveAllAndAddDoc);
-        }
-
-        /// <summary>
-        /// Конструктор класса DocField
-        /// </summary>
-        /// <param name="document">Ссылка на Document иначе маппинг будет некорректно работать</param>
-        public DocField(Document document)
-        {
-            _document = document;
-        }
-
-        /// <summary>
-        /// Строка подключения к БД.
-        /// </summary>
-        public sealed override string CN
-        {
-            get { return ConnString; }
-        }
-
-        /// <summary>
-        ///  Статическое поле для получения строки подключения
-        /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_document) : _connectionString; }
-        }
-
-        /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
-        /// </summary>
-        private static string _connectionString;
-
-        /// <summary>
-        ///  Загрузка данных по Id
+        ///     Загрузка данных по Id
         /// </summary>
         public sealed override void Load()
         {
@@ -394,39 +271,42 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Получить поля документа по типу документа
+        ///     Получить поля документа по типу документа
         /// </summary>
         public static Dictionary<string, DocField> GetDocFieldsByDocTypeId(int id, Document document)
         {
             Dictionary<string, DocField> list = null;
-            using (var dbReader = new DBReader(SQLQueries.SELECT_ПоляДокументов_ТипДокумента, id , CommandType.Text, ConnString))
+            using (var dbReader = new DBReader(SQLQueries.SELECT_ПоляДокументов_ТипДокумента, id, CommandType.Text,
+                ConnString))
             {
                 if (dbReader.HasRows)
                 {
                     list = new Dictionary<string, DocField>();
+
                     #region Получение порядкового номера столбца
 
-                    int colКодПоляДокумента = dbReader.GetOrdinal("КодПоляДокумента");
-                    int colПорядокПоляДокумента = dbReader.GetOrdinal("ПорядокПоляДокумента");
-                    int colПолеДокумента = dbReader.GetOrdinal("ПолеДокумента");
-                    int colПолеДокументаEN = dbReader.GetOrdinal("ПолеДокументаEN");
-                    int colПолеДокументаET = dbReader.GetOrdinal("ПолеДокументаET");
-                    int colКолонкаТаблицы = dbReader.GetOrdinal("КолонкаТаблицы");
-                    int colОбязательность = dbReader.GetOrdinal("Обязательность");
-                    int colРассчетное = dbReader.GetOrdinal("Рассчетное");
-                    int colКодТипаПоля = dbReader.GetOrdinal("КодТипаПоля");
-                    int colЧислоДесятичныхЗнаков = dbReader.GetOrdinal("ЧислоДесятичныхЗнаков");
-                    int colURLПоиска = dbReader.GetOrdinal("URLПоиска");
-                    int colМножественныйВыбор = dbReader.GetOrdinal("МножественныйВыбор");
-                    int colСтрогийПоиск = dbReader.GetOrdinal("СтрогийПоиск");
-                    int colПараметрыПоиска = dbReader.GetOrdinal("ПараметрыПоиска");
-                    int colРежимПоискаТипов = dbReader.GetOrdinal("РежимПоискаТипов");
-                    int colЗаголовокФормыПоиска = dbReader.GetOrdinal("ЗаголовокФормыПоиска");
-                    int colСтрокаПодключения = dbReader.GetOrdinal("СтрокаПодключения");
-                    int colSQLЗапрос = dbReader.GetOrdinal("SQLЗапрос");
-                    int colОписание = dbReader.GetOrdinal("Описание");
-                    int colИзменил = dbReader.GetOrdinal("Изменил");
-                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    var colКодПоляДокумента = dbReader.GetOrdinal("КодПоляДокумента");
+                    var colПорядокПоляДокумента = dbReader.GetOrdinal("ПорядокПоляДокумента");
+                    var colПолеДокумента = dbReader.GetOrdinal("ПолеДокумента");
+                    var colПолеДокументаEN = dbReader.GetOrdinal("ПолеДокументаEN");
+                    var colПолеДокументаET = dbReader.GetOrdinal("ПолеДокументаET");
+                    var colКолонкаТаблицы = dbReader.GetOrdinal("КолонкаТаблицы");
+                    var colОбязательность = dbReader.GetOrdinal("Обязательность");
+                    var colРассчетное = dbReader.GetOrdinal("Рассчетное");
+                    var colКодТипаПоля = dbReader.GetOrdinal("КодТипаПоля");
+                    var colЧислоДесятичныхЗнаков = dbReader.GetOrdinal("ЧислоДесятичныхЗнаков");
+                    var colURLПоиска = dbReader.GetOrdinal("URLПоиска");
+                    var colМножественныйВыбор = dbReader.GetOrdinal("МножественныйВыбор");
+                    var colСтрогийПоиск = dbReader.GetOrdinal("СтрогийПоиск");
+                    var colПараметрыПоиска = dbReader.GetOrdinal("ПараметрыПоиска");
+                    var colРежимПоискаТипов = dbReader.GetOrdinal("РежимПоискаТипов");
+                    var colЗаголовокФормыПоиска = dbReader.GetOrdinal("ЗаголовокФормыПоиска");
+                    var colСтрокаПодключения = dbReader.GetOrdinal("СтрокаПодключения");
+                    var colSQLЗапрос = dbReader.GetOrdinal("SQLЗапрос");
+                    var colОписание = dbReader.GetOrdinal("Описание");
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
                     #endregion
 
                     while (dbReader.Read())
@@ -458,7 +338,8 @@ namespace Kesco.Lib.Entities.Documents
                             ChangedDate = dbReader.GetDateTime(colИзменено)
                         };
 
-                        row.BaseDocSaver = new BaseDocFacade(document, row, row.IsMultipleSelect ? BaseSetBehavior.SetBaseDoc : BaseSetBehavior.RemoveAllAndAddDoc);
+                        row.BaseDocSaver = new BaseDocFacade(document, row,
+                            row.IsMultipleSelect ? BaseSetBehavior.SetBaseDoc : BaseSetBehavior.RemoveAllAndAddDoc);
 
                         list.Add(row.Id, row);
                     }
@@ -469,11 +350,11 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        /// Метод загрузки и заполнения данных сущности "Тип документа"
+        ///     Метод загрузки и заполнения данных сущности "Тип документа"
         /// </summary>
         public void FillData(int id)
         {
-            if(id == 0) return;
+            if (id == 0) return;
 
             using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ПолеДокумента, id, CommandType.Text, CN))
             {
@@ -481,31 +362,32 @@ namespace Kesco.Lib.Entities.Documents
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодПоляДокумента = dbReader.GetOrdinal("КодПоляДокумента");
-                    int colКодТипаДокумента = dbReader.GetOrdinal("КодТипаДокумента");
-                    int colПорядокПоляДокумента = dbReader.GetOrdinal("ПорядокПоляДокумента");
-                    int colПолеДокумента = dbReader.GetOrdinal("ПолеДокумента");
-                    int colПолеДокументаEN = dbReader.GetOrdinal("ПолеДокументаEN");
-                    int colПолеДокументаET = dbReader.GetOrdinal("ПолеДокументаET");
-                    int colКолонкаТаблицы = dbReader.GetOrdinal("КолонкаТаблицы");
-                    int colОбязательность = dbReader.GetOrdinal("Обязательность");
-                    int colРассчетное = dbReader.GetOrdinal("Рассчетное");
-                    int colКодТипаПоля = dbReader.GetOrdinal("КодТипаПоля");
-                    int colЧислоДесятичныхЗнаков = dbReader.GetOrdinal("ЧислоДесятичныхЗнаков");
-                    int colURLПоиска = dbReader.GetOrdinal("URLПоиска");
-                    int colМножественныйВыбор = dbReader.GetOrdinal("МножественныйВыбор");
-                    int colСтрогийПоиск = dbReader.GetOrdinal("СтрогийПоиск");
-                    int colПараметрыПоиска = dbReader.GetOrdinal("ПараметрыПоиска");
-                    int colРежимПоискаТипов = dbReader.GetOrdinal("РежимПоискаТипов");
-                    int colЗаголовокФормыПоиска = dbReader.GetOrdinal("ЗаголовокФормыПоиска");
-                    int colСтрокаПодключения = dbReader.GetOrdinal("СтрокаПодключения");
-                    int colSQLЗапрос = dbReader.GetOrdinal("SQLЗапрос");
-                    int colОписание = dbReader.GetOrdinal("Описание");
-                    int colИзменил = dbReader.GetOrdinal("Изменил");
-                    int colИзменено = dbReader.GetOrdinal("Изменено");
+                    var colКодПоляДокумента = dbReader.GetOrdinal("КодПоляДокумента");
+                    var colКодТипаДокумента = dbReader.GetOrdinal("КодТипаДокумента");
+                    var colПорядокПоляДокумента = dbReader.GetOrdinal("ПорядокПоляДокумента");
+                    var colПолеДокумента = dbReader.GetOrdinal("ПолеДокумента");
+                    var colПолеДокументаEN = dbReader.GetOrdinal("ПолеДокументаEN");
+                    var colПолеДокументаET = dbReader.GetOrdinal("ПолеДокументаET");
+                    var colКолонкаТаблицы = dbReader.GetOrdinal("КолонкаТаблицы");
+                    var colОбязательность = dbReader.GetOrdinal("Обязательность");
+                    var colРассчетное = dbReader.GetOrdinal("Рассчетное");
+                    var colКодТипаПоля = dbReader.GetOrdinal("КодТипаПоля");
+                    var colЧислоДесятичныхЗнаков = dbReader.GetOrdinal("ЧислоДесятичныхЗнаков");
+                    var colURLПоиска = dbReader.GetOrdinal("URLПоиска");
+                    var colМножественныйВыбор = dbReader.GetOrdinal("МножественныйВыбор");
+                    var colСтрогийПоиск = dbReader.GetOrdinal("СтрогийПоиск");
+                    var colПараметрыПоиска = dbReader.GetOrdinal("ПараметрыПоиска");
+                    var colРежимПоискаТипов = dbReader.GetOrdinal("РежимПоискаТипов");
+                    var colЗаголовокФормыПоиска = dbReader.GetOrdinal("ЗаголовокФормыПоиска");
+                    var colСтрокаПодключения = dbReader.GetOrdinal("СтрокаПодключения");
+                    var colSQLЗапрос = dbReader.GetOrdinal("SQLЗапрос");
+                    var colОписание = dbReader.GetOrdinal("Описание");
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
                     #endregion
 
-                   
+
                     if (dbReader.Read())
                     {
                         Unavailable = false;
@@ -541,27 +423,27 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Сохранение нового поля документа(Insert)
+        ///     Сохранение нового поля документа(Insert)
         /// </summary>
         public void Create()
         {
-            var sqlParams = SetSqlParams(isNew: true);
+            var sqlParams = SetSqlParams(true);
 
             DBManager.ExecuteNonQuery(SQLQueries.INSERT_ПолеДокумента, CommandType.Text, CN, sqlParams);
         }
 
         /// <summary>
-        ///  Обновление существующего поля документа (Update)
+        ///     Обновление существующего поля документа (Update)
         /// </summary>
         public void UpdateData()
         {
-            var sqlParams = SetSqlParams(isNew: false);
+            var sqlParams = SetSqlParams(false);
 
             DBManager.ExecuteNonQuery(SQLQueries.UPDATE_ПолеДокумента, CommandType.Text, CN, sqlParams);
         }
 
         /// <summary>
-        ///  Установка параметров для записи в БД
+        ///     Установка параметров для записи в БД
         /// </summary>
         /// <param name="isNew">флаг true - сохраняем новое, false - обнавляем</param>
         /// <returns>Коллекция параметров - значений</returns>
@@ -595,15 +477,261 @@ namespace Kesco.Lib.Entities.Documents
             return sqlParams;
         }
 
-        #region Методы для меппинга на DocumentData
-      
         /// <summary>
-        ///  Сохраняет значение с приведением типов
+        ///     Получение специального значения не входящий DocumentData
+        /// </summary>
+        public object GetLinkedDocValue()
+        {
+            if (Id.IsNullEmptyOrZero()) return "";
+
+            if (BaseDocSaver == null)
+                throw new Exception("Ошибка в классе DocField(ID=" + Id +
+                                    ") методе GetSpecialValue, BaseDocSaver не инициализирован");
+
+            return BaseDocSaver.Value;
+        }
+
+        /// <summary>
+        ///     Установка специального значения не входящий DocumentData
+        /// </summary>
+        public void SetLinkedDocValue(object value)
+        {
+            if (Id.IsNullEmptyOrZero()) return;
+
+            if (BaseDocSaver == null)
+                throw new Exception("Ошибка в классе DocField(ID=" + Id +
+                                    ") методе GetSpecialValue, BaseDocSaver не инициализирован");
+
+            BaseDocSaver.Value = value == null ? "" : value.ToString();
+        }
+
+        /// <summary>
+        ///     Переопределенный метод сравнения DocField по  Value значениям
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            var field = obj as DocField;
+            return field != null && EqualsHelper(this, field);
+        }
+
+        /// <summary>
+        ///     метод сравнения DocField по  Value значениям
+        /// </summary>
+        public bool Equals(DocField a)
+        {
+            return EqualsHelper(this, a);
+        }
+
+        /// <summary>
+        ///     Переопределенный метод взятия хеша
+        /// </summary>
+        public override int GetHashCode()
+        {
+            var val = Value;
+            return DocFieldId ^ (val != null ? val.GetHashCode() : 1);
+        }
+
+        /// <summary>
+        ///     Сравненене двух Value значений для DocField
+        /// </summary>
+        private static bool EqualsHelper(DocField a, DocField b)
+        {
+            if (a == null || b == null)
+                return false;
+
+            if (ReferenceEquals(a, b))
+                return true;
+
+            var val = a.Value;
+            var otherVal = b.Value;
+
+            if (val == null || otherVal == null)
+                return false;
+
+            var type = val.GetType();
+            var type2 = otherVal.GetType();
+
+            if (type != type2)
+                return false;
+
+            switch (type.Name)
+            {
+                case "String":
+                    var str1 = (string) val;
+                    var str2 = (string) otherVal;
+                    if (str1.Equals(str2))
+                        return true;
+
+                    return false;
+                case "Int32":
+                    var int1 = (int?) val;
+                    var int2 = (int?) otherVal;
+                    if (int1 == int2)
+                        return true;
+
+                    return false;
+                case "Decimal":
+                    var d1 = (decimal?) val;
+                    var d2 = (decimal?) otherVal;
+                    if (d1 == d2)
+                        return true;
+
+                    return false;
+                case "DateTime":
+                    var dt1 = (DateTime?) val;
+                    var dt2 = (DateTime?) otherVal;
+                    if (dt1 == dt2)
+                        return true;
+
+                    return false;
+                case "Byte":
+                    var b1 = (byte?) val;
+                    var b2 = (byte?) otherVal;
+                    if (b1 == b2)
+                        return true;
+
+                    return false;
+                case "Double":
+                    var f1 = (double?) val;
+                    var f2 = (double?) otherVal;
+                    if (f1 == f2)
+                        return true;
+                    break;
+                default:
+                    throw new ArgumentException("DocField: Не реализовано сравнение для типа: " + type.Name);
+            }
+
+            return false;
+        }
+
+        #region Поля сущности "Поля документов"
+
+        /// <summary>
+        ///     ID. Код поля документа
+        ///     Типизированный псевданим для Entity.Id
+        /// </summary>
+        public int DocFieldId => Id.ToInt();
+
+        /// <summary>
+        ///     Связянный код типа документа из сущности "Тип документа"
+        /// </summary>
+        public int DocTypeId { get; set; }
+
+        /// <summary>
+        ///     Порядок поля документа для сортировки
+        /// </summary>
+        public int SortNumber { get; set; }
+
+        /// <summary>
+        ///     Поле документа - описание поля
+        /// </summary>
+        public string DocumentField => Name;
+
+        /// <summary>
+        ///     Описание поля по английски
+        /// </summary>
+        public string DocumentFieldEN { get; set; }
+
+        /// <summary>
+        ///     Описание поля по эстонски
+        /// </summary>
+        public string DocumentFieldET { get; set; }
+
+        /// <summary>
+        ///     Колонка таблицы из таблицы ДокументыДанные
+        /// </summary>
+        public string DataColomnName { get; set; }
+
+        /// <summary>
+        ///     Обязательность
+        /// </summary>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        ///     Рассчетное, вычисляемое поле
+        /// </summary>
+        public bool IsCalculated { get; set; }
+
+        /// <summary>
+        ///     Код типа поля из таблицы "ТипыПолей"
+        /// </summary>
+        public int FieldTypeID { get; set; }
+
+        /// <summary>
+        ///     Число десятичных знаков
+        /// </summary>
+        public int Decimals { get; set; }
+
+        /// <summary>
+        ///     URL Поиска
+        /// </summary>
+        public string SearchURL { get; set; }
+
+        /// <summary>
+        ///     Множественный выбор
+        /// </summary>
+        public bool IsMultipleSelect { get; set; }
+
+        /// <summary>
+        ///     Строгий поиск
+        /// </summary>
+        public bool IsStrictSearch { get; set; }
+
+        /// <summary>
+        ///     Параметры поиска
+        /// </summary>
+        public string SearchParameters { get; set; }
+
+        /// <summary>
+        ///     Режим поиска типов
+        /// </summary>
+        public byte TypesSearchMode { get; set; }
+
+        /// <summary>
+        ///     Заголовок формы поиска
+        /// </summary>
+        public string SearchFormTitle { get; set; }
+
+        /// <summary>
+        ///     Строка подключения
+        /// </summary>
+        /// <example>
+        ///     @DS_resource
+        /// </example>
+        public string ConnectionString { get; set; }
+
+        /// <summary>
+        ///     SQL Запрос
+        /// </summary>
+        public string SQLquery { get; set; }
+
+        /// <summary>
+        ///     Описание
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        ///     ID сотрудника изменившего
+        /// </summary>
+        public int UserChangeID { get; set; }
+
+        /// <summary>
+        ///     Изменено
+        /// </summary>
+        public DateTime ChangedDate { get; set; }
+
+        #endregion
+
+        #region Методы для меппинга на DocumentData
+
+        /// <summary>
+        ///     Сохраняет значение с приведением типов
         /// </summary>
         public void SaveValue(string value)
         {
             if (DocDataMapping == null)
-                throw new MemberAccessException("Ошибка программиста DocDataMapping не инициализирован в классе DocField");
+                throw new MemberAccessException(
+                    "Ошибка программиста DocDataMapping не инициализирован в классе DocField");
             try
             {
                 int i;
@@ -693,7 +821,7 @@ namespace Kesco.Lib.Entities.Documents
                         DocDataMapping.BudgetId = int.TryParse(value, out i) ? i : (int?) null;
                         break;
                     case "Дата2":
-                        DocDataMapping.Date2 = DateTime.TryParse(value, out dt) ? dt : (DateTime?) null; 
+                        DocDataMapping.Date2 = DateTime.TryParse(value, out dt) ? dt : (DateTime?) null;
                         break;
                     case "Дата3":
                         DocDataMapping.Date3 = DateTime.TryParse(value, out dt) ? dt : (DateTime?) null;
@@ -708,7 +836,7 @@ namespace Kesco.Lib.Entities.Documents
                         DocDataMapping.Flag1 = byte.TryParse(value, out b) ? b : (byte?) null;
                         break;
                     case "Flag2":
-                        DocDataMapping.Flag1 = byte.TryParse(value, out b) ? b : (byte?)null;
+                        DocDataMapping.Flag1 = byte.TryParse(value, out b) ? b : (byte?) null;
                         break;
                     case "Int1":
                         DocDataMapping.Int1 = int.TryParse(value, out i) ? i : (int?) null;
@@ -865,7 +993,8 @@ namespace Kesco.Lib.Entities.Documents
             }
             catch (Exception ex)
             {
-                const string errMsg = "Ошибка в классе DocField методе SetValueToDocumentData, вероятно данные не отвалидированы или выбран неверное поле для данных";
+                const string errMsg =
+                    "Ошибка в классе DocField методе SetValueToDocumentData, вероятно данные не отвалидированы или выбран неверное поле для данных";
                 Logger.WriteEx(new DetailedException(errMsg, ex, ex.Message + " поле " + DataColomnName));
                 // ReSharper disable once PossibleIntendedRethrow
                 throw ex;
@@ -873,12 +1002,13 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Получение данных из DocumentData опираясь на mapping
+        ///     Получение данных из DocumentData опираясь на mapping
         /// </summary>
         public object GetValueFromDocumentData()
         {
             if (DocDataMapping == null)
-                throw new MemberAccessException("Ошибка программиста DocDataMapping не инициализирован в классе DocField");
+                throw new MemberAccessException(
+                    "Ошибка программиста DocDataMapping не инициализирован в классе DocField");
             try
             {
                 switch (DataColomnName)
@@ -1051,12 +1181,14 @@ namespace Kesco.Lib.Entities.Documents
                     case "ТекстДокумента":
                         return DocDataMapping.DocumentText;
                     default:
-                        throw new ArgumentException(@"Маппинг на DocumentData не реализован для поля " + DataColomnName, DataColomnName);
+                        throw new ArgumentException(@"Маппинг на DocumentData не реализован для поля " + DataColomnName,
+                            DataColomnName);
                 }
             }
             catch (Exception ex)
             {
-                const string errMsg = "Ошибка в классе DocField методе SetValueToDocumentData, вероятно данные не отвалидированы или выбран неверное поле для данных";
+                const string errMsg =
+                    "Ошибка в классе DocField методе SetValueToDocumentData, вероятно данные не отвалидированы или выбран неверное поле для данных";
                 Logger.WriteEx(new DetailedException(errMsg, ex, ex.Message + " поле " + DataColomnName));
                 // ReSharper disable once PossibleIntendedRethrow
                 throw ex;
@@ -1064,139 +1196,5 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         #endregion
-
-        /// <summary>
-        ///  Получение специального значения не входящий DocumentData
-        /// </summary>
-        public object GetLinkedDocValue()
-        {
-            if (Id.IsNullEmptyOrZero()) return "";
-
-            if(BaseDocSaver == null)
-                throw new Exception("Ошибка в классе DocField(ID=" + Id + ") методе GetSpecialValue, BaseDocSaver не инициализирован");
-
-            return BaseDocSaver.Value;
-        }
-
-        /// <summary>
-        ///  Установка специального значения не входящий DocumentData
-        /// </summary>
-        public void SetLinkedDocValue(object value)
-        {
-            if(Id.IsNullEmptyOrZero()) return;
-
-            if (BaseDocSaver == null)
-                throw new Exception("Ошибка в классе DocField(ID=" + Id + ") методе GetSpecialValue, BaseDocSaver не инициализирован");
-
-            BaseDocSaver.Value = value == null ? "" : value.ToString();
-        }
-
-        /// <summary>
-        ///  Переопределенный метод сравнения DocField по  Value значениям
-        /// </summary>
-        public override bool Equals(object obj)
-        {
-            var field = obj as DocField;
-            return field != null && EqualsHelper(this, field);
-        }
-
-        /// <summary>
-        /// метод сравнения DocField по  Value значениям
-        /// </summary>
-        public bool Equals(DocField a)
-        {
-            return EqualsHelper(this, a);
-        }
-
-        /// <summary>
-        ///  Переопределенный метод взятия хеша
-        /// </summary>
-        public override int GetHashCode()
-        {
-            var val = Value;
-            return DocFieldId ^ (val != null ? val.GetHashCode() : 1);
-        }
-
-        /// <summary>
-        ///  Сравненене двух Value значений для DocField
-        /// </summary>
-        private static bool EqualsHelper(DocField a, DocField b)
-        {
-            if (a == null || b == null)
-                return false;
-
-            if (ReferenceEquals(a, b))
-                return true;
-
-            var val = a.Value;
-            var otherVal = b.Value;
-
-            if (val == null || otherVal == null)
-                return false;
-
-            var type = val.GetType();
-            var type2 = otherVal.GetType();
-
-            if (type != type2)
-                return false;
-
-            switch (type.Name)
-            {
-                case "String":
-                    var str1 = (string)val;
-                    var str2 = (string)otherVal;
-                    if (str1.Equals(str2))
-                        return true;
-
-                    return false;
-                case "Int32":
-                    var int1 = (int?)val;
-                    var int2 = (int?)otherVal;
-                    if (int1 == int2)
-                        return true;
-
-                    return false;
-                case "Decimal":
-                    var d1 = (decimal?)val;
-                    var d2 = (decimal?)otherVal;
-                    if (d1 == d2)
-                        return true;
-
-                    return false;
-                case "DateTime":
-                    var dt1 = (DateTime?)val;
-                    var dt2 = (DateTime?)otherVal;
-                    if (dt1 == dt2)
-                        return true;
-
-                    return false;
-                case "Byte":
-                    var b1 = (byte?)val;
-                    var b2 = (byte?)otherVal;
-                    if (b1 == b2)
-                        return true;
-
-                    return false;
-                case "Double":
-                    var f1 = (double?)val;
-                    var f2 = (double?)otherVal;
-                    if (f1 == f2)
-                        return true;
-                    break;
-                default:
-                    throw new ArgumentException("DocField: Не реализовано сравнение для типа: " + type.Name);
-            }
-
-            return false;
-
-        }
-
-        /// <summary>
-        /// Создает новый объект, являющийся копией текущего экземпляра.
-        /// </summary>
-        public DocField Clone()
-        {
-            return (DocField)MemberwiseClone();
-        }
     }
 }

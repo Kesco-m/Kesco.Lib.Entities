@@ -1,7 +1,7 @@
 ﻿using System;
 using Kesco.Lib.DALC;
-using Kesco.Lib.Web.Settings;
 using Kesco.Lib.Entities.Persons;
+using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Corporate
 {
@@ -11,13 +11,13 @@ namespace Kesco.Lib.Entities.Corporate
     [Serializable]
     public class EmployeePersonType : Entity
     {
-        private PersonCatalog _catalog;
-        private PersonTheme _theme;
-
         /// <summary>
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
+
+        private PersonCatalog _catalog;
+        private PersonTheme _theme;
 
         /// <summary>
         ///     КодСотрудника
@@ -84,23 +84,15 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
-        {
-            get { return ConnString; }
-        }
+        public sealed override string CN => ConnString;
 
         /// <summary>
         ///     Статическое поле для получения строки подключения
         /// </summary>
-        public static string ConnString
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_connectionString)
-                    ? (_connectionString = Config.DS_person)
-                    : _connectionString;
-            }
-        }
+        public static string ConnString =>
+            string.IsNullOrEmpty(_connectionString)
+                ? _connectionString = Config.DS_person
+                : _connectionString;
 
         /// <summary>
         ///     Заполнение из dbReader
@@ -120,22 +112,10 @@ namespace Kesco.Lib.Entities.Corporate
             Id = dbReader.GetInt32(colКодПраваТипыЛиц).ToString();
             EmployeeId = dbReader.GetInt32(colКодСотрудника);
 
-            if (!dbReader.IsDBNull(colКодКаталога))
-            {
-                CatalogId = dbReader.GetInt32(colКодКаталога);
-            }
-            if (!dbReader.IsDBNull(colКаталог))
-            {
-                CatalogName = dbReader.GetString(colКаталог);
-            }
-            if (!dbReader.IsDBNull(colКодТемыЛица))
-            {
-                ThemeId = dbReader.GetInt32(colКодТемыЛица);
-            }
-            if (!dbReader.IsDBNull(colТемаЛица))
-            {
-                ThemeName = dbReader.GetString(colТемаЛица);
-            }
+            if (!dbReader.IsDBNull(colКодКаталога)) CatalogId = dbReader.GetInt32(colКодКаталога);
+            if (!dbReader.IsDBNull(colКаталог)) CatalogName = dbReader.GetString(colКаталог);
+            if (!dbReader.IsDBNull(colКодТемыЛица)) ThemeId = dbReader.GetInt32(colКодТемыЛица);
+            if (!dbReader.IsDBNull(colТемаЛица)) ThemeName = dbReader.GetString(colТемаЛица);
             CanGrant = dbReader.GetByte(colМожетДаватьПрава);
         }
     }

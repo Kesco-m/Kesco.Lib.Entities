@@ -1,10 +1,12 @@
-﻿using Kesco.Lib.DALC;
+﻿using System;
+using Kesco.Lib.DALC;
 
 namespace Kesco.Lib.Entities.Documents.EF.Directions
 {
     /// <summary>
     ///     Класс позиций документа УказанияИТ: ПозицииУказанийИТПапки
     /// </summary>
+    [Serializable]
     [DBSource("vwПозицииУказанийИТПапки")]
     public class PositionCommonFolder : DocumentPosition<PositionCommonFolder>
     {

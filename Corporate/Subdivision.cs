@@ -7,18 +7,18 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Corporate
 {
     /// <summary>
-    /// Класс сущности Подразделение
+    ///     Класс сущности Подразделение
     /// </summary>
     [Serializable]
     public class Subdivision : Entity
     {
         /// <summary>
-        ///  Типизированный псевданим для Id
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        public int SubDivisionId {get { return Id.ToInt(); }}
+        private static string _connectionString;
 
         /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         /// <param name="id">ID лица</param>
         public Subdivision(string id)
@@ -28,33 +28,31 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Строка подключения к БД.
+        ///     Конструктор
         /// </summary>
-        public sealed override string CN
+        public Subdivision()
         {
-            get { return ConnString; }
         }
 
         /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
+        ///     Типизированный псевданим для Id
         /// </summary>
-        private static string _connectionString;
+        public int SubDivisionId => Id.ToInt();
 
         /// <summary>
-        ///  Статическое поле для получения строки подключения
+        ///     Строка подключения к БД.
         /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_user) : _connectionString; }
-        }
+        public sealed override string CN => ConnString;
 
         /// <summary>
-        /// Конструктор
+        ///     Статическое поле для получения строки подключения
         /// </summary>
-        public Subdivision() { }
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_user
+            : _connectionString;
 
         /// <summary>
-        /// Метод загрузки данных сущности "Подразделение"
+        ///     Метод загрузки данных сущности "Подразделение"
         /// </summary>
         public sealed override void Load()
         {
@@ -62,12 +60,12 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Инициализация сущности Подразделение на основе таблицы данных
+        ///     Инициализация сущности Подразделение на основе таблицы данных
         /// </summary>
         /// <remarks>Данные, которые пока не нужны, закомментированы</remarks>
         public void FillData(int id)
         {
-            if(id == 0) return;
+            if (id == 0) return;
 
             using (var dbReader = new DBReader(SQLQueries.SELECT_ID_Должность, id, CommandType.Text, CN))
             {
@@ -75,9 +73,9 @@ namespace Kesco.Lib.Entities.Corporate
                 {
                     #region Получение порядкового номера столбца
 
-                    int colКодДолжности = dbReader.GetOrdinal("КодДолжности");
+                    var colКодДолжности = dbReader.GetOrdinal("КодДолжности");
                     //int colДолжность = dbReader.GetOrdinal("Должность");
-                    int colПодразделение = dbReader.GetOrdinal("Подразделение");
+                    var colПодразделение = dbReader.GetOrdinal("Подразделение");
                     //int colКодЛица = dbReader.GetOrdinal("КодЛица");
                     //int colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
                     //int colСовместитель = dbReader.GetOrdinal("Совместитель");
@@ -114,6 +112,6 @@ namespace Kesco.Lib.Entities.Corporate
                     Unavailable = true;
                 }
             }
-        } 
+        }
     }
 }

@@ -1,21 +1,20 @@
 ﻿using Kesco.Lib.BaseExtention;
-using Kesco.Lib.BaseExtention.Enums;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 
 namespace Kesco.Lib.Entities.Documents
 {
     /// <summary>
-    /// Класс параметров запроса по типу документа
+    ///     Класс параметров запроса по типу документа
     /// </summary>
     public class DocTypeParam
     {
         /// <summary>
-        /// ID типа документа
+        ///     ID типа документа
         /// </summary>
         public string DocTypeID { get; set; }
 
         /// <summary>
-        /// alias для DocTypeID
+        ///     alias для DocTypeID
         /// </summary>
         public DocTypeEnum DocTypeEnum
         {
@@ -24,10 +23,8 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        /// Тип запроса типов документа
+        ///     Тип запроса типов документа
         /// </summary>
         public DocTypeQueryType QueryType { get; set; }
     }
-
-   
 }

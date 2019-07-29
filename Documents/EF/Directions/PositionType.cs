@@ -1,4 +1,5 @@
-﻿using Kesco.Lib.DALC;
+﻿using System;
+using Kesco.Lib.DALC;
 using Kesco.Lib.Entities.Persons;
 
 namespace Kesco.Lib.Entities.Documents.EF.Directions
@@ -6,6 +7,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
     /// <summary>
     ///     Класс позиций документа УказанияИТ: ПозицииУказанийИТТипыЛиц
     /// </summary>
+    [Serializable]
     [DBSource("vwПозицииУказанийИТТипыЛиц", SQLQueries.SUBQUERY_ID_ПозицииУказанийИТТипы,
         SQLQueries.SUBQUERY_ID_DOC_ПозицииУказанийИТТипы)]
     public class PositionType : DocumentPosition<PositionType>
@@ -18,7 +20,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         public PositionType()
         {
-
         }
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// <summary>
         ///     КодПозицииУказанийИТТипЛица
         /// </summary>
-        [DBField("КодПозицииУказанийИТТипЛица",0)]
+        [DBField("КодПозицииУказанийИТТипЛица", 0)]
         public override int? PositionId
         {
             get { return base.PositionId; }
@@ -70,8 +71,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             }
         }
 
-
-       
 
         /// <summary>
         ///     Название каталога

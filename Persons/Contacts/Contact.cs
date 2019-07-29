@@ -129,28 +129,20 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
-        {
-            get { return ConnString; }
-        }
+        public sealed override string CN => ConnString;
 
         /// <summary>
         ///     Статическое поле для получения строки подключения
         /// </summary>
-        public static string ConnString
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_connectionString)
-                    ? (_connectionString = Config.DS_person)
-                    : _connectionString;
-            }
-        }
+        public static string ConnString =>
+            string.IsNullOrEmpty(_connectionString)
+                ? _connectionString = Config.DS_person
+                : _connectionString;
 
         /// <summary>
         ///     Метод загрузки данных сущности "Контакт"
         /// </summary>
-        public override sealed void Load()
+        public sealed override void Load()
         {
             var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_Контакт, CN, CommandType.Text, sqlParams));
@@ -161,7 +153,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// </summary>
         public void EditContact()
         {
-            if (String.IsNullOrEmpty(Id)) return;
+            if (string.IsNullOrEmpty(Id)) return;
             var sqlParams = GetContactParametrs();
             sqlParams.Add("@КодКонтакта", new object[] {Id, DBManager.ParameterTypes.Int32});
             var sql = LinkID != null ? SQLQueries.UPDATE_Контакт_ПоСвязи : SQLQueries.UPDATE_Контакт_ПоЛицу;
@@ -173,7 +165,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// </summary>
         public string CreateContact()
         {
-            if (!String.IsNullOrEmpty(Id)) return null;
+            if (!string.IsNullOrEmpty(Id)) return null;
             var sqlParams = GetContactParametrs();
             var sql = LinkID != null ? SQLQueries.INSERT_Контакт_ПоСвязи : SQLQueries.INSERT_Контакт_ПоЛицу;
             var dt = DBManager.GetData(sql, CN, CommandType.Text, sqlParams);
@@ -189,9 +181,9 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// </summary>
         public void DeleteContact()
         {
-            if (String.IsNullOrEmpty(Id)) return;
+            if (string.IsNullOrEmpty(Id)) return;
             var sqlParams = new Dictionary<string, object>
-            {{"@КодКонтакта", new object[] {Id, DBManager.ParameterTypes.Int32}}};
+                {{"@КодКонтакта", new object[] {Id, DBManager.ParameterTypes.Int32}}};
 
             DBManager.GetData(SQLQueries.DELETE_ID_Контакт, CN, CommandType.Text, sqlParams);
         }
@@ -201,15 +193,9 @@ namespace Kesco.Lib.Entities.Persons.Contacts
             var sqlParams = new Dictionary<string, object>();
             sqlParams.Add("@АдресГородRus", new object[] {AddressCityRUS ?? "", DBManager.ParameterTypes.String});
             if (LinkID != null)
-            {
                 sqlParams.Add("@КодСвязиЛиц", new object[] {LinkID, DBManager.ParameterTypes.Int32});
-                //sqlParams.Add("@КодЛица", new object[] { null, DBManager.ParameterTypes.String });
-            }
             else
-            {
-                //sqlParams.Add("@КодСвязиЛиц", new object[] { null, DBManager.ParameterTypes.String });
                 sqlParams.Add("@КодЛица", new object[] {PersonID, DBManager.ParameterTypes.Int32});
-            }
 
             sqlParams.Add("@КодТипаКонтакта", new object[] {ContactType.Id, DBManager.ParameterTypes.Int32});
 
@@ -232,14 +218,16 @@ namespace Kesco.Lib.Entities.Persons.Contacts
                 });
             sqlParams.Add("@АдресГород",
                 new object[]
-                {ContactType.Categoty == 1 && AddressCity != null ? AddressCity : "", DBManager.ParameterTypes.String});
+                {
+                    ContactType.Categoty == 1 && AddressCity != null ? AddressCity : "", DBManager.ParameterTypes.String
+                });
             sqlParams.Add("@Адрес",
                 new object[]
-                {ContactType.Categoty == 1 && Adress != null ? Adress : "", DBManager.ParameterTypes.String});
+                    {ContactType.Categoty == 1 && Adress != null ? Adress : "", DBManager.ParameterTypes.String});
             sqlParams.Add("@ТелефонСтрана",
                 new object[]
                 {
-                    ((ContactType.Categoty == 2 || ContactType.Categoty == 3) && TelephoneNumber.CountryCode != null)
+                    (ContactType.Categoty == 2 || ContactType.Categoty == 3) && TelephoneNumber.CountryCode != null
                         ? TelephoneNumber.CountryCode.ToString()
                         : "",
                     DBManager.ParameterTypes.String
@@ -247,7 +235,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
             sqlParams.Add("@ТелефонГород",
                 new object[]
                 {
-                    ((ContactType.Categoty == 2 || ContactType.Categoty == 3) && TelephoneNumber.CityCode != null)
+                    (ContactType.Categoty == 2 || ContactType.Categoty == 3) && TelephoneNumber.CityCode != null
                         ? TelephoneNumber.CityCode.ToString()
                         : "",
                     DBManager.ParameterTypes.String
@@ -255,7 +243,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
             sqlParams.Add("@ТелефонНомер",
                 new object[]
                 {
-                    ((ContactType.Categoty == 2 || ContactType.Categoty == 3)) && TelephoneNumber.PhoneNumber != null
+                    (ContactType.Categoty == 2 || ContactType.Categoty == 3) && TelephoneNumber.PhoneNumber != null
                         ? TelephoneNumber.PhoneNumber
                         : "",
                     DBManager.ParameterTypes.String
@@ -263,8 +251,8 @@ namespace Kesco.Lib.Entities.Persons.Contacts
             sqlParams.Add("@ТелефонДоп",
                 new object[]
                 {
-                    ((ContactType.Categoty == 2 || ContactType.Categoty == 3) &&
-                     TelephoneNumber.AdditionalNumber != null)
+                    (ContactType.Categoty == 2 || ContactType.Categoty == 3) &&
+                    TelephoneNumber.AdditionalNumber != null
                         ? TelephoneNumber.AdditionalNumber.ToString()
                         : "",
                     DBManager.ParameterTypes.String
@@ -272,7 +260,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
             sqlParams.Add("@ДругойКонтакт",
                 new object[]
                 {
-                    ((ContactType.Categoty == 4 || ContactType.Categoty == 0) && AnotherContact != null)
+                    (ContactType.Categoty == 4 || ContactType.Categoty == 0) && AnotherContact != null
                         ? AnotherContact
                         : "",
                     DBManager.ParameterTypes.String
@@ -285,7 +273,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         ///     Инициализация сущности Контакт на основе таблицы данных
         /// </summary>
         /// <param name="dt">Таблица данных места хранения</param>
-        protected override sealed void FillData(DataTable dt)
+        protected sealed override void FillData(DataTable dt)
         {
             if (dt.Rows.Count == 1)
             {
@@ -430,7 +418,8 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// <param name="phoneNumber">Телефонный нмер</param>
         /// <param name="phoneAdv">Номер дополнительного набора</param>
         /// <returns>Строка контакта</returns>
-        public static string FormatingContact(int contactType, string phoneCountry, string phoneCity, string phoneNumber,
+        public static string FormatingContact(int contactType, string phoneCountry, string phoneCity,
+            string phoneNumber,
             string phoneAdv)
         {
             return FormatingContact(contactType, "", "", "", "", "", -1, phoneCountry, phoneCity, phoneNumber, phoneAdv,

@@ -3,97 +3,83 @@ using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
+using Kesco.Lib.Log;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Resources
 {
     /// <summary>
-    /// Класс валют
+    ///     Класс валют
     /// </summary>
     /// <example>
-    ///  Получить валюту по Id  Currency.GetCurrency(value);
+    ///     Получить валюту по Id  Currency.GetCurrency(value);
     /// </example>
-    [Serializable]      
+    [Serializable]
     public class Currency : Resource
     {
         /// <summary>
-        ///  Запрещаем создание экземпляров
-        ///  Использование Получить валюту по Id Currency.GetCurrency(value);
-        /// </summary>
-        private Currency(){}
-        /// <summary>
-        ///  Запрещаем создание экземпляров
-        ///  Использование Получить валюту по Id Currency.GetCurrency(value);
-        /// </summary>
-        private Currency(int id) {}
-        /// <summary>
-        ///  Запрещаем создание экземпляров
-        ///  Использование Получить валюту по Id Currency.GetCurrency(value);
-        /// </summary>
-        private Currency(string id) {}
-
-        /// <summary>
-        /// Рубли
+        ///     Рубли
         /// </summary>
         public enum Code
         {
             /// <summary>
-            /// RUR
+            ///     RUR
             /// </summary>
             RUR = 183,
+
             /// <summary>
-            /// USD
+            ///     USD
             /// </summary>
             USD = 184,
+
             /// <summary>
-            /// EUR
+            ///     EUR
             /// </summary>
             EUR = 193
         }
 
-        #region Поля сущности
-
         /// <summary>
-        ///  Поле ЕдиницаРус
-        /// </summary>
-        /// <value>
-        /// ЕдиницаРус (nvarchar(10), null)
-        /// </value>
-        public string  UnitRus { get; set; }
-
-        /// <summary>
-        ///  Поле ЕдиницаЛат
-        /// </summary>
-        /// <value>
-        /// ЕдиницаЛат (nvarchar(10), null)
-        /// </value>
-        public string UnitEng { get; set; }
-
-        /// <summary>
-        ///  Точность
-        /// </summary>
-        public new int UnitScale { get; set; }
-
-        #endregion
-
-        /// <summary>
-        ///  backing field для AllCurrencies
+        ///     backing field для AllCurrencies
         /// </summary>
         private static Dictionary<int, Currency> _allCurrencies;
 
         /// <summary>
-        /// Получить все валюты
+        ///     Запрещаем создание экземпляров
+        ///     Использование Получить валюту по Id Currency.GetCurrency(value);
         /// </summary>
-        /// <remarks>
-        ///  Кешируется
-        /// </remarks>
-        public static Dictionary<int, Currency> GetAllCurrencies()
+        private Currency()
         {
-            return _allCurrencies ?? (_allCurrencies = GetCurrencyList()); 
         }
 
         /// <summary>
-        ///  Получить валюту по ID, в случае неудачи возвращает null
+        ///     Запрещаем создание экземпляров
+        ///     Использование Получить валюту по Id Currency.GetCurrency(value);
+        /// </summary>
+        private Currency(int id)
+        {
+        }
+
+        /// <summary>
+        ///     Запрещаем создание экземпляров
+        ///     Использование Получить валюту по Id Currency.GetCurrency(value);
+        /// </summary>
+        private Currency(string id)
+        {
+        }
+
+        /// <summary>
+        ///     Получить все валюты
+        /// </summary>
+        /// <remarks>
+        ///     Кешируется
+        /// </remarks>
+        public static Dictionary<int, Currency> GetAllCurrencies()
+        {
+            return _allCurrencies ?? (_allCurrencies = GetCurrencyList());
+        }
+
+        /// <summary>
+        ///     Получить валюту по ID, в случае неудачи возвращает null
         /// </summary>
         public static Currency GetCurrency(int id)
         {
@@ -105,7 +91,7 @@ namespace Kesco.Lib.Entities.Resources
         }
 
         /// <summary>
-        ///  Получить валюту по ID
+        ///     Получить валюту по ID
         /// </summary>
         public static Currency GetCurrency(string id)
         {
@@ -113,7 +99,7 @@ namespace Kesco.Lib.Entities.Resources
         }
 
         /// <summary>
-        ///  Получить список всех валют
+        ///     Получить список всех валют
         /// </summary>
         private static Dictionary<int, Currency> GetCurrencyList()
         {
@@ -123,14 +109,15 @@ namespace Kesco.Lib.Entities.Resources
                 if (dbReader.HasRows)
                 {
                     list = new Dictionary<int, Currency>();
+
                     #region Получение порядкового номера столбца
 
-                    int colКодРесурса = dbReader.GetOrdinal("КодРесурса");
-                    int colРесурсРус = dbReader.GetOrdinal("РесурсРус");
-                    int colРесурсЛат = dbReader.GetOrdinal("РесурсЛат");
-                    int colЕдиницаРус = dbReader.GetOrdinal("ЕдиницаРус");
-                    int colЕдиницаЛат = dbReader.GetOrdinal("ЕдиницаЛат");
-                    int colТочность = dbReader.GetOrdinal("Точность");
+                    var colКодРесурса = dbReader.GetOrdinal("КодРесурса");
+                    var colРесурсРус = dbReader.GetOrdinal("РесурсРус");
+                    var colРесурсЛат = dbReader.GetOrdinal("РесурсЛат");
+                    var colЕдиницаРус = dbReader.GetOrdinal("ЕдиницаРус");
+                    var colЕдиницаЛат = dbReader.GetOrdinal("ЕдиницаЛат");
+                    var colТочность = dbReader.GetOrdinal("Точность");
 
                     #endregion
 
@@ -144,31 +131,33 @@ namespace Kesco.Lib.Entities.Resources
                             Name = dbReader.GetString(colРесурсРус),
                             ResourceLat = dbReader.GetString(colРесурсЛат)
                         };
-                        if (!dbReader.IsDBNull(colЕдиницаРус)) { row.UnitRus = dbReader.GetString(colЕдиницаРус); }
-                        if (!dbReader.IsDBNull(colЕдиницаЛат)) { row.UnitEng = dbReader.GetString(colЕдиницаЛат); }
-                        if (!dbReader.IsDBNull(colТочность))   { row.UnitScale = dbReader.GetByte(colТочность); }
+                        if (!dbReader.IsDBNull(colЕдиницаРус)) row.UnitRus = dbReader.GetString(colЕдиницаРус);
+                        if (!dbReader.IsDBNull(colЕдиницаЛат)) row.UnitEng = dbReader.GetString(colЕдиницаЛат);
+                        if (!dbReader.IsDBNull(colТочность)) row.UnitScale = dbReader.GetByte(colТочность);
                         list.Add(id, row);
                     }
                 }
             }
+
             return list;
         }
 
         /// <summary>
-        /// Получить код валюты по имени
+        ///     Получить код валюты по имени
         /// </summary>
         /// <param name="ShortName">короткое наименование</param>
         /// <returns>Код валюты</returns>
         public static int GetCurrencyByName(string ShortName)
         {
-            var sqlParams = new Dictionary<string, object> { { "@КодКлассификатораБукв", ShortName }};
-            var dt = DBManager.GetData(SQLQueries.SELECT_ID_Валюты_ПоКодуКлассификатораБукв, Config.DS_resource, CommandType.Text, sqlParams);
+            var sqlParams = new Dictionary<string, object> {{"@КодКлассификатораБукв", ShortName}};
+            var dt = DBManager.GetData(SQLQueries.SELECT_ID_Валюты_ПоКодуКлассификатораБукв, Config.DS_resource,
+                CommandType.Text, sqlParams);
 
             return dt.Rows.Count == 1 ? Convert.ToInt32(dt.Rows[0]["КодВалюты"].ToString()) : 0;
         }
 
         /// <summary>
-        /// Курс валюты на дату
+        ///     Курс валюты на дату
         /// </summary>
         /// <param name="curId">Код валюты</param>
         /// <param name="d">Дата</param>
@@ -182,7 +171,7 @@ namespace Kesco.Lib.Entities.Resources
         }
 
         /// <summary>
-        /// Курс валюты на дату
+        ///     Курс валюты на дату
         /// </summary>
         /// <param name="curId">Код валюты</param>
         /// <param name="d">Дата</param>
@@ -203,11 +192,35 @@ namespace Kesco.Lib.Entities.Resources
             }
 
             if (kurs == 0m)
-            {
-                throw new Log.DetailedException("Нет курса " + GetCurrency(curId).Name + " на дату " + d.ToLongDateString(), null, false);
-            }
+                throw new DetailedException("Нет курса " + GetCurrency(curId).Name + " на дату " + d.ToLongDateString(),
+                    null, false);
 
             return kurs / scale;
         }
+
+        #region Поля сущности
+
+        /// <summary>
+        ///     Поле ЕдиницаРус
+        /// </summary>
+        /// <value>
+        ///     ЕдиницаРус (nvarchar(10), null)
+        /// </value>
+        public string UnitRus { get; set; }
+
+        /// <summary>
+        ///     Поле ЕдиницаЛат
+        /// </summary>
+        /// <value>
+        ///     ЕдиницаЛат (nvarchar(10), null)
+        /// </value>
+        public string UnitEng { get; set; }
+
+        /// <summary>
+        ///     Точность
+        /// </summary>
+        public new int UnitScale { get; set; }
+
+        #endregion
     }
 }

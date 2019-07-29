@@ -3,57 +3,68 @@
 namespace Kesco.Lib.Entities.Corporate
 {
     /// <summary>
-    /// Бизнес-объект - доступный телефон
+    ///     Бизнес-объект - доступный телефон
     /// </summary>
     [Serializable]
     public class AvailablePhone : Entity
     {
         /// <summary>
-        /// КодОборудования
+        ///     КодОборудования
         /// </summary>
         public int CodeEquipment { get; set; }
+
         /// <summary>
-        /// Исходящий
+        ///     Исходящий
         /// </summary>
         public int Outgoing { get; set; }
+
         /// <summary>
-        /// ТелефонныйНомер
+        ///     ТелефонныйНомер
         /// </summary>
         public string PhoneNumber { get; set; }
+
         /// <summary>
-        /// Ведомый
+        ///     Ведомый
         /// </summary>
         public string Driven { get; set; }
+
         /// <summary>
-        /// СетевоеИмя
+        ///     СетевоеИмя
         /// </summary>
         public string NetName { get; set; }
+
         /// <summary>
-        /// КодТелефоннойСтанции
+        ///     КодТелефоннойСтанции
         /// </summary>
         public int CodePhoneStation { get; set; }
+
         /// <summary>
-        /// CTI
+        ///     CTI
         /// </summary>
         public string CTI { get; set; }
+
         /// <summary>
-        /// Тип
+        ///     Тип
         /// </summary>
         public string Type { get; set; }
+
         /// <summary>
-        /// ОписаниеАТС
+        ///     ОписаниеАТС
         /// </summary>
         public string DescriptionATS { get; set; }
+
         /// <summary>
-        /// Оборудование
+        ///     Оборудование
         /// </summary>
         public string Equipment { get; set; }
+
         /// <summary>
-        /// Расположение
+        ///     Расположение
         /// </summary>
         public string Location { get; set; }
+
         /// <summary>
-        /// КодТипаОборудования
+        ///     КодТипаОборудования
         /// </summary>
         public int EquipmentTypeCode { get; set; }
     }

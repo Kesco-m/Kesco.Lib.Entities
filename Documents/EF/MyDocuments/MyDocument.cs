@@ -2,22 +2,20 @@
 
 namespace Kesco.Lib.Entities.Documents.EF.MyDocuments
 {
-	/// <summary>
-	/// 
-	/// </summary>
+    /// <summary>
+    /// </summary>
     public class MyDocument : Document
-	{
-		/// <summary>
-		/// 
-		/// </summary>
-        public DocField MyField { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
+    {
+        /// <summary>
+        /// </summary>
         public MyDocument()
-		{
-			Type = DocTypeEnum.СчетФактура;
-			MyField = GetDocField("75");//Продавец
-		}
-	}
+        {
+            Type = DocTypeEnum.СчетФактура;
+            MyField = GetDocField("75"); //Продавец
+        }
+
+        /// <summary>
+        /// </summary>
+        public DocField MyField { get; }
+    }
 }

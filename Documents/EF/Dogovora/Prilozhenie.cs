@@ -4,13 +4,13 @@ using Kesco.Lib.BaseExtention.Enums.Docs;
 namespace Kesco.Lib.Entities.Documents.EF.Dogovora
 {
     /// <summary>
-    /// Документ "Приложение к договору"
+    ///     Документ "Приложение к договору"
     /// </summary>
     [Serializable]
     public class Prilozhenie : Dogovor
     {
         /// <summary>
-        /// Конструктор по умолчанию
+        ///     Конструктор по умолчанию
         /// </summary>
         public Prilozhenie()
         {
@@ -18,7 +18,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
         }
 
         /// <summary>
-        /// Конструктор с инициализацей
+        ///     Конструктор с инициализацей
         /// </summary>
         public Prilozhenie(string id)
         {
@@ -27,7 +27,17 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
         }
 
         /// <summary>
-        /// Инициализация "Приложение к договору"
+        ///     Договор
+        /// </summary>
+        public DocField Contract { get; private set; }
+
+        /// <summary>
+        ///     Ресурсы
+        /// </summary>
+        public DocField Resources { get; private set; }
+
+        /// <summary>
+        ///     Инициализация "Приложение к договору"
         /// </summary>
         private void Initialization()
         {
@@ -35,15 +45,5 @@ namespace Kesco.Lib.Entities.Documents.EF.Dogovora
             Contract = GetDocField("677");
             Resources = GetDocField("1098");
         }
-
-        /// <summary>
-        ///  Договор
-        /// </summary>
-        public DocField Contract { get; private set; }
-
-        /// <summary>
-        /// Ресурсы
-        /// </summary>
-        public DocField Resources { get; private set; }
     }
 }

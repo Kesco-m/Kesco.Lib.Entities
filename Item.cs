@@ -3,29 +3,27 @@
 namespace Kesco.Lib.Entities
 {
     /// <summary>
-    /// Структура для коллекции выбранных элементов контрола Select
+    ///     Структура для коллекции выбранных элементов контрола Select
     /// </summary>
     public struct Item : ICloneable<Item>
     {
         /// <summary>
-        /// ID элемента
+        ///     ID элемента
         /// </summary>
         public string Id { get; set; }
+
         /// <summary>
-        /// Элемент
+        ///     Элемент
         /// </summary>
         public object Value { get; set; }
 
         /// <summary>
-        /// Вспомогательное свойство для совместимости с контролами типа Select
+        ///     Вспомогательное свойство для совместимости с контролами типа Select
         /// </summary>
-        public object Name
-        {
-            get { return Value; }
-        }
+        public object Name => Value;
 
         /// <summary>
-        /// Создает новый объект, являющийся копией текущего экземпляра.
+        ///     Создает новый объект, являющийся копией текущего экземпляра.
         /// </summary>
         public Item Clone()
         {

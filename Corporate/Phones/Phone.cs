@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+using Kesco.Lib.DALC;
+using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Corporate.Phones
 {
     /// <summary>
-    /// Класс обеспечивающий работу с телефонными номера в инвентаризации
+    ///     Класс обеспечивающий работу с телефонными номера в инвентаризации
     /// </summary>
     public class Phone
     {
         /// <summary>
-        /// Процедура разбора телефонного номера на части
+        ///     Процедура разбора телефонного номера на части
         /// </summary>
         /// <param name="textNum">Полный телефонный номер, которвый нужно разобрать</param>
         /// <param name="p_areaName">Название территории</param>
@@ -21,16 +21,16 @@ namespace Kesco.Lib.Entities.Corporate.Phones
         /// <param name="p_telCodeInCountry">Телефонный код в стране</param>
         /// <param name="p_direction">Направление</param>
         /// <param name="p_phone">Местный номер</param>
-        public static void GetPhoneNumberInfo(string textNum, ref string p_areaName, ref string p_telCodeCountry, ref string p_telCodeInCountry,
+        public static void GetPhoneNumberInfo(string textNum, ref string p_areaName, ref string p_telCodeCountry,
+            ref string p_telCodeInCountry,
             ref string p_direction, ref string p_phone)
         {
-            
-            int p_dlinaCoda = 0;
+            var p_dlinaCoda = 0;
 
             p_phone = "";
-            p_direction="";
-            p_telCodeCountry="";
-            p_telCodeInCountry="";
+            p_direction = "";
+            p_telCodeCountry = "";
+            p_telCodeInCountry = "";
             p_areaName = "";
 
             textNum = Regex.Replace(textNum, @"\D", "");
@@ -53,36 +53,41 @@ namespace Kesco.Lib.Entities.Corporate.Phones
             }
 
 
-            Dictionary<string, object> inputParameters = new Dictionary<string, object>();
-            Dictionary<string, object> outpuParameters = new Dictionary<string, object>();
+            var inputParameters = new Dictionary<string, object>();
+            var outpuParameters = new Dictionary<string, object>();
 
             //--------------------------
 
             inputParameters.Add("@Телефон", textNum);
 
-            outpuParameters.Add("@Направление",         p_direction);
-            outpuParameters.Add("@ТелКодСтраны",        p_telCodeCountry);
-            outpuParameters.Add("@ТелКодВСтране",       p_telCodeInCountry);
-            outpuParameters.Add("@ДлинаКодаОбласти",    p_dlinaCoda);
-            outpuParameters.Add("@Территория",          p_areaName);
-            
+            outpuParameters.Add("@Направление", p_direction);
+            outpuParameters.Add("@ТелКодСтраны", p_telCodeCountry);
+            outpuParameters.Add("@ТелКодВСтране", p_telCodeInCountry);
+            outpuParameters.Add("@ДлинаКодаОбласти", p_dlinaCoda);
+            outpuParameters.Add("@Территория", p_areaName);
 
-            DALC.DBManager.ExecuteNonQuery(SQLQueries.SELECT_ЧастиТелефонногоНомера, CommandType.Text, Kesco.Lib.Web.Settings.Config.DS_user, inputParameters, outpuParameters);
 
-            p_direction         = outpuParameters["@Направление"].ToString();
-            p_telCodeCountry    = outpuParameters["@ТелКодСтраны"].ToString();
-            p_telCodeInCountry  = outpuParameters["@ТелКодВСтране"].ToString();
-            p_dlinaCoda = outpuParameters["@ДлинаКодаОбласти"] == null || outpuParameters["@ДлинаКодаОбласти"].ToString().Length==0 ? 0 : int.Parse(outpuParameters["@ДлинаКодаОбласти"].ToString());
-            p_areaName          = outpuParameters["@Территория"].ToString();
+            DBManager.ExecuteNonQuery(SQLQueries.SELECT_ЧастиТелефонногоНомера, CommandType.Text, Config.DS_user,
+                inputParameters, outpuParameters);
+
+            p_direction = outpuParameters["@Направление"].ToString();
+            p_telCodeCountry = outpuParameters["@ТелКодСтраны"].ToString();
+            p_telCodeInCountry = outpuParameters["@ТелКодВСтране"].ToString();
+            p_dlinaCoda =
+                outpuParameters["@ДлинаКодаОбласти"] == null ||
+                outpuParameters["@ДлинаКодаОбласти"].ToString().Length == 0
+                    ? 0
+                    : int.Parse(outpuParameters["@ДлинаКодаОбласти"].ToString());
+            p_areaName = outpuParameters["@Территория"].ToString();
 
             //--------------------------
-            
-            string phoneNum = textNum.Remove(0, string.Concat(p_telCodeCountry, p_telCodeInCountry).Length);
+
+            var phoneNum = textNum.Remove(0, string.Concat(p_telCodeCountry, p_telCodeInCountry).Length);
             if (phoneNum.Length > 0)
             {
-                string Phone2 = "";
+                var Phone2 = "";
                 //возмьем из исходного номера столько цифр с конца пока не получится номер Phone2
-                for (int i = 0; i < textNum.Length; i++)
+                for (var i = 0; i < textNum.Length; i++)
                 {
                     p_phone = textNum[textNum.Length - 1 - i] + p_phone;
 
@@ -94,10 +99,9 @@ namespace Kesco.Lib.Entities.Corporate.Phones
                 }
             }
 
-            int lengthCode = Math.Min(p_dlinaCoda, p_telCodeInCountry.Length);
+            var lengthCode = Math.Min(p_dlinaCoda, p_telCodeInCountry.Length);
             p_phone = p_telCodeInCountry.Substring(lengthCode, p_telCodeInCountry.Length - lengthCode) + p_phone;
             p_telCodeInCountry = p_telCodeInCountry.Substring(0, lengthCode);
-
         }
     }
 }

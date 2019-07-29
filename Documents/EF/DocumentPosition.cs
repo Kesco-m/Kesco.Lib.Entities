@@ -4,7 +4,6 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
@@ -20,25 +19,29 @@ namespace Kesco.Lib.Entities.Documents.EF
         /// <summary>
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        static string _connectionString;
+        private static string _connectionString;
+
+        /// <summary>
+        ///     Защищенный конструктор для генерации нового GUID позиции
+        /// </summary>
+        protected DocumentPosition()
+        {
+            GuidId = Guid.NewGuid();
+        }
 
         /// <summary>
         ///     Строка подключения
         /// </summary>
-        public static string ConnString
-        {
-            get
-            {
-                return string.IsNullOrEmpty(_connectionString)
-                    ? (_connectionString = Config.DS_document)
-                    : _connectionString;
-            }
-        }
+        public static string ConnString =>
+            string.IsNullOrEmpty(_connectionString)
+                ? _connectionString = Config.DS_document
+                : _connectionString;
 
         /// <summary>
-        /// В большинстве случаев,первичный ключ позиции документа - int
+        ///     В большинстве случаев,первичный ключ позиции документа - int
         /// </summary>
-        public virtual int? PositionId {
+        public virtual int? PositionId
+        {
             get { return string.IsNullOrEmpty(Id) ? (int?) null : int.Parse(Id); }
             set { Id = value == null ? string.Empty : value.ToString(); }
         }
@@ -61,7 +64,7 @@ namespace Kesco.Lib.Entities.Documents.EF
         public DateTime ChangedTime { get; set; }
 
         /// <summary>
-        /// Уникальный идентификатор позиции документа
+        ///     Уникальный идентификатор позиции документа
         /// </summary>
         public Guid GuidId { get; set; }
 
@@ -78,26 +81,16 @@ namespace Kesco.Lib.Entities.Documents.EF
             //return (T) MemberwiseClone();
 
             var newObj = Activator.CreateInstance(GetType());
-            foreach (var pi in this.GetType().GetProperties().Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType.IsSerializable))
-            {
+            foreach (var pi in GetType().GetProperties()
+                .Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType.IsSerializable))
                 pi.SetValue(newObj, pi.GetValue(this, null), null);
-            }
             return (T) newObj;
-
         }
 
-        /// <summary>
-        /// Защищенный конструктор для генерации нового GUID позиции
-        /// </summary>
-        protected DocumentPosition()
-        {
-            GuidId = Guid.NewGuid();
-        }
-        
         /// <summary>
         ///     Заполнение по идентификатору позиции
         /// </summary>
-        public override sealed void Load()
+        public sealed override void Load()
         {
             var dbProps = GetDbProperties();
             var sqlSelectId = GetSqlSelect(dbProps);
@@ -115,26 +108,26 @@ namespace Kesco.Lib.Entities.Documents.EF
                         var fInfo = p.Value;
 
                         //для первичного ключа Entity
-                        var type = p.Value.IsPK && pInfo.PropertyType == typeof (string)
-                            ? typeof (int)
+                        var type = p.Value.IsPK && pInfo.PropertyType == typeof(string)
+                            ? typeof(int)
                             : pInfo.PropertyType;
 
                         var value = DBManager.GetReaderValue(dbReader, type, fInfo.Ordinal);
 
-                        if (p.Value.IsPK && pInfo.PropertyType == typeof (string) && type == typeof (int))
+                        if (p.Value.IsPK && pInfo.PropertyType == typeof(string) && type == typeof(int))
                             value = value.ToString();
                         //=============================================
 
                         pInfo.SetValue(this, value, null);
                     }
-                    
+
                     DbOriginal = Clone();
                 }
             }
         }
 
         /// <summary>
-        /// Загрузка позиций по Id документа
+        ///     Загрузка позиций по Id документа
         /// </summary>
         /// <param name="docId"></param>
         /// <returns></returns>
@@ -147,7 +140,6 @@ namespace Kesco.Lib.Entities.Documents.EF
             using (var dbReader = new DBReader(sql, docId, CommandType.Text, ConnString))
             {
                 if (dbReader.HasRows)
-                {
                     while (dbReader.Read())
                     {
                         var position = new T();
@@ -178,13 +170,13 @@ namespace Kesco.Lib.Entities.Documents.EF
 
                         var method = position.GetType().GetMethod("Clone");
 
-                        prop = position.GetType().GetProperty("DbOriginal", BindingFlags.Public | BindingFlags.Instance);
+                        prop = position.GetType()
+                            .GetProperty("DbOriginal", BindingFlags.Public | BindingFlags.Instance);
                         if (null != prop && prop.CanWrite)
                             prop.SetValue(position, method.Invoke(position, null), null);
 
                         list.Add(position);
                     }
-                }
             }
 
             return list;
@@ -211,7 +203,7 @@ namespace Kesco.Lib.Entities.Documents.EF
                 {
                     cmds.Add(new DBCommand
                     {
-                        Appointment="Создание позиции документа",
+                        Appointment = "Создание позиции документа",
                         Text = sqlSave,
                         Type = CommandType.Text,
                         ConnectionString = ConnString,
@@ -232,19 +224,21 @@ namespace Kesco.Lib.Entities.Documents.EF
                     if (cmds != null)
                     {
                         cmds.Add(new DBCommand
-                                     {
-                                         Appointment = "Изменение позиции документа",
-                                         Text = sqlSave,
-                                         Type = CommandType.Text,
-                                         ConnectionString = ConnString,
-                                         ParamsIn = param,
-                                         ParamsOut = null
-                                     });
+                        {
+                            Appointment = "Изменение позиции документа",
+                            Text = sqlSave,
+                            Type = CommandType.Text,
+                            ConnectionString = ConnString,
+                            ParamsIn = param,
+                            ParamsOut = null
+                        });
                         return;
                     }
+
                     DBManager.ExecuteNonQuery(sqlSave, CommandType.Text, ConnString, param);
                 }
             }
+
             if (evalLoad) Load();
         }
 
@@ -273,8 +267,10 @@ namespace Kesco.Lib.Entities.Documents.EF
                     });
                     return;
                 }
+
                 DBManager.ExecuteNonQuery(sql, CommandType.Text, ConnString, param);
             }
+
             if (evalLoad) Load();
         }
 
@@ -285,13 +281,13 @@ namespace Kesco.Lib.Entities.Documents.EF
         private static Dictionary<PropertyInfo, DBFieldAttribute> GetDbProperties()
         {
             var dict = new Dictionary<PropertyInfo, DBFieldAttribute>();
-            var props = typeof (T).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof (DBFieldAttribute)));
+            var props = typeof(T).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(DBFieldAttribute)));
 
             var inx = 0;
             var propertyInfos = props as PropertyInfo[] ?? props.ToArray();
             foreach (var p in propertyInfos)
             {
-                var attributes = p.GetCustomAttributes(typeof (DBFieldAttribute), true);
+                var attributes = p.GetCustomAttributes(typeof(DBFieldAttribute), true);
                 if (attributes.Length != 1) continue;
 
                 var field = (DBFieldAttribute) attributes[0];
@@ -299,6 +295,7 @@ namespace Kesco.Lib.Entities.Documents.EF
                 dict.Add(p, field);
                 inx++;
             }
+
             return dict;
         }
 
@@ -328,6 +325,7 @@ namespace Kesco.Lib.Entities.Documents.EF
                 if (inx < props.Count) w.Write(", ");
                 inx++;
             }
+
             if (pkFieldName.Length == 0) return "";
 
             var isSubquery = false;
@@ -353,7 +351,7 @@ namespace Kesco.Lib.Entities.Documents.EF
 
             if (props.Count == 0) return "";
 
-            w.Write(" SELECT");
+            w.Write(Environment.NewLine + "SELECT");
 
             foreach (var p in props)
             {
@@ -366,6 +364,7 @@ namespace Kesco.Lib.Entities.Documents.EF
                 if (inx < props.Count) w.Write(", ");
                 inx++;
             }
+
             if (docFieldName.Length == 0) return "";
 
             var isSubquery = false;
@@ -406,10 +405,10 @@ namespace Kesco.Lib.Entities.Documents.EF
                     param.Add(pkParamName, int.Parse(pValue.ToString()));
                 }
 
-                if (!fInfo.IsUpdateble 
-                    || (pValue == null && pOriginalValue == null) 
-                    || (pValue != null && pValue.Equals(pOriginalValue)) 
-                    || (pOriginalValue != null && pOriginalValue.Equals(pValue)))
+                if (!fInfo.IsUpdateble
+                    || pValue == null && pOriginalValue == null
+                    || pValue != null && pValue.Equals(pOriginalValue)
+                    || pOriginalValue != null && pOriginalValue.Equals(pValue))
                     continue;
 
                 if (w.ToString().Length > 0) w.Write(", ");
@@ -418,8 +417,8 @@ namespace Kesco.Lib.Entities.Documents.EF
             }
 
             if (w.ToString().Length == 0) return "";
-            return string.Format(" UPDATE {0} SET {1} WHERE {2} = {3}", GetRecordSouceEdit(), w, pkFieldName,
-                pkParamName);
+            return string.Format("{4}UPDATE {0} SET {1} WHERE {2} = {3}", GetRecordSouceEdit(), w, pkFieldName,
+                pkParamName, Environment.NewLine);
         }
 
         /// <summary>
@@ -464,9 +463,12 @@ namespace Kesco.Lib.Entities.Documents.EF
             }
 
             if (fieldString.ToString().Length == 0) return "";
-            return string.Format(" INSERT INTO {0}({1}) VALUES ({2}) SET {3} = SCOPE_IDENTITY()", GetRecordSouceEdit(),
+            return string.Format("{4}INSERT INTO {0}({1}) VALUES ({2}) SET {3} = SCOPE_IDENTITY()",
+                GetRecordSouceEdit(),
                 fieldString,
-                paramString, pkParamName);
+                paramString,
+                pkParamName,
+                Environment.NewLine);
         }
 
         /// <summary>
@@ -480,12 +482,14 @@ namespace Kesco.Lib.Entities.Documents.EF
             var p = props.FirstOrDefault(t => t.Value.IsPK);
             if (p.Key == null) return "";
 
-            var paramName = string.Format("@{0}", p.Value.ParamName.Length == 0 ? p.Value.FieldName : p.Value.ParamName);
+            var paramName = string.Format("@{0}",
+                p.Value.ParamName.Length == 0 ? p.Value.FieldName : p.Value.ParamName);
             var pValue = p.Key.GetValue(this, null);
             if (pValue == null) return "";
             param.Add(paramName, pValue);
 
-            return string.Format(" DELETE FROM {0} WHERE {1} = {2}", GetRecordSouceEdit(), p.Value.FieldName, paramName);
+            return string.Format("{3}DELETE FROM {0} WHERE {1} = {2}", GetRecordSouceEdit(), p.Value.FieldName,
+                paramName, Environment.NewLine);
         }
 
         /// <summary>
@@ -494,9 +498,9 @@ namespace Kesco.Lib.Entities.Documents.EF
         /// <returns>Название таблицы/представления</returns>
         public static string GetRecordSourceSelect(bool forList, out bool isSubquery)
         {
-            var dnAttribute = typeof (T).GetCustomAttributes(
-                typeof (DBSourceAttribute), true
-                ).FirstOrDefault() as DBSourceAttribute;
+            var dnAttribute = typeof(T).GetCustomAttributes(
+                typeof(DBSourceAttribute), true
+            ).FirstOrDefault() as DBSourceAttribute;
             isSubquery = false;
             if (dnAttribute != null)
             {
@@ -504,7 +508,9 @@ namespace Kesco.Lib.Entities.Documents.EF
                 if (forList)
                 {
                     if (string.IsNullOrEmpty(dnAttribute.RecordsSource))
+                    {
                         ret = dnAttribute.TableName;
+                    }
                     else
                     {
                         ret = dnAttribute.RecordsSource;
@@ -512,7 +518,9 @@ namespace Kesco.Lib.Entities.Documents.EF
                     }
                 }
                 else if (string.IsNullOrEmpty(dnAttribute.RecordSource))
+                {
                     ret = dnAttribute.TableName;
+                }
                 else
                 {
                     ret = dnAttribute.RecordSource;
@@ -521,6 +529,7 @@ namespace Kesco.Lib.Entities.Documents.EF
 
                 return ret;
             }
+
             return null;
         }
 
@@ -530,9 +539,9 @@ namespace Kesco.Lib.Entities.Documents.EF
         /// <returns>Название таблицы/представления</returns>
         public static string GetRecordSouceEdit()
         {
-            var dnAttribute = typeof (T).GetCustomAttributes(
-                typeof (DBSourceAttribute), true
-                ).FirstOrDefault() as DBSourceAttribute;
+            var dnAttribute = typeof(T).GetCustomAttributes(
+                typeof(DBSourceAttribute), true
+            ).FirstOrDefault() as DBSourceAttribute;
 
             if (dnAttribute != null)
                 return dnAttribute.TableName;

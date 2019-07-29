@@ -1,34 +1,152 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Documents
 {
-
     /// <summary>
-    /// Параметры DocView из БД. Cтатический класс конфига параметров DocView.
+    ///     Параметры DocView из БД. Cтатический класс конфига параметров DocView.
     /// </summary>
     /// <remarks>
-    ///  Большинство полей кешируются через предикат if (!_available).
-    ///  Так же возможно принудительное обновление через метод Refresh()
+    ///     Большинство полей кешируются через предикат if (!_available).
+    ///     Так же возможно принудительное обновление через метод Refresh()
     /// </remarks>
     /// <example>
-    /// Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
+    ///     Примеры использования и юнит тесты: Kesco.App.UnitTests.DalcTests.DocumentsTest
     /// </example>
     public static class DocViewParams
     {
         /// <summary>
-        ///  Connection string для базы документы. 
-        ///  Readonly - получает только один раз по необходимости за работу приложения.
+        ///     Connection string для базы документы.
+        ///     Readonly - получает только один раз по необходимости за работу приложения.
         /// </summary>
         private static readonly string CN = Config.DS_document;
 
         /// <summary>
-        ///  Доступность сущности. Загружены ли данные или нет. 
+        ///     Доступность сущности. Загружены ли данные или нет.
         /// </summary>
         private static bool _available;
+
+        /// <summary>
+        ///     Обновить данные
+        /// </summary>
+        /// <remarks>
+        ///     По сути является более уместным псевданимом для LoadDocViewParams()
+        /// </remarks>
+        public static void Refresh()
+        {
+            LoadDocViewParams();
+        }
+
+        /// <summary>
+        ///     Получение параметров
+        /// </summary>
+        private static void LoadDocViewParams()
+        {
+            using (var dbReader = new DBReader(SQLQueries.SELECT_НастройкиDocView, CommandType.Text, CN))
+            {
+                if (dbReader.HasRows)
+                {
+                    #region Получение порядкового номера столбца
+
+                    var colКодЛица = dbReader.GetOrdinal("КодЛица");
+                    var colПорядокГруппировки = dbReader.GetOrdinal("ПорядокГруппировки");
+                    var colКодыДокументовСвязующих = dbReader.GetOrdinal("КодыДокументовСвязующих");
+                    var colУведомлениеСообщения = dbReader.GetOrdinal("УведомлениеСообщения");
+                    var colВремяОтметкиПрочтения = dbReader.GetOrdinal("ВремяОтметкиПрочтения");
+                    var colДокументыПодуровней = dbReader.GetOrdinal("ДокументыПодуровней");
+                    var colФильтрДатыАрхивирования = dbReader.GetOrdinal("ФильтрДатыАрхивирования");
+                    var colФильтрДатыДокумента = dbReader.GetOrdinal("ФильтрДатыДокумента");
+                    var colФильтрДатыСоздания = dbReader.GetOrdinal("ФильтрДатыСоздания");
+                    var colПодтвУдаления = dbReader.GetOrdinal("ПодтвУдаления");
+                    var colПодтвГрупповыхОпераций = dbReader.GetOrdinal("ПодтвГрупповыхОпераций");
+                    var colПоказыватьНовости = dbReader.GetOrdinal("ПоказыватьНовости");
+                    var colСохранениеДобавитьВРаботу = dbReader.GetOrdinal("СохранениеДобавитьВРаботу");
+                    var colСохранениеОткрытьСохранённый = dbReader.GetOrdinal("СохранениеОткрытьСохранённый");
+                    var colСохранениеПослатьСообщение = dbReader.GetOrdinal("СохранениеПослатьСообщение");
+                    var colПодписьВыполненоСообщение = dbReader.GetOrdinal("ПодписьВыполненоСообщение");
+                    var colФаксыВходящиеТолькоНеСохранённые = dbReader.GetOrdinal("ФаксыВходящиеТолькоНеСохранённые");
+                    var colФаксыОтправленныеТолькоНеСохранённые =
+                        dbReader.GetOrdinal("ФаксыОтправленныеТолькоНеСохранённые");
+                    var colПереходНаСледующийПриОтправкеСообщения =
+                        dbReader.GetOrdinal("ПереходНаСледующийПриОтправкеСообщения");
+                    var colИскатьНесколькоДокументовПоШтрихкоду =
+                        dbReader.GetOrdinal("ИскатьНесколькоДокументовПоШтрихкоду");
+                    var colЛичныеСпискиРассылкиПоказыватьПервыми =
+                        dbReader.GetOrdinal("ЛичныеСпискиРассылкиПоказыватьПервыми");
+                    var colПрочитыватьСообщениеПриЗавершенииРаботы =
+                        dbReader.GetOrdinal("ПрочитыватьСообщениеПриЗавершенииРаботы");
+
+                    #endregion
+
+                    if (dbReader.Read())
+                    {
+                        _available = true;
+                        _codePerson = !dbReader.IsDBNull(colКодЛица) ? dbReader.GetInt32(colКодЛица) : 0;
+                        _orderGroup = dbReader.GetString(colПорядокГруппировки);
+                        _codeDocumentLink = dbReader.GetString(colКодыДокументовСвязующих);
+                        _messagesNotify = dbReader.GetBoolean(colУведомлениеСообщения);
+                        _readMarkTime = dbReader.GetInt32(colВремяОтметкиПрочтения);
+                        _sublevelDocuments = dbReader.GetBoolean(colДокументыПодуровней);
+                        _archiveDateFilter = dbReader.GetInt16(colФильтрДатыАрхивирования);
+                        _dateDocumentFilter = dbReader.GetInt16(colФильтрДатыДокумента);
+                        _creationDateFilter = dbReader.GetInt16(colФильтрДатыСоздания);
+                        _deleteConfirm = dbReader.GetBoolean(colПодтвУдаления);
+                        _groupOperationsConfirm = dbReader.GetBoolean(colПодтвГрупповыхОпераций);
+                        _showNews = dbReader.GetBoolean(colПоказыватьНовости);
+                        _addWorkSaving = dbReader.GetBoolean(colСохранениеДобавитьВРаботу);
+                        _savingOpenSaved = dbReader.GetBoolean(colСохранениеОткрытьСохранённый);
+                        _sendMessageSaving = dbReader.GetBoolean(colСохранениеПослатьСообщение);
+                        _signMessageWorkDone = dbReader.GetBoolean(colПодписьВыполненоСообщение);
+                        _incomingFaxesJustNotSaved = dbReader.GetBoolean(colФаксыВходящиеТолькоНеСохранённые);
+                        _sendFaxesJustNotSaved = dbReader.GetBoolean(colФаксыОтправленныеТолькоНеСохранённые);
+                        _moveNextSendingMessages = dbReader.GetBoolean(colПереходНаСледующийПриОтправкеСообщения);
+                        _searchMultipleDocumentsBarcode = dbReader.GetBoolean(colИскатьНесколькоДокументовПоШтрихкоду);
+                        _personalSendListFirstOrder = dbReader.GetBoolean(colЛичныеСпискиРассылкиПоказыватьПервыми);
+                        _readMessageEndWork = dbReader.GetByte(colПрочитыватьСообщениеПриЗавершенииРаботы);
+                    }
+                }
+                else
+                {
+                    _available = false;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Сохранение параметров
+        /// </summary>
+        public static void SaveDVParameters()
+        {
+            var sqlParams = new Dictionary<string, object>
+            {
+                {"@КодЛица", _codePerson},
+                {"@ПорядокГруппировки", _orderGroup},
+                {"@КодыДокументовСвязующих", _codeDocumentLink},
+                {"@УведомлениеСообщения", _messagesNotify},
+                {"@ВремяОтметкиПрочтения", _readMarkTime},
+                {"@ДокументыПодуровней", _sublevelDocuments},
+                {"@ФильтрДатыАрхивирования", _archiveDateFilter},
+                {"@ФильтрДатыДокумента", _dateDocumentFilter},
+                {"@ФильтрДатыСоздания", _creationDateFilter},
+                {"@ПодтвУдаления", _deleteConfirm},
+                {"@ПодтвГрупповыхОпераций", _groupOperationsConfirm},
+                {"@ПоказыватьНовости", _showNews},
+                {"@СохранениеДобавитьВРаботу", _addWorkSaving},
+                {"@СохранениеОткрытьСохранённый", _savingOpenSaved},
+                {"@СохранениеПослатьСообщение", _sendMessageSaving},
+                {"@ПодписьВыполненоСообщение", _signMessageWorkDone},
+                {"@ФаксыВходящиеТолькоНеСохранённые", _incomingFaxesJustNotSaved},
+                {"@ФаксыОтправленныеТолькоНеСохранённые", _sendFaxesJustNotSaved},
+                {"@ПереходНаСледующийПриОтправкеСообщения", _moveNextSendingMessages},
+                {"@ИскатьНесколькоДокументовПоШтрихкоду", _searchMultipleDocumentsBarcode},
+                {"@ЛичныеСпискиРассылкиПоказыватьПервыми", _personalSendListFirstOrder},
+                {"@ПрочитыватьСообщениеПриЗавершенииРаботы", _readMessageEndWork}
+            };
+
+            DBManager.ExecuteNonQuery(SQLQueries.UPDATE_НастройкиDocView, CommandType.Text, CN, sqlParams);
+        }
 
 
         #region Backing field для свойств
@@ -61,10 +179,10 @@ namespace Kesco.Lib.Entities.Documents
         #region Поля сущности
 
         /// <summary>
-        ///  Поле КодЛица
+        ///     Поле КодЛица
         /// </summary>
         /// <value>
-        /// КодЛица (int, null)
+        ///     КодЛица (int, null)
         /// </value>
         public static int CodePerson
         {
@@ -77,10 +195,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПорядокГруппировки
+        ///     Поле ПорядокГруппировки
         /// </summary>
         /// <value>
-        /// ПорядокГруппировки (varchar(10), not null)
+        ///     ПорядокГруппировки (varchar(10), not null)
         /// </value>
         public static string OrderGroup
         {
@@ -93,10 +211,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле КодыДокументовСвязующих
+        ///     Поле КодыДокументовСвязующих
         /// </summary>
         /// <value>
-        /// КодыДокументовСвязующих (varchar(1000), not null)
+        ///     КодыДокументовСвязующих (varchar(1000), not null)
         /// </value>
         public static string CodeDocumentLink
         {
@@ -109,10 +227,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле УведомлениеСообщения
+        ///     Поле УведомлениеСообщения
         /// </summary>
         /// <value>
-        /// УведомлениеСообщения (bit, not null)
+        ///     УведомлениеСообщения (bit, not null)
         /// </value>
         public static bool MessagesNotify
         {
@@ -125,10 +243,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ВремяОтметкиПрочтения
+        ///     Поле ВремяОтметкиПрочтения
         /// </summary>
         /// <value>
-        /// ВремяОтметкиПрочтения (int, not null)
+        ///     ВремяОтметкиПрочтения (int, not null)
         /// </value>
         public static int ReadMarkTime
         {
@@ -141,10 +259,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ДокументыПодуровней
+        ///     Поле ДокументыПодуровней
         /// </summary>
         /// <value>
-        /// ДокументыПодуровней (bit, not null)
+        ///     ДокументыПодуровней (bit, not null)
         /// </value>
         public static bool SublevelDocuments
         {
@@ -157,12 +275,12 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ФильтрДатыАрхивирования
+        ///     Поле ФильтрДатыАрхивирования
         /// </summary>
         /// <value>
-        /// ФильтрДатыАрхивирования (smallint, not null)
+        ///     ФильтрДатыАрхивирования (smallint, not null)
         /// </value>
-        public static Int16 ArchiveDateFilter
+        public static short ArchiveDateFilter
         {
             get
             {
@@ -173,12 +291,12 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ФильтрДатыДокумента
+        ///     Поле ФильтрДатыДокумента
         /// </summary>
         /// <value>
-        /// ФильтрДатыДокумента (smallint, not null)
+        ///     ФильтрДатыДокумента (smallint, not null)
         /// </value>
-        public static Int16 DateDocumentFilter
+        public static short DateDocumentFilter
         {
             get
             {
@@ -189,12 +307,12 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ФильтрДатыСоздания
+        ///     Поле ФильтрДатыСоздания
         /// </summary>
         /// <value>
-        /// ФильтрДатыСоздания (smallint, not null)
+        ///     ФильтрДатыСоздания (smallint, not null)
         /// </value>
-        public static Int16 CreationDateFilter
+        public static short CreationDateFilter
         {
             get
             {
@@ -205,10 +323,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПодтвУдаления
+        ///     Поле ПодтвУдаления
         /// </summary>
         /// <value>
-        /// ПодтвУдаления (bit, not null)
+        ///     ПодтвУдаления (bit, not null)
         /// </value>
         public static bool DeleteConfirm
         {
@@ -221,10 +339,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПодтвГрупповыхОпераций
+        ///     Поле ПодтвГрупповыхОпераций
         /// </summary>
         /// <value>
-        /// ПодтвГрупповыхОпераций (bit, not null)
+        ///     ПодтвГрупповыхОпераций (bit, not null)
         /// </value>
         public static bool GroupOperationsConfirm
         {
@@ -237,10 +355,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПоказыватьНовости
+        ///     Поле ПоказыватьНовости
         /// </summary>
         /// <value>
-        /// ПоказыватьНовости (bit, not null)
+        ///     ПоказыватьНовости (bit, not null)
         /// </value>
         public static bool ShowNews
         {
@@ -253,10 +371,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле СохранениеДобавитьВРаботу
+        ///     Поле СохранениеДобавитьВРаботу
         /// </summary>
         /// <value>
-        /// СохранениеДобавитьВРаботу (bit, not null)
+        ///     СохранениеДобавитьВРаботу (bit, not null)
         /// </value>
         public static bool AddWorkSaving
         {
@@ -269,10 +387,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле СохранениеОткрытьСохранённый
+        ///     Поле СохранениеОткрытьСохранённый
         /// </summary>
         /// <value>
-        /// СохранениеОткрытьСохранённый (bit, not null)
+        ///     СохранениеОткрытьСохранённый (bit, not null)
         /// </value>
         public static bool SavingOpenSaved
         {
@@ -285,10 +403,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле СохранениеПослатьСообщение
+        ///     Поле СохранениеПослатьСообщение
         /// </summary>
         /// <value>
-        /// СохранениеПослатьСообщение (bit, not null)
+        ///     СохранениеПослатьСообщение (bit, not null)
         /// </value>
         public static bool SendMessageSaving
         {
@@ -301,11 +419,11 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПодписьВыполненоСообщение. 
-        ///  Не кешируется, при обращении все время загружает актуальные данные из БД.
+        ///     Поле ПодписьВыполненоСообщение.
+        ///     Не кешируется, при обращении все время загружает актуальные данные из БД.
         /// </summary>
         /// <value>
-        /// ПодписьВыполненоСообщение (bit, not null)
+        ///     ПодписьВыполненоСообщение (bit, not null)
         /// </value>
         public static bool SignMessageWorkDone
         {
@@ -318,10 +436,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ФаксыВходящиеТолькоНеСохранённые
+        ///     Поле ФаксыВходящиеТолькоНеСохранённые
         /// </summary>
         /// <value>
-        /// ФаксыВходящиеТолькоНеСохранённые (bit, not null)
+        ///     ФаксыВходящиеТолькоНеСохранённые (bit, not null)
         /// </value>
         public static bool IncomingFaxesJustNotSaved
         {
@@ -334,10 +452,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ФаксыОтправленныеТолькоНеСохранённые
+        ///     Поле ФаксыОтправленныеТолькоНеСохранённые
         /// </summary>
         /// <value>
-        /// ФаксыОтправленныеТолькоНеСохранённые (bit, not null)
+        ///     ФаксыОтправленныеТолькоНеСохранённые (bit, not null)
         /// </value>
         public static bool SendFaxesJustNotSaved
         {
@@ -350,10 +468,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПереходНаСледующийПриОтправкеСообщения
+        ///     Поле ПереходНаСледующийПриОтправкеСообщения
         /// </summary>
         /// <value>
-        /// ПереходНаСледующийПриОтправкеСообщения (bit, not null)
+        ///     ПереходНаСледующийПриОтправкеСообщения (bit, not null)
         /// </value>
         public static bool MoveNextSendingMessages
         {
@@ -366,10 +484,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ИскатьНесколькоДокументовПоШтрихкоду
+        ///     Поле ИскатьНесколькоДокументовПоШтрихкоду
         /// </summary>
         /// <value>
-        /// ИскатьНесколькоДокументовПоШтрихкоду (bit, not null)
+        ///     ИскатьНесколькоДокументовПоШтрихкоду (bit, not null)
         /// </value>
         public static bool SearchMultipleDocumentsBarcode
         {
@@ -382,10 +500,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ЛичныеСпискиРассылкиПоказыватьПервыми
+        ///     Поле ЛичныеСпискиРассылкиПоказыватьПервыми
         /// </summary>
         /// <value>
-        /// ЛичныеСпискиРассылкиПоказыватьПервыми (bit, not null)
+        ///     ЛичныеСпискиРассылкиПоказыватьПервыми (bit, not null)
         /// </value>
         public static bool PersonalSendListFirstOrder
         {
@@ -398,10 +516,10 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         /// <summary>
-        ///  Поле ПрочитыватьСообщениеПриЗавершенииРаботы
+        ///     Поле ПрочитыватьСообщениеПриЗавершенииРаботы
         /// </summary>
         /// <value>
-        /// ПрочитыватьСообщениеПриЗавершенииРаботы (tinyint, not null)
+        ///     ПрочитыватьСообщениеПриЗавершенииРаботы (tinyint, not null)
         /// </value>
         public static byte ReadMessageEndWork
         {
@@ -414,117 +532,5 @@ namespace Kesco.Lib.Entities.Documents
         }
 
         #endregion
-
-        /// <summary>
-        ///  Обновить данные
-        /// </summary>
-        /// <remarks>
-        ///  По сути является более уместным псевданимом для LoadDocViewParams()
-        /// </remarks>
-        public static void Refresh()
-        {
-            LoadDocViewParams();
-        }
-
-        /// <summary>
-        /// Получение параметров
-        /// </summary>
-        private static void LoadDocViewParams()
-        {
-            using (var dbReader = new DBReader(SQLQueries.SELECT_НастройкиDocView, CommandType.Text, CN))
-            {
-                if (dbReader.HasRows)
-                {
-                    #region Получение порядкового номера столбца
-
-                    int colКодЛица = dbReader.GetOrdinal("КодЛица");
-                    int colПорядокГруппировки = dbReader.GetOrdinal("ПорядокГруппировки");
-                    int colКодыДокументовСвязующих = dbReader.GetOrdinal("КодыДокументовСвязующих");
-                    int colУведомлениеСообщения = dbReader.GetOrdinal("УведомлениеСообщения");
-                    int colВремяОтметкиПрочтения = dbReader.GetOrdinal("ВремяОтметкиПрочтения");
-                    int colДокументыПодуровней = dbReader.GetOrdinal("ДокументыПодуровней");
-                    int colФильтрДатыАрхивирования = dbReader.GetOrdinal("ФильтрДатыАрхивирования");
-                    int colФильтрДатыДокумента = dbReader.GetOrdinal("ФильтрДатыДокумента");
-                    int colФильтрДатыСоздания = dbReader.GetOrdinal("ФильтрДатыСоздания");
-                    int colПодтвУдаления = dbReader.GetOrdinal("ПодтвУдаления");
-                    int colПодтвГрупповыхОпераций = dbReader.GetOrdinal("ПодтвГрупповыхОпераций");
-                    int colПоказыватьНовости = dbReader.GetOrdinal("ПоказыватьНовости");
-                    int colСохранениеДобавитьВРаботу = dbReader.GetOrdinal("СохранениеДобавитьВРаботу");
-                    int colСохранениеОткрытьСохранённый = dbReader.GetOrdinal("СохранениеОткрытьСохранённый");
-                    int colСохранениеПослатьСообщение = dbReader.GetOrdinal("СохранениеПослатьСообщение");
-                    int colПодписьВыполненоСообщение = dbReader.GetOrdinal("ПодписьВыполненоСообщение");
-                    int colФаксыВходящиеТолькоНеСохранённые = dbReader.GetOrdinal("ФаксыВходящиеТолькоНеСохранённые");
-                    int colФаксыОтправленныеТолькоНеСохранённые = dbReader.GetOrdinal("ФаксыОтправленныеТолькоНеСохранённые");
-                    int colПереходНаСледующийПриОтправкеСообщения = dbReader.GetOrdinal("ПереходНаСледующийПриОтправкеСообщения");
-                    int colИскатьНесколькоДокументовПоШтрихкоду = dbReader.GetOrdinal("ИскатьНесколькоДокументовПоШтрихкоду");
-                    int colЛичныеСпискиРассылкиПоказыватьПервыми = dbReader.GetOrdinal("ЛичныеСпискиРассылкиПоказыватьПервыми");
-                    int colПрочитыватьСообщениеПриЗавершенииРаботы = dbReader.GetOrdinal("ПрочитыватьСообщениеПриЗавершенииРаботы");
-                    #endregion
-
-                    if (dbReader.Read())
-                    {
-                         _available = true;
-                        _codePerson = !dbReader.IsDBNull(colКодЛица) ? dbReader.GetInt32(colКодЛица) : 0;
-                        _orderGroup = dbReader.GetString(colПорядокГруппировки);
-                        _codeDocumentLink = dbReader.GetString(colКодыДокументовСвязующих);
-                        _messagesNotify = dbReader.GetBoolean(colУведомлениеСообщения);
-                        _readMarkTime = dbReader.GetInt32(colВремяОтметкиПрочтения);
-                        _sublevelDocuments = dbReader.GetBoolean(colДокументыПодуровней);
-                        _archiveDateFilter = dbReader.GetInt16(colФильтрДатыАрхивирования);
-                        _dateDocumentFilter = dbReader.GetInt16(colФильтрДатыДокумента);
-                        _creationDateFilter = dbReader.GetInt16(colФильтрДатыСоздания);
-                        _deleteConfirm = dbReader.GetBoolean(colПодтвУдаления);
-                        _groupOperationsConfirm = dbReader.GetBoolean(colПодтвГрупповыхОпераций);
-                        _showNews = dbReader.GetBoolean(colПоказыватьНовости);
-                        _addWorkSaving = dbReader.GetBoolean(colСохранениеДобавитьВРаботу);
-                        _savingOpenSaved = dbReader.GetBoolean(colСохранениеОткрытьСохранённый);
-                        _sendMessageSaving = dbReader.GetBoolean(colСохранениеПослатьСообщение);
-                        _signMessageWorkDone = dbReader.GetBoolean(colПодписьВыполненоСообщение);
-                        _incomingFaxesJustNotSaved = dbReader.GetBoolean(colФаксыВходящиеТолькоНеСохранённые);
-                        _sendFaxesJustNotSaved = dbReader.GetBoolean(colФаксыОтправленныеТолькоНеСохранённые);
-                        _moveNextSendingMessages = dbReader.GetBoolean(colПереходНаСледующийПриОтправкеСообщения);
-                        _searchMultipleDocumentsBarcode = dbReader.GetBoolean(colИскатьНесколькоДокументовПоШтрихкоду);
-                        _personalSendListFirstOrder = dbReader.GetBoolean(colЛичныеСпискиРассылкиПоказыватьПервыми);
-                        _readMessageEndWork = dbReader.GetByte(colПрочитыватьСообщениеПриЗавершенииРаботы);
-                    }
-                }
-                else { _available = false; }
-            }
-        }
-
-        /// <summary>
-        /// Сохранение параметров
-        /// </summary>
-        public static void SaveDVParameters()
-        {
-            var sqlParams = new Dictionary<string, object>
-            {
-                {"@КодЛица", _codePerson},
-                {"@ПорядокГруппировки", _orderGroup},
-                {"@КодыДокументовСвязующих", _codeDocumentLink},
-                {"@УведомлениеСообщения", _messagesNotify},
-                {"@ВремяОтметкиПрочтения", _readMarkTime},
-                {"@ДокументыПодуровней", _sublevelDocuments},
-                {"@ФильтрДатыАрхивирования", _archiveDateFilter},
-                {"@ФильтрДатыДокумента", _dateDocumentFilter},
-                {"@ФильтрДатыСоздания", _creationDateFilter},
-                {"@ПодтвУдаления", _deleteConfirm},
-                {"@ПодтвГрупповыхОпераций", _groupOperationsConfirm},
-                {"@ПоказыватьНовости", _showNews},
-                {"@СохранениеДобавитьВРаботу", _addWorkSaving},
-                {"@СохранениеОткрытьСохранённый", _savingOpenSaved},
-                {"@СохранениеПослатьСообщение", _sendMessageSaving},
-                {"@ПодписьВыполненоСообщение", _signMessageWorkDone},
-                {"@ФаксыВходящиеТолькоНеСохранённые", _incomingFaxesJustNotSaved},
-                {"@ФаксыОтправленныеТолькоНеСохранённые", _sendFaxesJustNotSaved},
-                {"@ПереходНаСледующийПриОтправкеСообщения", _moveNextSendingMessages},
-                {"@ИскатьНесколькоДокументовПоШтрихкоду", _searchMultipleDocumentsBarcode},
-                {"@ЛичныеСпискиРассылкиПоказыватьПервыми", _personalSendListFirstOrder},
-                {"@ПрочитыватьСообщениеПриЗавершенииРаботы", _readMessageEndWork}
-            };
-
-            DBManager.ExecuteNonQuery(SQLQueries.UPDATE_НастройкиDocView, CommandType.Text, CN, sqlParams);
-        }
     }
-
 }

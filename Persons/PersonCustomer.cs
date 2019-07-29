@@ -7,18 +7,18 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Persons
 {
     /// <summary>
-    /// Класс сущности Лица заказчики
+    ///     Класс сущности Лица заказчики
     /// </summary>
     [Serializable]
     public class PersonCustomer : Entity
     {
         /// <summary>
-        /// Наименование Лат.
+        ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
-        public string NameLat { get; set; }
+        private static string _connectionString;
 
         /// <summary>
-        /// Конструктор
+        ///     Конструктор
         /// </summary>
         /// <param name="id">ID лица</param>
         public PersonCustomer(string id)
@@ -28,42 +28,40 @@ namespace Kesco.Lib.Entities.Persons
         }
 
         /// <summary>
-        /// Строка подключения к БД.
+        ///     Конструктор
         /// </summary>
-        public sealed override string CN
+        public PersonCustomer()
         {
-            get { return ConnString; }
         }
 
         /// <summary>
-        ///  Статическое поле для получения строки подключения
+        ///     Наименование Лат.
         /// </summary>
-        public static string ConnString
-        {
-            get { return string.IsNullOrEmpty(_connectionString) ? (_connectionString = Config.DS_user) : _connectionString; }
-        }
+        public string NameLat { get; set; }
 
         /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
+        ///     Строка подключения к БД.
         /// </summary>
-        private static string _connectionString;
+        public sealed override string CN => ConnString;
 
         /// <summary>
-        /// Конструктор
+        ///     Статическое поле для получения строки подключения
         /// </summary>
-        public PersonCustomer() { }
+        public static string ConnString => string.IsNullOrEmpty(_connectionString)
+            ? _connectionString = Config.DS_user
+            : _connectionString;
 
         /// <summary>
-        /// Метод загрузки данных сущности "Компания"
+        ///     Метод загрузки данных сущности "Компания"
         /// </summary>
         public override void Load()
         {
-            var sqlParams = new Dictionary<string, object> { { "@id", new object[] { Id, DBManager.ParameterTypes.Int32 } } };
+            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_ЛицоЗаказчик, CN, CommandType.Text, sqlParams));
         }
 
         /// <summary>
-        /// Инициализация сущности Компания на основе таблицы данных
+        ///     Инициализация сущности Компания на основе таблицы данных
         /// </summary>
         /// <param name="dt">Таблица данных места хранения</param>
         protected override void FillData(DataTable dt)

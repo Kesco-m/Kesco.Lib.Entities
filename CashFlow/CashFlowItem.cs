@@ -5,7 +5,7 @@ using Kesco.Lib.BaseExtention.BindModels;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
-namespace Kesco.Lib.Entities.CashFlowItem
+namespace Kesco.Lib.Entities.CashFlow
 {
     /// <summary>
     ///     Класс сущности Статьи движения денежных средств
@@ -210,6 +210,9 @@ namespace Kesco.Lib.Entities.CashFlowItem
                 };
                 var сashFlowItemId = DBManager.ExecuteScalar(SQLQueries.INSERT_СтатьиДвиженияДенежныхСредств,
                     CommandType.Text, Config.DS_resource, sqlParams);
+
+                if (сashFlowItemId != null)
+                    Id = сashFlowItemId.ToString();
             }
             else
             {

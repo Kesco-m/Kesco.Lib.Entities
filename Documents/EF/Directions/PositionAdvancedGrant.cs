@@ -1,11 +1,13 @@
-﻿using Kesco.Lib.DALC;
+﻿using System;
+using Kesco.Lib.DALC;
 
 namespace Kesco.Lib.Entities.Documents.EF.Directions
 {
     /// <summary>
     ///     Класс позиций документа УказанияИТ: ПозицииУказанийИТПрава
     /// </summary>
-    [DBSource("vwПозицииУказанийИТПрава")]
+    [Serializable]
+    [DBSource("vwПозицииУказанийИТДопПараметры")]
     public class PositionAdvancedGrant : DocumentPosition<PositionAdvancedGrant>
     {
         /// <summary>
@@ -29,7 +31,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// <summary>
         ///     КодПозицииУказанийИТПрава
         /// </summary>
-        [DBField("КодПозицииУказанийИТПрава", 0)]
+        [DBField("КодПозицииУказанийИТДопПараметры", 0)]
         public override int? PositionId
         {
             get { return base.PositionId; }
@@ -43,9 +45,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         public override int DocumentId { get; set; }
 
         /// <summary>
-        ///     КодПраваДляУказанийIT
+        ///     КодДопПараметраУказанийИТ
         /// </summary>
-        [DBField("КодПраваДляУказанийIT")]
+        [DBField("КодДопПараметраУказанийИТ")]
         public int GrantId { get; set; }
 
         /// <summary>
@@ -59,6 +61,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         [DBField("ОписаниеЛат")]
         public string GrantDescriptionEn { get; set; }
+
+        /// <summary>
+        ///     Порядок вывода
+        /// </summary>
+        public int OrderOutput { get; set; }
+
+        /// <summary>
+        ///     Относится к
+        /// </summary>
+        public int RefersTo { get; set; }
 
         #endregion
     }

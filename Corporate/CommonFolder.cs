@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Corporate
 {
     /// <summary>
-    /// Класс сущности "Обшая папка"
+    ///     Класс сущности "Обшая папка"
     /// </summary>
     public class CommonFolder : Entity
     {
-         /// <summary>
+        /// <summary>
+        ///     Инкапсулирует и сохраняет в себе строку подключения
+        /// </summary>
+        protected string _connectionString;
+
+        /// <summary>
         ///     Конструктор
         /// </summary>
         /// <param name="id">DomainName</param>
@@ -31,14 +33,14 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        /// Группа
+        ///     Группа
         /// </summary>
         public string Group { get; set; }
 
         /// <summary>
-        /// Строка подключения к БД.
+        ///     Строка подключения к БД.
         /// </summary>
-        public override sealed string CN
+        public sealed override string CN
         {
             get
             {
@@ -50,15 +52,12 @@ namespace Kesco.Lib.Entities.Corporate
         }
 
         /// <summary>
-        ///  Инкапсулирует и сохраняет в себе строку подключения
-        /// </summary>
-        protected string _connectionString;
-        /// <summary>
-        /// Метод загрузки данных сущности "Обща папка"
+        ///     Метод загрузки данных сущности "Обща папка"
         /// </summary>
         public override void Load()
         {
-            var sqlParams = new Dictionary<string, object> { { "@id", new object[] { Id, DBManager.ParameterTypes.String } } };
+            var sqlParams = new Dictionary<string, object>
+                {{"@id", new object[] {Id, DBManager.ParameterTypes.String}}};
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_CommonFolder, CN, CommandType.Text, sqlParams));
         }
 

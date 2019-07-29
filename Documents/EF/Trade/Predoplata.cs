@@ -1,15 +1,16 @@
-﻿using Kesco.Lib.BaseExtention.Enums;
+﻿using System.Collections.Generic;
+using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 
 namespace Kesco.Lib.Entities.Documents.EF.Trade
 {
     /// <summary>
-    ///  Документ Предоплата
+    ///     Документ Предоплата
     /// </summary>
     public class Predoplata : Document
     {
-                /// <summary>
-        ///  Конструктор
+        /// <summary>
+        ///     Конструктор
         /// </summary>
         public Predoplata()
         {
@@ -17,7 +18,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        ///  Конструктор с инициализацией документа
+        ///     Конструктор с инициализацией документа
         /// </summary>
         public Predoplata(string id)
         {
@@ -26,7 +27,35 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
         }
 
         /// <summary>
-        /// Инициализация документа Претензия
+        ///     Bind поля Договор
+        /// </summary>
+        public BaseDocFacade DogovorBind { get; private set; }
+
+        /// <summary>
+        ///     Bind поля Приложение
+        /// </summary>
+        public BaseDocFacade PrilozhenieBind { get; private set; }
+
+        /// <summary>
+        ///     Договор
+        /// </summary>
+        public string _Dogovor
+        {
+            get { return DogovorBind.Value; }
+            set { DogovorBind.Value = value; }
+        }
+
+        /// <summary>
+        ///     Приложение
+        /// </summary>
+        public string _Prilozhenie
+        {
+            get { return PrilozhenieBind.Value; }
+            set { PrilozhenieBind.Value = value; }
+        }
+
+        /// <summary>
+        ///     Инициализация документа Претензия
         /// </summary>
         private void Initialization()
         {
@@ -75,197 +104,226 @@ namespace Kesco.Lib.Entities.Documents.EF.Trade
             DogovorBind = new BaseDocFacade(this, DogovorField, BaseSetBehavior.RemoveAllAndAddDoc);
             PrilozhenieBind = new BaseDocFacade(this, PrilozhenieField, BaseSetBehavior.RemoveAllAndAddDoc);
         }
-        
+
         #region Поля документа
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
         public DocField ProdavetsField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-        public DocField   ProdavetsNameField	{ get; private set; } 
+        public DocField ProdavetsNameField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsINNField		{ get; private set; } 
+        public DocField ProdavetsINNField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsKPPField		{ get; private set; } 
+        public DocField ProdavetsKPPField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsAddressField	{ get; private set; }  
+        public DocField ProdavetsAddressField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsKontactField	{ get; private set; } 
+        public DocField ProdavetsKontactField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsBankField	{ get; private set; }  
+        public DocField ProdavetsBankField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsBIKField		{ get; private set; } 
+        public DocField ProdavetsBIKField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsKSField		{ get; private set; } 
+        public DocField ProdavetsKSField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsRSSkladField	{ get; private set; } 
+        public DocField ProdavetsRSSkladField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsRSField		{ get; private set; }
+        public DocField ProdavetsRSField { get; private set; }
+
         /// <summary>
-        /// Продавец
+        ///     Продавец
         /// </summary>
-		public DocField   ProdavetsFilialField	{ get; private set; } 
+        public DocField ProdavetsFilialField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelField		{ get; private set; }
+        public DocField PokupatelField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelNameField	{ get; private set; } 
+        public DocField PokupatelNameField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelINNField		{ get; private set; }
+        public DocField PokupatelINNField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelKPPField		{ get; private set; } 
+        public DocField PokupatelKPPField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelAddressField	{ get; private set; } 
+        public DocField PokupatelAddressField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelKontactField	{ get; private set; }  
+        public DocField PokupatelKontactField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelBankField	{ get; private set; } 
+        public DocField PokupatelBankField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelBIKField		{ get; private set; }
+        public DocField PokupatelBIKField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelKSField		{ get; private set; } 
+        public DocField PokupatelKSField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelRSSkladField	{ get; private set; }  
+        public DocField PokupatelRSSkladField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelRSField		{ get; private set; } 
+        public DocField PokupatelRSField { get; private set; }
+
         /// <summary>
-        /// Покупатель
+        ///     Покупатель
         /// </summary>
-		public DocField   PokupatelFilialField	{ get; private set; } 
+        public DocField PokupatelFilialField { get; private set; }
+
         /// <summary>
-        /// Договор
+        ///     Договор
         /// </summary>
-		public DocField   DogovorField			{ get; private set; }
+        public DocField DogovorField { get; private set; }
+
         /// <summary>
-        /// Договор
+        ///     Договор
         /// </summary>
-		public DocField   DogovorTextField		{ get; private set; } 
+        public DocField DogovorTextField { get; private set; }
+
         /// <summary>
-        /// Приложение
+        ///     Приложение
         /// </summary>
-		public DocField   PrilozhenieField		{ get; private set; }
+        public DocField PrilozhenieField { get; private set; }
+
         /// <summary>
-        /// Валюта
+        ///     Валюта
         /// </summary>
-        public DocField   CurrencyField			{ get; private set; }
+        public DocField CurrencyField { get; private set; }
+
         /// <summary>
-        /// Руководитель
+        ///     Руководитель
         /// </summary>
-		public DocField   RukovoditelTextField	{ get; private set; } 
+        public DocField RukovoditelTextField { get; private set; }
+
         /// <summary>
-        /// Бухгалтер
+        ///     Бухгалтер
         /// </summary>
-		public DocField   BuhgalterTextField	{ get; private set; } 
+        public DocField BuhgalterTextField { get; private set; }
+
         /// <summary>
-        /// Бухгалтер по расчету
+        ///     Бухгалтер по расчету
         /// </summary>
-        public DocField BuhgalterTextAccountField { get; private set; } 
+        public DocField BuhgalterTextAccountField { get; private set; }
+
         /// <summary>
-        /// документ основание заявка на покупку
+        ///     документ основание заявка на покупку
         /// </summary>
-        public DocField ZvkBField { get; private set; } 
+        public DocField ZvkBField { get; private set; }
+
         /// <summary>
-        /// Примечание
+        ///     Примечание
         /// </summary>
         public DocField PrimechanieField { get; private set; }
+
         /// <summary>
-        ///  Срок
+        ///     Срок
         /// </summary>
         public DocField SrokField { get; private set; }
+
         /// <summary>
-        /// Срок поставки
+        ///     Срок поставки
         /// </summary>
-        public DocField SrokPostavkiField { get; private set; } 
+        public DocField SrokPostavkiField { get; private set; }
+
         /// <summary>
-        /// 
         /// </summary>
         public DocField PrePayPercentField { get; private set; }
+
         /// <summary>
-        /// 
         /// </summary>
         public DocField PrePaySrokField { get; private set; }
+
         /// <summary>
-        /// Курс
+        ///     Курс
         /// </summary>
-        public DocField KursField { get; private set; } 
+        public DocField KursField { get; private set; }
+
         /// <summary>
-        /// описание формулы
+        ///     описание формулы
         /// </summary>
         public DocField FormulaDescrField { get; private set; }
+
         /// <summary>
-        /// Позиции
+        ///     Позиции
         /// </summary>
-        public DocField PositionField { get; private set; } 
+        public DocField PositionField { get; private set; }
 
         #endregion
 
-        /// <summary>
-        /// Bind поля Договор
-        /// </summary>
-        public BaseDocFacade DogovorBind { get; private set; }
+        #region ПозицииСчетовНаПредоплату
 
         /// <summary>
-        /// Bind поля Приложение
+        ///     Позиции документа
         /// </summary>
-        public BaseDocFacade PrilozhenieBind { get; private set; }
+        public List<PrepaymentInvoice> PositionPrepaymentInvoice { get; set; }
 
         /// <summary>
-        /// Договор
+        ///     Загрузка Позиции Счетов На Предоплату
         /// </summary>
-        public string _Dogovor
+        public void LoadPositionPrepaymentInvoice()
         {
-            get { return DogovorBind.Value; }
-            set { DogovorBind.Value = value; }
+            PositionPrepaymentInvoice = Id.IsNullEmptyOrZero()
+                ? new List<PrepaymentInvoice>()
+                : DocumentPosition<PrepaymentInvoice>.LoadByDocId(int.Parse(Id));
         }
 
-        /// <summary>
-        /// Приложение
-        /// </summary>
-        public string _Prilozhenie
-        {
-            get { return PrilozhenieBind.Value; }
-            set { PrilozhenieBind.Value = value; }
-        }
+        #endregion
     }
 }

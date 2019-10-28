@@ -151,8 +151,7 @@
     <Compile Include="Corporate\Equipments\Equipment.cs" />
     <Compile Include="Corporate\Equipments\ModelEquipment.cs" />
     <Compile Include="Corporate\Equipments\TypeEquipment.cs" />
-    <Compile Include="Corporate\Language.cs" />
-    <Compile Include="Corporate\ProviderService.cs" />
+    <Compile Include="Corporate\Language.cs" />    
     <Compile Include="Corporate\Location.cs" />
     <Compile Include="Corporate\Phones\Phone.cs" />
     <Compile Include="Corporate\EmployeeContact.cs" />

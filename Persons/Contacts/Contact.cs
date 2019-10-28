@@ -23,7 +23,7 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         /// </summary>
         public Contact()
         {
-            FillData(new DataTable());
+            //FillData(new DataTable());
         }
 
         /// <summary>
@@ -50,6 +50,11 @@ namespace Kesco.Lib.Entities.Persons.Contacts
         ///     Тип контакта
         /// </summary>
         public ContactType ContactType { get; set; }
+
+        /// <summary>
+        ///     Тип контакта
+        /// </summary>
+        public string ContactTypeName { get; set; }
 
         /// <summary>
         ///     Контакт

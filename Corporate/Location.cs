@@ -35,6 +35,7 @@ namespace Kesco.Lib.Entities
         public Location(string id)
             : base(id)
         {
+            
             Load();
         }
 
@@ -43,6 +44,7 @@ namespace Kesco.Lib.Entities
         /// </summary>
         public Location()
         {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
         }
 
         /// <summary>
@@ -81,7 +83,8 @@ namespace Kesco.Lib.Entities
         {
             get
             {
-                if (_isOffice.HasValue && !RequiredRefreshInfo)
+                var cacheKey = "location._isOffice";
+                if (_isOffice.HasValue && LoadedExternalProperties.ContainsKey(cacheKey))
                     return _isOffice.Value;
 
                 _isOffice = false;
@@ -92,6 +95,7 @@ namespace Kesco.Lib.Entities
                     if (dbReader.HasRows) _isOffice = true;
                 }
 
+                AddLoadedExternalProperties(cacheKey);
                 return _isOffice.Value;
             }
         }
@@ -103,18 +107,20 @@ namespace Kesco.Lib.Entities
         {
             get
             {
-                if (RequiredRefreshInfo || _equipmentsIt == null)
+                var cacheKey = "location._equipmentsIt";
+                if (LoadedExternalProperties.ContainsKey(cacheKey)) return _equipmentsIt;
+                
+                _equipmentsIt = new List<Equipment>();
+                var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}, {"@IT", 1}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеНаРасположении, CommandType.Text,
+                        CN,
+                        sqlParams))
                 {
-                    _equipmentsIt = new List<Equipment>();
-                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}, {"@IT", 1}};
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеНаРасположении, CommandType.Text,
-                            CN,
-                            sqlParams))
-                    {
-                        _equipmentsIt = Equipment.GetEquipmentList(dbReader);
-                    }
+                    _equipmentsIt = Equipment.GetEquipmentList(dbReader);
                 }
+
+                AddLoadedExternalProperties(cacheKey);
 
                 return _equipmentsIt;
             }
@@ -144,9 +150,9 @@ namespace Kesco.Lib.Entities
         {
             get
             {
-                if (_isOrganized.HasValue && !RequiredRefreshInfo)
-                    return _isOrganized.Value;
-
+                var cacheKey = "location._isOrganized";
+                if (_isOrganized.HasValue && LoadedExternalProperties.ContainsKey(cacheKey)) return _isOrganized.Value;
+                
                 _isOrganized = false;
                 var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
                 using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста,
@@ -155,6 +161,7 @@ namespace Kesco.Lib.Entities
                     if (dbReader.HasRows) _isOrganized = true;
                 }
 
+                AddLoadedExternalProperties(cacheKey);
                 return _isOrganized.Value;
             }
         }

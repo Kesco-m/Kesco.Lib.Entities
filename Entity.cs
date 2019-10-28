@@ -19,8 +19,7 @@ namespace Kesco.Lib.Entities
     public abstract class Entity
     {
         private string _name;
-        private bool requiredRefreshInfo;
-
+        
         /// <summary>
         ///     Конструктор базовой сущности
         ///     При использовании данного конструктора, сущность автоматически становиться доступной
@@ -40,9 +39,15 @@ namespace Kesco.Lib.Entities
         /// <param name="id">Код сущности</param>
         protected Entity(string id) : this()
         {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
             Unavailable = true;
             Id = id;
         }
+
+        /// <summary>
+        ///     Признак нового документа
+        /// </summary>
+        public bool IsNew => string.IsNullOrEmpty(Id) || Id == "0";
 
         /// <summary>
         ///     Доступность сущности. Удалось по ключу создать экземпляр объекта. false = ok
@@ -50,12 +55,20 @@ namespace Kesco.Lib.Entities
         public bool Unavailable { get; set; }
 
         /// <summary>
-        ///     Необходимо заново получить данные для закэшированных свойств объекта
+        /// Словарь загруженных внешних свойсв объекта
         /// </summary>
-        public bool RequiredRefreshInfo
+        public Dictionary<string, DateTime> LoadedExternalProperties;
+
+       /// <summary>
+       /// Добавление информации о закешированном объекте
+       /// </summary>
+       /// <param name="cacheKey">Ключ кэшируемого объекта</param>
+        public void AddLoadedExternalProperties(string cacheKey)
         {
-            get { return requiredRefreshInfo; }
-            set { requiredRefreshInfo = value; }
+            if (!LoadedExternalProperties.ContainsKey(cacheKey))
+                LoadedExternalProperties.Add(cacheKey, DateTime.UtcNow);
+            else
+                LoadedExternalProperties[cacheKey] = DateTime.UtcNow;
         }
 
         /// <summary>

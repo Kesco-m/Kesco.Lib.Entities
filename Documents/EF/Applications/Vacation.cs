@@ -13,6 +13,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
     /// <summary>
     ///     Класс заявления на отпуск
     /// </summary>
+    [Serializable]
     public class Vacation : Document
     {
         private PersonOld objectCompanyFrom;
@@ -54,9 +55,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         {
             get
             {
-                if (VacationType.ValueString.Length == 0) return null;
+                if (VacationTypeField.ValueString.Length == 0) return null;
 
-                return objectVacationType ?? (objectVacationType = new VacationType(VacationType.ValueString));
+                return objectVacationType ?? (objectVacationType = new VacationType(VacationTypeField.ValueString));
             }
             set { objectVacationType = value; }
         }
@@ -68,9 +69,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         {
             get
             {
-                if (EmployeeFrom.ValueString.Length == 0) return null;
+                if (EmployeeFromField.ValueString.Length == 0) return null;
 
-                return objectEmployeeFrom ?? (objectEmployeeFrom = new Employee(EmployeeFrom.ValueString));
+                return objectEmployeeFrom ?? (objectEmployeeFrom = new Employee(EmployeeFromField.ValueString));
             }
             set { objectEmployeeFrom = value; }
         }
@@ -83,9 +84,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         {
             get
             {
-                if (EmployeeTo.ValueString.Length == 0) return null;
+                if (EmployeeToField.ValueString.Length == 0) return null;
 
-                return objectEmployeeTo ?? (objectEmployeeTo = new PersonOld(EmployeeTo.ValueString));
+                return objectEmployeeTo ?? (objectEmployeeTo = new PersonOld(EmployeeToField.ValueString));
             }
             set { objectEmployeeTo = value; }
         }
@@ -97,9 +98,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         {
             get
             {
-                if (CompanyFrom.ValueString.Length == 0) return null;
+                if (CompanyFromField.ValueString.Length == 0) return null;
 
-                return objectCompanyFrom ?? (objectCompanyFrom = new PersonOld(CompanyFrom.ValueString));
+                return objectCompanyFrom ?? (objectCompanyFrom = new PersonOld(CompanyFromField.ValueString));
             }
             set { objectCompanyFrom = value; }
         }
@@ -116,30 +117,30 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
             Type = DocTypeEnum.ЗаявлениеНаОтпуск;
 
             //Код лица сотрудника, от имени которого составляется заявление
-            PersonFrom = GetDocField("1479");
+            PersonFromField = GetDocField("1479");
             //Код сотрудника, от имени которого составляется заявление
-            EmployeeFrom = GetDocField("1277");
+            EmployeeFromField = GetDocField("1277");
             //Код лица компании сотрудника, от имени которого составляется заявление
-            CompanyFrom = GetDocField("1275");
+            CompanyFromField = GetDocField("1275");
             //Код лица сотрудника, на имя которого составляется заявление
-            EmployeeTo = GetDocField("1276");
+            EmployeeToField = GetDocField("1276");
             //Тип отпуска
-            VacationType = GetDocField("1280");
+            VacationTypeField = GetDocField("1280");
             //Дата начала отпуска
-            DateFrom = GetDocField("1278");
+            DateFromField = GetDocField("1278");
             //Продолжительность отпуска в днях
-            Days = GetDocField("1442");
+            DaysField = GetDocField("1442");
             //Дата конца отпуска
-            DateTo = GetDocField("1279");
+            DateToField = GetDocField("1279");
 
             var doc_id = 0;
             int.TryParse(Id, out doc_id);
             if (0 == doc_id && null != User)
             {
-                PersonFrom.Value = User.PersonEmployeeId;
-                EmployeeFrom.Value = User.EmployeeId;
+                PersonFromField.Value = User.PersonEmployeeId;
+                EmployeeFromField.Value = User.EmployeeId;
                 if (User.Employer != null)
-                    CompanyFrom.Value = User.Employer.Id;
+                    CompanyFromField.Value = User.Employer.Id;
             }
         }
 
@@ -152,7 +153,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Applications
         public DataTable GetPostSupervisor()
         {
             var dt = new DataTable();
-            if (EmployeeFrom.ValueString.Length == 0) return dt;
+            if (EmployeeFromField.ValueString.Length == 0) return dt;
             var sql = @"
 DECLARE @Сотрудник nvarchar(300), @ДолжностьСотрудника nvarchar(300),
 	@LСотрудника int, @RСотрудника int,
@@ -170,7 +171,7 @@ FROM		 Сотрудники Я
 		INNER JOIN vwДолжности МояДолжн ON Я.КодСотрудника = МояДолжн.КодСотрудника
 		INNER JOIN vwДолжности РукДолжн ON МояДолжн.Parent = РукДолжн.КодДолжности
 		LEFT OUTER JOIN Сотрудники Рук ON РукДолжн.КодСотрудника = Рук.КодСотрудника
-WHERE	 (Я.КодСотрудника = " + EmployeeFrom.ValueString + @") AND (МояДолжн.Совместитель = 0)
+WHERE	 (Я.КодСотрудника = " + EmployeeFromField.ValueString + @") AND (МояДолжн.Совместитель = 0)
 
 IF @@ROWCOUNT>0 AND @КодСотрудникаРуководителя IS NULL
 	SELECT TOP 1  @КодЛицаРуководителя=S.КодЛица, @КодСотрудникаРуководителя=S.КодСотрудника,
@@ -194,47 +195,47 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
         /// <summary>
         ///     Лицо сотрудника
         /// </summary>
-        public DocField PersonFrom { get; private set; }
+        public DocField PersonFromField { get; private set; }
 
         /// <summary>
         ///     От сотрудника
         /// </summary>
-        public DocField EmployeeFrom { get; private set; }
+        public DocField EmployeeFromField { get; private set; }
 
         /// <summary>
         ///     От организации сотрудника
         /// </summary>
-        public DocField CompanyFrom { get; private set; }
+        public DocField CompanyFromField { get; private set; }
 
         /// <summary>
         ///     Руководителю организации
         /// </summary>
-        public DocField EmployeeTo { get; private set; }
+        public DocField EmployeeToField { get; private set; }
 
         /// <summary>
         ///     Тип отпуска
         /// </summary>
-        public DocField VacationType { get; private set; }
+        public DocField VacationTypeField { get; private set; }
 
         /// <summary>
         ///     Дата начала отпуска
         /// </summary>
-        public DocField DateFrom { get; private set; }
+        public DocField DateFromField { get; private set; }
 
         /// <summary>
         ///     Продолжительность отпуска
         /// </summary>
-        public DocField Days { get; private set; }
+        public DocField DaysField { get; private set; }
 
         /// <summary>
         ///     Дата конца отпуска
         /// </summary>
-        public DocField DateTo { get; private set; }
+        public DocField DateToField { get; private set; }
 
         /// <summary>
         ///     Замещающий сотрудник
         /// </summary>
-        public DocField Sub { get; private set; }
+        public DocField SubField { get; private set; }
 
         #endregion
 
@@ -325,14 +326,14 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("<table width='100%' cellpadding='0' cellspacing='0'>");
             sb.Append("<tr>");
             sb.Append("<td style='FONT-SIZE:14pt;'>");
-            if (EmployeeTo.ValueString.Length > 0 && !ObjectEmployeeTo.Unavailable
-                                                  && CompanyFrom.ValueString.Length > 0 &&
+            if (EmployeeToField.ValueString.Length > 0 && !ObjectEmployeeTo.Unavailable
+                                                  && CompanyFromField.ValueString.Length > 0 &&
                                                   !ObjectCompanyFrom.Unavailable && Date != DateTime.MinValue)
-                sb.Append(ObjectEmployeeTo.PersonNP_GetPostDatelPadegHead(CompanyFrom.ValueString,
+                sb.Append(ObjectEmployeeTo.PersonNP_GetPostDatelPadegHead(CompanyFromField.ValueString,
                     Date.ToString("yyyyMMdd")));
             sb.Append("&nbsp;");
 
-            if (CompanyFrom.ValueString.Length > 0 && !ObjectCompanyFrom.Unavailable)
+            if (CompanyFromField.ValueString.Length > 0 && !ObjectCompanyFrom.Unavailable)
             {
                 var crd = ObjectCompanyFrom.GetCard(Date == DateTime.MinValue ? DateTime.Today : Date);
                 if (crd != null) sb.Append(crd.NameRus.Length > 0 ? crd.NameRus : crd.NameLat);
@@ -342,7 +343,7 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("</tr>");
             sb.Append("<tr>");
             sb.Append("<td style='FONT-SIZE:14pt;'>");
-            if (EmployeeTo.ValueString.Length > 0 && !ObjectEmployeeTo.Unavailable)
+            if (EmployeeToField.ValueString.Length > 0 && !ObjectEmployeeTo.Unavailable)
                 sb.Append(ObjectEmployeeTo.PersonNP_GetFIODadelPareg(Date == DateTime.MinValue
                     ? DateTime.Today
                     : Date));
@@ -474,7 +475,7 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("&nbsp;&nbsp;Прошу предоставить мне");
             sb.Append("</td>");
             sb.Append("<td align=center colspan=2 style='WIDTH:100%;BORDER-BOTTOM:black 1px solid'>");
-            if (VacationType.ValueString.Length > 0 && !ObjectVacationType.Unavailable)
+            if (VacationTypeField.ValueString.Length > 0 && !ObjectVacationType.Unavailable)
                 sb.Append(ObjectVacationType.Name);
             else sb.Append("&nbsp;");
             sb.Append("</td>");
@@ -494,7 +495,7 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("продолжительностью");
             sb.Append("</td>");
             sb.Append("<td align='center' style='WIDTH:50px;BORDER-BOTTOM:black 1px solid'>");
-            sb.Append(Days.ValueString);
+            sb.Append(DaysField.ValueString);
 
             sb.Append("</td>");
             sb.Append("<td nowrap style='FONT-SIZE:14pt;'>");
@@ -504,16 +505,16 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("&lt;&lt;");
             sb.Append("</td>");
             sb.Append("<td  align='center' style='WIDTH:50px;BORDER-BOTTOM:black 1px solid'>");
-            sb.Append(((DateTime) DateFrom.Value).ToString("dd"));
+            sb.Append(((DateTime) DateFromField.Value).ToString("dd"));
             sb.Append("</td>");
             sb.Append("<td width='20'>");
             sb.Append("&gt;&gt;");
             sb.Append("</td>");
             sb.Append("<td  align='center' style='WIDTH:150px;BORDER-BOTTOM:black 1px solid'>");
-            sb.Append(Dictionaries.MonthRP[((DateTime) DateFrom.Value).Month - 1]);
+            sb.Append(Dictionaries.MonthRP[((DateTime) DateFromField.Value).Month - 1]);
             sb.Append("</td>");
             sb.Append("<td  align='center' width='20'>");
-            sb.Append(((DateTime) DateFrom.Value).Year);
+            sb.Append(((DateTime) DateFromField.Value).Year);
             sb.Append("</td>");
             sb.Append("<td>");
             sb.Append("г.");
@@ -618,7 +619,7 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             sb.Append("&nbsp;");
             sb.Append("</td>");
             sb.Append("<td align='center' valign='bottom' style='WIDTH:150px;BORDER-BOTTOM:black 1px solid'>");
-            if (EmployeeFrom.ValueString.Length > 0 && !ObjectEmployeeFrom.Unavailable)
+            if (EmployeeFromField.ValueString.Length > 0 && !ObjectEmployeeFrom.Unavailable)
                 sb.Append(ObjectEmployeeFrom.FIO);
             else sb.Append("&nbsp;");
 
@@ -712,7 +713,7 @@ SELECT @Сотрудник Я, @ДолжностьСотрудника МояД�
             var dt = GetPostSupervisor();
             var _postS = "&nbsp;";
             var _fioS = "&nbsp;";
-            if (dt.Rows.Count > 0 && !EmployeeTo.ValueString.Equals(dt.Rows[0]["КодЛица"].ToString()))
+            if (dt.Rows.Count > 0 && !EmployeeToField.ValueString.Equals(dt.Rows[0]["КодЛица"].ToString()))
             {
                 _postS = dt.Rows[0]["ДолжностьРуководителя"].Equals(DBNull.Value) ||
                          dt.Rows[0]["ДолжностьРуководителя"].Equals("")

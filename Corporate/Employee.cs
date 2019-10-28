@@ -28,8 +28,8 @@ namespace Kesco.Lib.Entities.Corporate
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
-
-        private List<int> _advancedGrants;
+        
+        private Dictionary<int,byte?> _advancedGrants;
         private List<CommonFolder> _commonFolders;
         private List<Equipment> _employeeEquipmentsAnotherWorkPlaces;
         private List<Employee> _employeesOnWorkPlace;
@@ -130,15 +130,27 @@ namespace Kesco.Lib.Entities.Corporate
 
         private DataTable supervisorsData;
 
+        /// <inheritdoc />
         /// <summary>
         ///     Конструктор
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Код сотрудника</param>
         public Employee(string id)
             : base(id)
         {
             Id = id;
             Load();
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        /// <param name="guid">GUID сотрудника</param>
+        public Employee(Guid guid)
+        {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
+            LoadByGuid(guid);
         }
 
         /// <summary>
@@ -147,6 +159,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// <param name="fillCurrentUser">Заполнить объект данными текущего сотрудника</param>
         public Employee(bool fillCurrentUser)
         {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
             if (fillCurrentUser) GetCurrentUser();
         }
 
@@ -155,6 +168,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public Employee()
         {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
         }
 
 
@@ -592,9 +606,17 @@ namespace Kesco.Lib.Entities.Corporate
                 }
                 else
                 {
-                    if (RequiredRefreshInfo || _organization == null || _organization.Unavailable ||
-                        !_organization.Id.Equals(OrganizationId.ToString()))
-                        _organization = new PersonOld(OrganizationId.ToString());
+                    
+                    if (LoadedExternalProperties.ContainsKey("employee._organization") && _organization != null &&
+                        !_organization.Unavailable && _organization.Id.Equals(OrganizationId.ToString()))
+                        return _organization;
+
+                    _organization = new PersonOld(OrganizationId.ToString());
+
+                    if (!LoadedExternalProperties.ContainsKey("employee._organization"))
+                        LoadedExternalProperties.Add("employee._organization", DateTime.UtcNow);
+                    else
+                        LoadedExternalProperties["employee._organization"] = DateTime.UtcNow;
                 }
 
                 return _organization;
@@ -614,9 +636,17 @@ namespace Kesco.Lib.Entities.Corporate
                 }
                 else
                 {
-                    if (RequiredRefreshInfo || _personEmployee == null || _personEmployee.Unavailable ||
-                        !_personEmployee.Id.Equals(PersonEmployeeId.ToString()))
-                        _personEmployee = new PersonOld(PersonEmployeeId.ToString());
+
+                    if (LoadedExternalProperties.ContainsKey("employee._personEmployee") && _personEmployee != null &&
+                        !_personEmployee.Unavailable && _personEmployee.Id.Equals(PersonEmployeeId.ToString()))
+                        return _organization;
+                    
+                    _personEmployee = new PersonOld(PersonEmployeeId.ToString());
+
+                    if (!LoadedExternalProperties.ContainsKey("employee._personEmployee"))
+                        LoadedExternalProperties.Add("employee._personEmployee", DateTime.UtcNow);
+                    else
+                        LoadedExternalProperties["employee._personEmployee"] = DateTime.UtcNow;
                 }
 
                 return _personEmployee;
@@ -630,15 +660,16 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (RequiredRefreshInfo || _employer == null || _employer.Unavailable)
-                {
-                    var dt = GetUserPositions(CombineType.ОсновноеМестоРаботы);
-                    if (dt.Rows.Count == 1)
-                        _employer = new PersonOld(dt.Rows[0]["КодЛица"].ToString());
-                    else
-                        _employer = null;
-                }
+                if (LoadedExternalProperties.ContainsKey("employee._employer")) return _employer;
 
+                var dt = GetUserPositions(CombineType.ОсновноеМестоРаботы);
+
+                if (dt.Rows.Count == 1)
+                    _employer = new PersonOld(dt.Rows[0]["КодЛица"].ToString());
+                else
+                    _employer = null;
+                
+                LoadedExternalProperties.Add("employee._employer", DateTime.UtcNow);
                 return _employer;
             }
         }
@@ -650,23 +681,24 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (RequiredRefreshInfo || _workPlaces == null)
+                if (LoadedExternalProperties.ContainsKey("employee._workPlaces")) return _workPlaces;
+
+                _workPlaces = new List<Location>();
+                var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_РабочиеМестаСотрудника, CommandType.Text, CN,
+                        sqlParams))
                 {
-                    _workPlaces = new List<Location>();
-                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SELECT_РабочиеМестаСотрудника, CommandType.Text, CN,
-                            sqlParams))
-                    {
-                        if (dbReader.HasRows)
-                            while (dbReader.Read())
-                            {
-                                var wp = new Location();
-                                wp.LoadFromDbReader(dbReader);
-                                _workPlaces.Add(wp);
-                            }
-                    }
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var wp = new Location();
+                            wp.LoadFromDbReader(dbReader);
+                            _workPlaces.Add(wp);
+                        }
                 }
+
+                LoadedExternalProperties.Add("employee._workPlaces", DateTime.UtcNow);
 
                 return _workPlaces;
             }
@@ -679,23 +711,24 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (RequiredRefreshInfo || _photos == null)
+                if (LoadedExternalProperties.ContainsKey("employee._photos")) return _photos;
+
+                _photos = new List<EmployeePhoto>();
+                var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_ФотографииСотрудника, CommandType.Text, CN,
+                        sqlParams))
                 {
-                    _photos = new List<EmployeePhoto>();
-                    var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SELECT_ФотографииСотрудника, CommandType.Text, CN,
-                            sqlParams))
-                    {
-                        if (dbReader.HasRows)
-                            while (dbReader.Read())
-                            {
-                                var ph = new EmployeePhoto();
-                                ph.LoadFromDbReader(dbReader);
-                                _photos.Add(ph);
-                            }
-                    }
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var ph = new EmployeePhoto();
+                            ph.LoadFromDbReader(dbReader);
+                            _photos.Add(ph);
+                        }
                 }
+
+                LoadedExternalProperties.Add("employee._photos", DateTime.UtcNow);
 
                 return _photos;
             }
@@ -704,28 +737,32 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Получение дополнительных прав сотрудника
         /// </summary>
-        public List<int> AdvancedGrants
+        public Dictionary<int,byte?> AdvancedGrants
         {
             get
             {
-                if (RequiredRefreshInfo || _advancedGrants == null)
-                {
-                    _advancedGrants = new List<int>();
-                    var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SP_ДопПараметрыУказанийИТ, CommandType.Text, CN,
-                            sqlParams))
-                    {
-                        if (dbReader.HasRows)
-                            while (dbReader.Read())
-                            {
-                                var colКодДопПараметраУказанийИТ = dbReader.GetOrdinal("КодДопПараметраУказанийИТ");
-                                if (!dbReader.IsDBNull(colКодДопПараметраУказанийИТ))
-                                    _advancedGrants.Add(dbReader.GetInt32(colКодДопПараметраУказанийИТ));
-                            }
-                    }
-                }
 
+                if (LoadedExternalProperties.ContainsKey("employee._advancedGrants")) return _advancedGrants;
+
+                _advancedGrants = new Dictionary<int, byte?>();
+                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SP_ДопПараметрыУказанийИТ, CommandType.Text, CN,
+                        sqlParams))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var colКодДопПараметраУказанийИТ = dbReader.GetOrdinal("КодДопПараметраУказанийИТ");
+                            var colЕстьПраво = dbReader.GetOrdinal("ЕстьПраво");
+                            if (!dbReader.IsDBNull(colЕстьПраво))
+                                _advancedGrants.Add(dbReader.GetInt32(colКодДопПараметраУказанийИТ),
+                                    dbReader.GetByte(colЕстьПраво));
+                            else
+                                _advancedGrants.Add(dbReader.GetInt32(colКодДопПараметраУказанийИТ), null);
+                        }
+                }
+                LoadedExternalProperties.Add("employee._advancedGrants", DateTime.UtcNow);
                 return _advancedGrants;
             }
         }
@@ -737,53 +774,53 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (RequiredRefreshInfo || _commonFolders == null)
+
+                if (LoadedExternalProperties.ContainsKey("employee._commonFolders")) return _commonFolders;
+
+                _commonFolders = new List<CommonFolder>();
+                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
+                using (
+                    var dbReader = new DBReader(SQLQueries.SP_ОбщиеПапкиСотрудника, CommandType.StoredProcedure, CN,
+                        sqlParams))
                 {
-                    _commonFolders = new List<CommonFolder>();
-                    var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
-                    using (
-                        var dbReader = new DBReader(SQLQueries.SP_ОбщиеПапкиСотрудника, CommandType.StoredProcedure, CN,
-                            sqlParams))
+                    if (dbReader.HasRows)
                     {
-                        if (dbReader.HasRows)
+                        while (dbReader.Read())
                         {
-                            while (dbReader.Read())
-                            {
-                                var f = new CommonFolder();
-                                var colКодОбщейПапки = dbReader.GetOrdinal("КодОбщейПапки");
-                                var colОбщаяПапка = dbReader.GetOrdinal("ОбщаяПапка");
+                            var f = new CommonFolder();
+                            var colКодОбщейПапки = dbReader.GetOrdinal("КодОбщейПапки");
+                            var colОбщаяПапка = dbReader.GetOrdinal("ОбщаяПапка");
 
-                                f.Unavailable = false;
+                            f.Unavailable = false;
 
-                                if (!dbReader.IsDBNull(colКодОбщейПапки))
-                                    f.Id = dbReader.GetInt32(colКодОбщейПапки).ToString();
-                                if (!dbReader.IsDBNull(colОбщаяПапка)) f.Name = dbReader.GetString(colОбщаяПапка);
+                            if (!dbReader.IsDBNull(colКодОбщейПапки))
+                                f.Id = dbReader.GetInt32(colКодОбщейПапки).ToString();
+                            if (!dbReader.IsDBNull(colОбщаяПапка)) f.Name = dbReader.GetString(colОбщаяПапка);
 
-                                _commonFolders.Add(f);
-                            }
-
-                            //Кривая структура процедуры, которая возвращает два несвязанных между собой рекордсета!!!
-                            if (dbReader.NextResult())
-                                if (dbReader.HasRows)
-                                {
-                                    var colVPN = dbReader.GetOrdinal("VPN");
-                                    var colInternet = dbReader.GetOrdinal("Internet");
-                                    var colDialUp = dbReader.GetOrdinal("DialUp");
-
-                                    while (dbReader.Read())
-                                    {
-                                        if (!dbReader.IsDBNull(colVPN))
-                                            IsVPNGroup = dbReader.GetValue(colVPN).Equals(1);
-                                        if (!dbReader.IsDBNull(colInternet))
-                                            IsInternetGroup = dbReader.GetValue(colInternet).Equals(1);
-                                        if (!dbReader.IsDBNull(colDialUp))
-                                            IsDialUpGroup = dbReader.GetValue(colDialUp).Equals(1);
-                                    }
-                                }
+                            _commonFolders.Add(f);
                         }
+
+                        //Кривая структура процедуры, которая возвращает два несвязанных между собой рекордсета!!!
+                        if (dbReader.NextResult())
+                            if (dbReader.HasRows)
+                            {
+                                var colVPN = dbReader.GetOrdinal("VPN");
+                                var colInternet = dbReader.GetOrdinal("Internet");
+                                var colDialUp = dbReader.GetOrdinal("DialUp");
+
+                                while (dbReader.Read())
+                                {
+                                    if (!dbReader.IsDBNull(colVPN))
+                                        IsVPNGroup = dbReader.GetValue(colVPN).Equals(1);
+                                    if (!dbReader.IsDBNull(colInternet))
+                                        IsInternetGroup = dbReader.GetValue(colInternet).Equals(1);
+                                    if (!dbReader.IsDBNull(colDialUp))
+                                        IsDialUpGroup = dbReader.GetValue(colDialUp).Equals(1);
+                                }
+                            }
                     }
                 }
-
+                LoadedExternalProperties.Add("employee._commonFolders", DateTime.UtcNow);
                 return _commonFolders;
             }
         }
@@ -795,7 +832,7 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (!(RequiredRefreshInfo || _roles == null)) return _roles;
+                if (LoadedExternalProperties.ContainsKey("employee._roles")) return _roles;
 
                 _roles = new List<EmployeeRole>();
                 var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
@@ -811,7 +848,7 @@ namespace Kesco.Lib.Entities.Corporate
                             _roles.Add(tempUserRole);
                         }
                 }
-
+                LoadedExternalProperties.Add("employee._roles", DateTime.UtcNow);
                 return _roles;
             }
         }
@@ -823,7 +860,7 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (!(RequiredRefreshInfo || _rolesСurrentEmployes == null)) return _rolesСurrentEmployes;
+                if (LoadedExternalProperties.ContainsKey("employee._rolesСurrentEmployes")) return _rolesСurrentEmployes;
 
                 _rolesСurrentEmployes = new List<EmployeeRole>();
                 var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
@@ -840,6 +877,8 @@ namespace Kesco.Lib.Entities.Corporate
                         }
                 }
 
+                LoadedExternalProperties.Add("employee._rolesСurrentEmployes", DateTime.UtcNow);
+
                 return _rolesСurrentEmployes;
             }
         }
@@ -851,7 +890,7 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (!(RequiredRefreshInfo || _types == null)) return _types;
+                if (LoadedExternalProperties.ContainsKey("employee._types")) return _types;
 
                 _types = new List<EmployeePersonType>();
                 var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", int.Parse(Id)}};
@@ -869,6 +908,8 @@ namespace Kesco.Lib.Entities.Corporate
                         }
                 }
 
+                LoadedExternalProperties.Add("employee._types", DateTime.UtcNow);
+
                 return _types;
             }
         }
@@ -880,7 +921,7 @@ namespace Kesco.Lib.Entities.Corporate
         {
             get
             {
-                if (!(RequiredRefreshInfo || _groupMembers == null)) return _groupMembers;
+                if (LoadedExternalProperties.ContainsKey("employee._groupMembers")) return _groupMembers;
 
                 _groupMembers = new List<Employee>();
                 var sqlParams = new Dictionary<string, object> {{"@Id", int.Parse(Id)}};
@@ -896,6 +937,8 @@ namespace Kesco.Lib.Entities.Corporate
                             _groupMembers.Add(empl);
                         }
                 }
+
+                LoadedExternalProperties.Add("employee._groupMembers", DateTime.UtcNow);
 
                 return _groupMembers;
             }
@@ -924,24 +967,27 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         private void SetSimInfo()
         {
-            if (RequiredRefreshInfo || !_simGprsPackage.HasValue || !_simRequired.HasValue)
-            {
-                var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", Id}};
-                var dt = DBManager.GetData(SQLQueries.SELECT_СотрудникуПоДолжностиПоложенаSIM, ConnString,
-                    CommandType.Text, sqlParams);
+            if (LoadedExternalProperties.ContainsKey("employee._simInfo")) return;
+            
+            var sqlParams = new Dictionary<string, object> {{"@КодСотрудника", Id}};
+            var dt = DBManager.GetData(SQLQueries.SELECT_СотрудникуПоДолжностиПоложенаSIM, ConnString,
+                CommandType.Text, sqlParams);
 
-                _simGprsPackage = false;
-                _simRequired = false;
-                _simPost = "";
-                _simNumber = "";
-                if (dt.Rows.Count == 1)
-                {
-                    _simRequired = dt.Rows[0]["НеобходимаSIMКарта"].ToString() != "0";
-                    _simGprsPackage = dt.Rows[0]["ПодключитьGPRSПакет"].ToString() != "0";
-                    _simPost = dt.Rows[0]["Должность"].ToString();
-                    _simNumber = dt.Rows[0]["SIMКартаНомер"].ToString();
-                }
+            _simGprsPackage = false;
+            _simRequired = false;
+            _simPost = "";
+            _simNumber = "";
+            if (dt.Rows.Count == 1)
+            {
+                _simRequired = dt.Rows[0]["НеобходимаSIMКарта"].ToString() != "0";
+                _simGprsPackage = dt.Rows[0]["ПодключитьGPRSПакет"].ToString() != "0";
+                _simPost = dt.Rows[0]["Должность"].ToString();
+                _simNumber = dt.Rows[0]["SIMКартаНомер"].ToString();
             }
+
+            LoadedExternalProperties.Add("employee._simInfo", DateTime.UtcNow);
+
+
         }
 
         /// <summary>
@@ -979,6 +1025,121 @@ namespace Kesco.Lib.Entities.Corporate
         public override void Load()
         {
             using (var dbReader = new DBReader(SQLQueries.SELECT_ID_Сотрудник, EmployeeId, CommandType.Text, CN))
+            {
+                if (dbReader.HasRows)
+                {
+                    #region Получение порядкового номера столбца
+
+                    var colКодСотрудника = dbReader.GetOrdinal("КодСотрудника");
+                    var colCommonEmployeeID = dbReader.GetOrdinal("КодОбщегоСотрудника");
+                    var colLogin = dbReader.GetOrdinal("Login");
+                    var colСотрудникLocal = dbReader.GetOrdinal("СотрудникLocal");
+                    var colFioLocal = dbReader.GetOrdinal("ФИОLocal");
+                    var colСотрудник = dbReader.GetOrdinal("Сотрудник");
+                    var colFullNameEn = dbReader.GetOrdinal("Employee");
+                    var colФИО = dbReader.GetOrdinal("ФИО");
+                    var colFIO = dbReader.GetOrdinal("FIO");
+
+                    var colДополнение = dbReader.GetOrdinal("Дополнение");
+                    var colAddition = dbReader.GetOrdinal("Addition");
+
+                    var colЯзык = dbReader.GetOrdinal("Язык");
+                    var colStatus = dbReader.GetOrdinal("Состояние");
+                    var colGuid = dbReader.GetOrdinal("GUID");
+
+                    var colКодЛица = dbReader.GetOrdinal("КодЛица");
+                    var colКодЛицаЗаказчика = dbReader.GetOrdinal("КодЛицаЗаказчика");
+
+                    var colLastNameEn = dbReader.GetOrdinal("LastName");
+                    var colFirstNameEn = dbReader.GetOrdinal("FirstName");
+                    var colMiddleNameEn = dbReader.GetOrdinal("MiddleName");
+
+                    var colDisplayName = dbReader.GetOrdinal("DisplayName");
+                    var colEmail = dbReader.GetOrdinal("Email");
+                    var colPersonalFolder = dbReader.GetOrdinal("ЛичнаяПапка");
+
+                    var colGender = dbReader.GetOrdinal("Пол");
+
+                    var colFirstName = dbReader.GetOrdinal("Имя");
+                    var colLastName = dbReader.GetOrdinal("Фамилия");
+                    var colMiddleName = dbReader.GetOrdinal("Отчество");
+
+                    var colAccountDisabled = dbReader.GetOrdinal("AccountDisabled");
+                    var colПримечания = dbReader.GetOrdinal("Примечания");
+
+                    var colИзменил = dbReader.GetOrdinal("Изменил");
+                    var colИзменено = dbReader.GetOrdinal("Изменено");
+
+                    #endregion
+
+                    if (dbReader.Read())
+                    {
+                        Unavailable = false;
+
+                        Id = dbReader.GetInt32(colКодСотрудника).ToString();
+
+                        if (!dbReader.IsDBNull(colCommonEmployeeID))
+                            CommonEmployeeID = dbReader.GetInt32(colCommonEmployeeID).ToString();
+
+                        if (!dbReader.IsDBNull(colСотрудникLocal)) Name = dbReader.GetString(colСотрудникLocal);
+
+                        if (!dbReader.IsDBNull(colСотрудник)) FullName = dbReader.GetString(colСотрудник);
+                        if (!dbReader.IsDBNull(colFullNameEn)) FullNameEn = dbReader.GetString(colFullNameEn);
+
+                        if (!dbReader.IsDBNull(colДополнение)) Addition = dbReader.GetString(colДополнение);
+                        if (!dbReader.IsDBNull(colAddition)) AdditionEn = dbReader.GetString(colAddition);
+
+                        if (!dbReader.IsDBNull(colЯзык)) Language = dbReader.GetString(colЯзык);
+                        if (!dbReader.IsDBNull(colStatus)) Status = dbReader.GetByte(colStatus);
+
+                        if (!dbReader.IsDBNull(colGuid)) Guid = dbReader.GetGuid(colGuid);
+                        if (!dbReader.IsDBNull(colLogin)) Login = dbReader.GetString(colLogin);
+
+                        if (!dbReader.IsDBNull(colFioLocal)) NameShort = dbReader.GetString(colFioLocal);
+                        if (!dbReader.IsDBNull(colФИО)) FIO = dbReader.GetString(colФИО);
+                        if (!dbReader.IsDBNull(colFIO)) FIOEn = dbReader.GetString(colFIO);
+
+                        if (!dbReader.IsDBNull(colКодЛица)) PersonEmployeeId = dbReader.GetInt32(colКодЛица);
+                        if (!dbReader.IsDBNull(colКодЛицаЗаказчика))
+                            OrganizationId = dbReader.GetInt32(colКодЛицаЗаказчика);
+
+                        if (!dbReader.IsDBNull(colLastNameEn)) LastNameEn = dbReader.GetString(colLastNameEn);
+                        if (!dbReader.IsDBNull(colFirstNameEn)) FirstNameEn = dbReader.GetString(colFirstNameEn);
+                        if (!dbReader.IsDBNull(colMiddleNameEn)) MiddleNameEn = dbReader.GetString(colMiddleNameEn);
+
+                        if (!dbReader.IsDBNull(colDisplayName)) DisplayName = dbReader.GetString(colDisplayName);
+                        if (!dbReader.IsDBNull(colEmail)) Email = dbReader.GetString(colEmail);
+                        if (!dbReader.IsDBNull(colPersonalFolder))
+                            PersonalFolder = dbReader.GetString(colPersonalFolder);
+
+                        if (!dbReader.IsDBNull(colGender)) Gender = dbReader.GetString(colGender);
+
+                        if (!dbReader.IsDBNull(colLastName)) LastName = dbReader.GetString(colLastName);
+                        if (!dbReader.IsDBNull(colFirstName)) FirstName = dbReader.GetString(colFirstName);
+                        if (!dbReader.IsDBNull(colMiddleName)) MiddleName = dbReader.GetString(colMiddleName);
+                        if (!dbReader.IsDBNull(colAccountDisabled))
+                            AccountDisabled = dbReader.GetByte(colAccountDisabled);
+
+                        if (!dbReader.IsDBNull(colПримечания)) Notes = dbReader.GetString(colПримечания);
+
+                        if (!dbReader.IsDBNull(colИзменено)) Changed = dbReader.GetDateTime(colИзменено);
+                        if (!dbReader.IsDBNull(colИзменил)) ChangedBy = dbReader.GetInt32(colИзменил);
+                    }
+                }
+                else
+                {
+                    Unavailable = true;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Загрузка информации о сотруднике по GUID
+        /// </summary>
+        public void LoadByGuid(Guid guid)
+        {
+            var sqlParams = new Dictionary<string, object>{{"@GUID", guid}};
+            using (var dbReader = new DBReader(SQLQueries.SELECT_GUID_Сотрудник, CommandType.Text, CN, sqlParams))
             {
                 if (dbReader.HasRows)
                 {
@@ -1323,8 +1484,9 @@ namespace Kesco.Lib.Entities.Corporate
         /// </returns>
         public DataTable SupervisorsData()
         {
-            if (supervisorsData != null && !RequiredRefreshInfo) return supervisorsData;
-
+            
+            if (LoadedExternalProperties.ContainsKey("employee.supervisorsData")) return supervisorsData;
+            
             supervisorsData = new DataTable("SupervisorsData");
 
             var dr = supervisorsData.NewRow();
@@ -1335,6 +1497,8 @@ namespace Kesco.Lib.Entities.Corporate
             supervisorsData = DBManager.GetData(SQLQueries.SELECT_НепосредственныйРуководитель_Данные, CN,
                 CommandType.Text,
                 sqlParams);
+
+            LoadedExternalProperties.Add("employee.supervisorsData", DateTime.UtcNow);
 
             return supervisorsData;
         }
@@ -1394,11 +1558,12 @@ namespace Kesco.Lib.Entities.Corporate
         ///     Получение списка сотрудников, которые работатют на указанном рабочем месте
         /// </summary>
         /// <param name="wp">КодРасположения</param>
-        /// <returns>Список сотрудников</returns>
-        public List<Employee> EmployeesOnWorkPlace(int wp)
+        /// <param name="maxState">Максимальное состояние сотрудника</param>
+        /// <returns>Список сотрудников на рабочем месте</returns>
+        public List<Employee> EmployeesOnWorkPlace(int wp, int maxState = 3)
         {
             _employeesOnWorkPlace = new List<Employee>();
-            var sqlParams = new Dictionary<string, object> {{"@Id", wp}, {"@idEmpl", int.Parse(Id)}, {"@state", -1}};
+            var sqlParams = new Dictionary<string, object> {{"@Id", wp}, {"@idEmpl", int.Parse(Id)}, {"@state", maxState} };
             using (
                 var dbReader = new DBReader(SQLQueries.SELECT_СотрудникиНаРабочемМесте, CommandType.Text, CN,
                     sqlParams))

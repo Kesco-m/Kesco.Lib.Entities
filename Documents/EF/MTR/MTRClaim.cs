@@ -34,11 +34,11 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         public MTRClaim()
         {
             Type = DocTypeEnum.ЗаявкаНаПриобретениеМТР;
-            Organization = GetDocField("1799");
-            Subdivision = GetDocField("1800");
-            PerformerOfSubdivision = GetDocField("1801");
-            Basis = GetDocField("1802");
-            RequestItems = GetDocField("1803");
+            OrganizationField = GetDocField("1799");
+            SubdivisionField = GetDocField("1800");
+            PerformerOfSubdivisionField = GetDocField("1801");
+            BasisField = GetDocField("1802");
+            RequestItemsField = GetDocField("1803");
             Positions = new List<MTRClaimItem>();
             PositionDocLinks = new List<MtrChildDoc>();
         }
@@ -46,27 +46,27 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         /// <summary>
         ///     Организация
         /// </summary>
-        public DocField Organization { get; private set; }
+        public DocField OrganizationField { get; private set; }
 
         /// <summary>
         ///     Подразделение
         /// </summary>
-        public DocField Subdivision { get; private set; }
+        public DocField SubdivisionField { get; private set; }
 
         /// <summary>
         ///     Исполнитель от подразделения
         /// </summary>
-        public DocField PerformerOfSubdivision { get; private set; }
+        public DocField PerformerOfSubdivisionField { get; private set; }
 
         /// <summary>
         ///     Документ - основание
         /// </summary>
-        public DocField Basis { get; private set; }
+        public DocField BasisField { get; private set; }
 
         /// <summary>
         ///     Позиции заявки
         /// </summary>
-        public DocField RequestItems { get; }
+        public DocField RequestItemsField { get; }
 
         /// <summary>
         ///     Позиции заяки
@@ -85,10 +85,10 @@ namespace Kesco.Lib.Entities.Documents.EF.MTR
         public override Document Clone()
         {
             var mtrDoc = (MTRClaim) base.Clone();
-            mtrDoc.Organization = Organization.Clone();
-            mtrDoc.Subdivision = Subdivision.Clone();
-            mtrDoc.PerformerOfSubdivision = PerformerOfSubdivision.Clone();
-            mtrDoc.Basis = Basis.Clone();
+            mtrDoc.OrganizationField = OrganizationField.Clone();
+            mtrDoc.SubdivisionField = SubdivisionField.Clone();
+            mtrDoc.PerformerOfSubdivisionField = PerformerOfSubdivisionField.Clone();
+            mtrDoc.BasisField = BasisField.Clone();
 
             if (Positions != null)
             {

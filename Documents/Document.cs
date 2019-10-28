@@ -63,6 +63,7 @@ namespace Kesco.Lib.Entities.Documents
         /// </summary>
         public Document()
         {
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
             DocumentData = new DocumentData {Id = Id};
         }
 
@@ -1420,7 +1421,17 @@ ORDER BY Изменено DESC
         public List<Document> GetSequelDocs(int fieldId = 0)
         {
             if (DocId <= 0) return new List<Document>();
-            DocSequels sd = null;
+
+            var cacheKey = $"document._sequelDocs_{fieldId}";
+
+            DocSequels sd;
+
+            if (LoadedExternalProperties.ContainsKey(cacheKey))
+            {
+                sd = _sequelDocs.FirstOrDefault(x => x.FieldId == fieldId);
+                return sd?.Documents;
+            }
+
             if (_sequelDocs == null)
             {
                 sd = new DocSequels
@@ -1442,28 +1453,32 @@ ORDER BY Изменено DESC
                     };
                     _sequelDocs.Add(sd);
                 }
-
-                if (RequiredRefreshInfo)
+                else
                     sd.Documents = GetDocumentsList(SQLQueries.SELECT_ВсеВытекающие(DocId, fieldId));
             }
 
+
+            AddLoadedExternalProperties(cacheKey);
             return sd.Documents;
         }
 
         /// <summary>
-        ///     Загрузить вытекающие документы
+        /// Загурзить все вытекающие документы
         /// </summary>
-        public static DataTable LoadSequelDocs(string _type, string _field, string docId)
+        /// <param name="typeId">Код типа документа</param>
+        /// <param name="fieldId">Код поля документа</param>
+        /// <param name="docId">КодДокумента</param>
+        /// <returns></returns>
+        public static DataTable LoadSequelDocs(string typeId, string fieldId, string docId)
         {
-            var query = string.Format(@"
-SELECT D._КодДокумента КодДокумента, D.ДатаДокумента, D.КодТипаДокумента, D.КодРесурса1,ISNULL(D.Money1,0) Money1
-FROM vwСвязиДокументов S (nolock)
-			INNER JOIN vwДокументыДокументыДанные D (nolock) ON S.КодДокументаВытекающего=D.КодДокумента
-WHERE КодДокументаОснования={0} {1} {2}", docId,
-                _type.Length > 0 ? string.Format(" AND КодТипаДокумента IN ({0})", _type) : "",
-                _field.Length > 0 ? string.Format(" AND КодПоляДокумента IN ({0})", _field) : ""
-            );
-            return DBManager.GetData(query, ConnString);
+            var sqlParams = new Dictionary<string, object>
+            {
+                { "@КодДокументаОснования", int.Parse(docId)},
+                { "@КодТипаДокумента", typeId.Length > 0 ? int.Parse(typeId) : -1},
+                { "@КодПоляДокумента", fieldId.Length > 0 ? int.Parse(fieldId) : -1}
+            };
+
+            return DBManager.GetData(SQLQueries.SELECT_ВсеВытекающие_ПоПолю_ПоТипу,ConnString, CommandType.Text, sqlParams);
         }
 
         /// <summary>
@@ -1471,44 +1486,52 @@ WHERE КодДокументаОснования={0} {1} {2}", docId,
         /// </summary>
         public static DataTable LoadSequelDocs(string docId)
         {
-            var query = string.Format(@"
-SELECT D._КодДокумента КодДокумента, D.ДатаДокумента, D.КодТипаДокумента, КодПоляДокумента, D.КодРесурса1,ISNULL(D.Money1,0) Money1
-FROM vwСвязиДокументов S (nolock)
-			INNER JOIN vwДокументыДокументыДанные D (nolock) ON S.КодДокументаВытекающего=D.КодДокумента
-WHERE КодДокументаОснования={0}", docId
-            );
-            return DBManager.GetData(query, ConnString);
+            var sqlParams = new Dictionary<string, object>
+            {
+                { "@КодДокументаОснования", int.Parse(docId)},
+                { "@КодТипаДокумента",  -1},
+                { "@КодПоляДокумента",  -1}
+            };
+            return DBManager.GetData(SQLQueries.SELECT_ВсеВытекающие_ПоПолю_ПоТипу, ConnString, CommandType.Text, sqlParams);
         }
 
         /// <summary>
-        ///     Загрузить данные для документов по типу
+        /// Загрузить данные по последним отметкам транспортного узла
         /// </summary>
-        public static string GetTRWeselLastNote(string _id, string _docType, int idDoc, DateTime date)
+        /// <param name="trWeselId">Код транспортного узла</param>
+        /// <param name="typeId">Код типа документа</param>
+        /// <param name="docId">Код документа</param>
+        /// <param name="docDate">Дата документа</param>
+        /// <returns>Отметка транспортного узла</returns>
+        public static string GetTrWeselLastNote(string trWeselId, string typeId, int docId, DateTime docDate)
         {
-            var sqlQuery = string.Format(@"
-SELECT TOP 1 (CASE WHEN КодТУзла1={0} THEN Text100_1 ELSE Text100_2 END) Note FROM vwДокументыДокументыДанные (nolock)
-WHERE КодТипаДокумента={1} AND {0} IN (КодТУзла1,КодТУзла2) " + (idDoc > 0 ? " AND КодДокумента!=" + idDoc : "") + @"
-AND ДатаДокумента <='" + date.ToString("yyyyMMdd") + @"'
-ORDER BY ДатаДокумента DESC
-", _id, _docType);
 
-            var result = DBManager.ExecuteScalar(sqlQuery, CommandType.Text, Config.DS_document);
+            var sqlParams = new Dictionary<string, object>
+            {
+                { "@КодТУзла", int.Parse(trWeselId)},
+                { "@КодТипаДокумента", int.Parse(typeId)},
+                { "@ДатаДокумента", docDate},
+                { "@КодДокумента", docId}
+            };
+            
+            var result = DBManager.ExecuteScalar(SQLQueries.SELECT_ПоследниеОтметкиТранспортногоУзла, CommandType.Text, Config.DS_document, sqlParams);
             return result == null ? "" : result.ToString();
         }
 
         /// <summary>
-        ///     Получить количествовытекающих документов по куду поля и коду документа
+        ///     Получить количество вытекающих документов по коду поля и коду документа
         /// </summary>
-        /// <param name="docId"></param>
-        /// <param name="fieId"></param>
+        /// <param name="docId">Код документа вытекающего</param>
+        /// <param name="fieId">Код поля документа</param>
         /// <returns></returns>
-        public static bool CheckLoadSequelDoc(string docId, string fieId)
+        public static bool CheckExistsBasisDocs(string docId, string fieId)
         {
-            var sqlQuery = string.Format(@"
-                    SELECT COUNT(*) FROM vwСвязиДокументов
-                    WHERE КодПоляДокумента = {0} AND КодДокументаВытекающего = {1}", fieId, docId);
+            var sqlParams = new Dictionary<string, object>
+                {
+                    { "@КодПоляДокумента", int.Parse(fieId)},
+                    { "@КодДокументаВытекающего", int.Parse(docId)}};
 
-            var result = DBManager.ExecuteScalar(sqlQuery, CommandType.Text, Config.DS_document);
+            var result = DBManager.ExecuteScalar(SQLQueries.SELECT_КоличествоДокументовОснований, CommandType.Text, Config.DS_document, sqlParams);
 
             if (result == null)
                 return false;

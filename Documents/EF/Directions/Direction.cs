@@ -24,8 +24,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         private List<AdvancedGrant> _advancedGrantsAvailable;
         private List<CommonFolder> _commonFolders;
         private List<DomainName> _domainNames;
+
+
         private List<Language> _languages;
         private Location _locationWorkPlace;
+
         private Employee _sotrudnik;
         private Employee _sotrudnikParent;
         private Employee _supervisor;
@@ -230,15 +233,6 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         public List<DocLink> OsnovanieLinks { get; set; }
 
-        /// <summary>
-        ///     обновить информацию о сотруднике
-        /// </summary>
-        public bool SotrudnikRequiredRefreshInfo { get; set; }
-
-        /// <summary>
-        ///     обновить информацию о сотруднике родителя
-        /// </summary>
-        public bool SotrudnikParentRequiredRefreshInfo { get; set; }
 
         /// <summary>
         ///     Возвращает объект User по значению поля SotrudnikField
@@ -254,10 +248,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 else
                 {
                     if (_sotrudnik == null || _sotrudnik.Unavailable ||
-                        !_sotrudnik.Id.Equals(SotrudnikField.ValueString) || SotrudnikRequiredRefreshInfo)
+                        !_sotrudnik.Id.Equals(SotrudnikField.ValueString) ||
+                        !LoadedExternalProperties.ContainsKey(CacheKey_Sotrudnik))
                     {
                         _sotrudnik = new Employee(SotrudnikField.ValueString);
-                        SotrudnikRequiredRefreshInfo = false;
+                        AddLoadedExternalProperties(CacheKey_Sotrudnik);
                     }
                 }
 
@@ -280,10 +275,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 {
                     if (_sotrudnikParent == null || _sotrudnikParent.Unavailable ||
                         !_sotrudnikParent.Id.Equals(SotrudnikParentField.ValueString) ||
-                        SotrudnikParentRequiredRefreshInfo)
+                        !LoadedExternalProperties.ContainsKey(CacheKey_SotrudnikParent))
                     {
                         _sotrudnikParent = new Employee(SotrudnikParentField.ValueString);
-                        SotrudnikParentRequiredRefreshInfo = false;
+                        AddLoadedExternalProperties(CacheKey_SotrudnikParent);
                     }
                 }
 
@@ -305,8 +300,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 else
                 {
                     if (_supervisor == null || _supervisor.Unavailable ||
-                        !_supervisor.Id.Equals(SupervisorField.ValueString))
+                        !_supervisor.Id.Equals(SupervisorField.ValueString) ||
+                        !LoadedExternalProperties.ContainsKey(CacheKey_Supervisor))
                         _supervisor = new Employee(SupervisorField.ValueString);
+
+                    AddLoadedExternalProperties(CacheKey_Supervisor);
                 }
 
                 return _supervisor;
@@ -323,13 +321,17 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 if (SotrudnikField.ValueString.Length == 0)
                 {
                     _supervisorData = null;
-                    return _supervisorData;
                 }
 
-                if (_supervisorData != null && SupervisorField.ValueString.Length > 0 && !RequiredRefreshInfo)
-                    return _supervisorData;
+                else
+                {
+                    if (_supervisorData != null && SupervisorField.ValueString.Length > 0 &&
+                        LoadedExternalProperties.ContainsKey(CacheKey_SupervisorData))
+                        return _supervisorData;
 
-                _supervisorData = Sotrudnik.SupervisorsData();
+                    _supervisorData = Sotrudnik.SupervisorsData();
+                    AddLoadedExternalProperties(CacheKey_SupervisorData);
+                }
 
                 return _supervisorData;
             }
@@ -349,8 +351,12 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 else
                 {
                     if (_locationWorkPlace == null || _locationWorkPlace.Unavailable ||
-                        !_locationWorkPlace.Id.Equals(WorkPlaceField.ValueString))
+                        !_locationWorkPlace.Id.Equals(WorkPlaceField.ValueString) ||
+                        !LoadedExternalProperties.ContainsKey(CacheKey_LocationWorkPlace))
+                    {
                         _locationWorkPlace = new Location(WorkPlaceField.ValueString);
+                        AddLoadedExternalProperties(CacheKey_LocationWorkPlace);
+                    }
                 }
 
                 return _locationWorkPlace;
@@ -365,7 +371,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         {
             get
             {
-                if (_languages != null && !RequiredRefreshInfo) return _languages;
+                if (_languages != null && LoadedExternalProperties.ContainsKey(CacheKey_Languages))
+                    return _languages;
+
                 _languages = new List<Language>();
                 using (var dbReader = new DBReader(SQLQueries.SELECT_Языки, CommandType.Text, Config.DS_user))
                 {
@@ -378,6 +386,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                         }
                 }
 
+                AddLoadedExternalProperties(CacheKey_Languages);
                 return _languages;
             }
         }
@@ -390,7 +399,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         {
             get
             {
-                if (_domainNames != null && !RequiredRefreshInfo) return _domainNames;
+                if (_domainNames != null && LoadedExternalProperties.ContainsKey(CacheKey_DomainNames))
+                    return _domainNames;
+
                 _domainNames = new List<DomainName>();
                 using (var dbReader = new DBReader(SQLQueries.SELECT_DomainNames, CommandType.Text, Config.DS_user))
                 {
@@ -403,6 +414,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                         }
                 }
 
+                AddLoadedExternalProperties(CacheKey_DomainNames);
                 return _domainNames;
             }
         }
@@ -415,7 +427,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         {
             get
             {
-                if (_commonFolders != null && !RequiredRefreshInfo) return _commonFolders;
+                if (_commonFolders != null && LoadedExternalProperties.ContainsKey(CacheKey_CommonFolders))
+                    return _commonFolders;
+
                 _commonFolders = new List<CommonFolder>();
                 using (var dbReader = new DBReader(SQLQueries.SELECT_CommonFolders, CommandType.Text, Config.DS_user))
                 {
@@ -428,6 +442,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                         }
                 }
 
+                AddLoadedExternalProperties(CacheKey_CommonFolders);
                 return _commonFolders;
             }
         }
@@ -440,7 +455,9 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         {
             get
             {
-                if (_advancedGrants != null && !RequiredRefreshInfo) return _advancedGrants;
+                if (_advancedGrants != null && LoadedExternalProperties.ContainsKey(CacheKey_AdvancedGrants))
+                    return _advancedGrants;
+
                 _advancedGrants = new List<AdvancedGrant>();
                 using (var dbReader = new DBReader(SQLQueries.SELECT_AdvancedGrants, CommandType.Text, Config.DS_user))
                 {
@@ -453,6 +470,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                         }
                 }
 
+                AddLoadedExternalProperties(CacheKey_AdvancedGrants);
                 return _advancedGrants;
             }
         }
@@ -465,7 +483,10 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         {
             get
             {
-                if (_advancedGrantsAvailable != null && !RequiredRefreshInfo) return _advancedGrantsAvailable;
+                if (_advancedGrantsAvailable != null &&
+                    LoadedExternalProperties.ContainsKey(CacheKey_AdvancedGrantsAvailable))
+                    return _advancedGrantsAvailable;
+
                 _advancedGrantsAvailable = new List<AdvancedGrant>();
 
                 PositionAdvancedGrants.ForEach(delegate(PositionAdvancedGrant p)
@@ -489,6 +510,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     }
                 });
 
+                AddLoadedExternalProperties(CacheKey_AdvancedGrantsAvailable);
                 return _advancedGrantsAvailable;
             }
         }
@@ -604,6 +626,60 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
 
             return dt;
         }
+
+        #region Cache Keys
+
+        /// <summary>
+        ///     Ключ кэширования объекта Сотрудник
+        /// </summary>
+        public const string CacheKey_Sotrudnik = "direction._sotrudnik";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Сотрудник вместо/как
+        /// </summary>
+        public const string CacheKey_SotrudnikParent = "direction._sotrudnikParent";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Руководитель
+        /// </summary>
+        public const string CacheKey_Supervisor = "direction._supervisor";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Данные руководителя
+        /// </summary>
+        public const string CacheKey_SupervisorData = "direction._supervisorData";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Рабочее место
+        /// </summary>
+        public const string CacheKey_LocationWorkPlace = "direction._locationWorkPlace";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Языки
+        /// </summary>
+        public const string CacheKey_Languages = "direction._languages";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Общие папки
+        /// </summary>
+        public const string CacheKey_CommonFolders = "direction._commonFolders";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Дополнительные права
+        /// </summary>
+        public const string CacheKey_AdvancedGrants = "direction._advancedGrants";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Доступные дополнительные права
+        /// </summary>
+        public const string CacheKey_AdvancedGrantsAvailable = "direction._advancedGrantsAvailable";
+
+        /// <summary>
+        ///     Ключ кэширования объекта DomainNames
+        /// </summary>
+        public const string CacheKey_DomainNames = "direction._domainNames";
+
+        #endregion
 
         #region Позиции
 

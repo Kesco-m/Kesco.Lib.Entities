@@ -9,6 +9,7 @@ namespace Kesco.Lib.Entities.Corporate
     /// <summary>
     ///     Класс сущности "Дополнительные права для указаний"
     /// </summary>
+    [Serializable]
     public class AdvancedGrant : Entity
     {
         /// <summary>

@@ -18,6 +18,25 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         protected string _connectionString;
 
         /// <summary>
+        ///     Конструктор
+        /// </summary>
+        public ModelEquipment()
+        {
+
+        }
+
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        /// <param name="id">Код модели</param>
+        public ModelEquipment(string id)
+            : base(id)
+        {
+            Id = id;
+            FillData(id);
+        }
+
+        /// <summary>
         ///     Строка подключения к БД.
         /// </summary>
         public sealed override string CN
@@ -60,6 +79,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                     var colНазваниеNet = dbReader.GetOrdinal("НазваниеNet");
                     var colДрайвер = dbReader.GetOrdinal("Драйвер");
                     var colРесурс = dbReader.GetOrdinal("Ресурс");
+                    var colКодШаблонаIPТелефонов = dbReader.GetOrdinal("КодШаблонаIPТелефонов");
                     var colИзменил = dbReader.GetOrdinal("Изменил");
                     var colИзменено = dbReader.GetOrdinal("Изменено");
 
@@ -74,7 +94,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                         Name = dbReader.GetString(colМодельОборудования);
                         PN = dbReader.GetString(colPN);
                         CPU = dbReader.GetString(colCPU);
-                        MonitorSize = dbReader.GetDouble(colРазмерМонитора);
+                        MonitorSize = dbReader.GetFloat(colРазмерМонитора);
                         TypeMemoryId = dbReader.GetInt32(colКодТипаПамяти);
                         BankMemory = dbReader.GetByte(colБанковПамяти);
                         IsMultimedia = dbReader.GetByte(colМультимедиа);
@@ -82,6 +102,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                         NetName = dbReader.GetString(colНазваниеNet);
                         Driver = dbReader.GetString(colДрайвер);
                         LongWill = dbReader.GetString(colРесурс);
+                        VoipTemplateId = dbReader.GetInt32(colКодШаблонаIPТелефонов);
                         ChangeEmployeeId = dbReader.GetInt32(colИзменил);
                         ChangedDate = dbReader.GetDateTime(colИзменено);
                     }
@@ -90,6 +111,47 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                 {
                     Unavailable = true;
                 }
+            }
+        }
+
+        /// <summary>
+        ///     Метод сохранения
+        /// </summary>
+        /// <param name="isNew">Выполнить повторную загрузку</param>
+        public void Save(bool isNew)
+        {
+            var sqlParams = new Dictionary<string, object>
+            {
+                { "@КодРесурса", ResourceId },
+                { "@КодТипаОборудования", TypeEquipmentId },
+                { "@МодельОборудования", Name },
+                { "@PN", PN },
+                { "@CPU", CPU },
+                { "@РазмерМонитора", MonitorSize },
+                { "@КодТипаПамяти", TypeMemoryId },
+                { "@БанковПамяти", BankMemory },
+                { "@Мультимедиа", IsMultimedia },
+                { "@Net", Net },
+                { "@НазваниеNet", NetName },
+                { "@Драйвер", Driver },
+                { "@Ресурс", LongWill }
+            };
+
+            if (isNew)
+            {
+                var modId = DBManager.ExecuteScalar(SQLQueries.INSERT_МоделиОборудования,
+                    CommandType.Text, Config.DS_user, sqlParams);
+
+                if (modId != null)
+                    Id = modId.ToString();
+            }
+            else
+            {
+                sqlParams.Add("@КодМоделиОборудования", Id);
+                sqlParams.Add("@КодШаблонаIPТелефонов", VoipTemplateId);
+
+                DBManager.ExecuteNonQuery(SQLQueries.UPDATE_МоделиОборудования, CommandType.Text,
+                    Config.DS_user, sqlParams);
             }
         }
 
@@ -123,6 +185,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                     var colНазваниеNet = dbReader.GetOrdinal("НазваниеNet");
                     var colДрайвер = dbReader.GetOrdinal("Драйвер");
                     var colРесурс = dbReader.GetOrdinal("Ресурс");
+                    var colКодШаблонаIPТелефонов = dbReader.GetOrdinal("КодШаблонаIPТелефонов");
                     var colИзменил = dbReader.GetOrdinal("Изменил");
                     var colИзменено = dbReader.GetOrdinal("Изменено");
 
@@ -146,6 +209,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                         row.NetName = dbReader.GetString(colНазваниеNet);
                         row.Driver = dbReader.GetString(colДрайвер);
                         row.LongWill = dbReader.GetString(colРесурс);
+                        row.VoipTemplateId = dbReader.GetInt32(colКодШаблонаIPТелефонов);
                         row.ChangeEmployeeId = dbReader.GetInt32(colИзменил);
                         row.ChangedDate = dbReader.GetDateTime(colИзменено);
                         list.Add(row);
@@ -172,6 +236,14 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         ///     КодТипаОборудования (int, not null)
         /// </value>
         public int TypeEquipmentId { get; set; }
+
+        /// <summary>
+        ///     Название модели оборудования
+        /// </summary>
+        /// <value>
+        ///     Название (varchar(100), not null)
+        /// </value>
+        public new string Name { get; set; }
 
         /// <summary>
         ///     PartNumber
@@ -252,6 +324,14 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         ///     Ресурс (varchar(50), not null)
         /// </value>
         public string LongWill { get; set; }
+
+        /// <summary>
+        ///     КодШаблонаIPТелефонов
+        /// </summary>
+        /// <value>
+        ///     КодШаблонаIPТелефонов (int, null)
+        /// </value>
+        public int VoipTemplateId { get; set; }
 
         /// <summary>
         /// </summary>

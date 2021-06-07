@@ -39,9 +39,8 @@ namespace Kesco.Lib.Entities.Link
         ///     Конструктор по умолчанию
         /// </summary>
         public Link()
-
         {
-            ClearModel();
+            LoadedExternalProperties = new Dictionary<string, DateTime>();
         }
 
         /// <summary>

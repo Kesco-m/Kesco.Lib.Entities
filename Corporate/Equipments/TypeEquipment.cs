@@ -10,12 +10,36 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
     ///     Класс сущности Тип оборудования
     /// </summary>
     [Serializable]
+    [DBSource("ТипыОборудования")]
     public class TypeEquipment : Entity
     {
         /// <summary>
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         protected string _connectionString;
+
+        /// <summary>
+        /// Тип оборудования IPТелефон
+        /// </summary>
+        public const string IPТелефон = "30";
+
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        public TypeEquipment()
+        {
+            Name = "";
+        }
+
+        /// <summary>
+        ///     Конструктор
+        /// </summary>
+        /// <param name="id">Код типа оборудования</param>
+        public TypeEquipment(string id)
+            : base(id)
+        {
+            Load();
+        }
 
         /// <summary>
         ///     Строка подключения к БД.
@@ -32,54 +56,39 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         }
 
         /// <summary>
-        ///     Заполение объекта ТипОборудования по идентификатору
+        ///     Метод загрузки данных сущности Тип оборудования
         /// </summary>
-        /// <param name="id">Идентификатор</param>
-        public void FillData(string id)
+        public override void Load()
         {
-            using (
-                var dbReader = new DBReader(SQLQueries.SELECT_ID_ТипыОборудования, int.Parse(id), CommandType.Text, CN))
+            var sqlParams = new Dictionary<string, object> { { "@id", new object[] { Id, DBManager.ParameterTypes.Int32 } } };
+            FillData(DBManager.GetData(SQLQueries.SELECT_ID_ТипыОборудования, CN, CommandType.Text, sqlParams));
+        }
+
+        /// <summary>
+        ///     Инициализация сущности Тип оборудования на основе таблицы данных
+        /// </summary>
+        /// <param name="dt">Таблица данных</param>
+        protected override void FillData(DataTable dt)
+        {
+            if (dt.Rows.Count == 1)
             {
-                if (dbReader.HasRows)
-                {
-                    #region Получение порядкового номера столбца
-
-                    var colКодТипаОборудования = dbReader.GetOrdinal("КодТипаОборудования");
-                    var colТипОборудования = dbReader.GetOrdinal("ТипОборудования");
-                    var colТипОборудованияЛат = dbReader.GetOrdinal("ТипОборудованияЛат");
-                    var colSNобязателен = dbReader.GetOrdinal("SNобязателен");
-                    var colБезТочногоРасположения = dbReader.GetOrdinal("БезТочногоРасположения");
-                    var colЕстьХарактеристикиКомпьютера = dbReader.GetOrdinal("ЕстьХарактеристикиКомпьютера");
-                    var colЕстьХарактеристикиМонитора = dbReader.GetOrdinal("ЕстьХарактеристикиМонитора");
-                    var colЕстьХарактеристикиSIM = dbReader.GetOrdinal("ЕстьХарактеристикиSIM");
-                    var colЕстьХарактеристикиSoft = dbReader.GetOrdinal("ЕстьХарактеристикиSoft");
-                    var colЕстьТелефонныйНомер = dbReader.GetOrdinal("ЕстьТелефонныйНомер");
-                    var colЕстьMACадрес = dbReader.GetOrdinal("ЕстьMACадрес");
-                    var colЕстьСетевоеИмя = dbReader.GetOrdinal("ЕстьСетевоеИмя");
-
-                    #endregion
-
-                    if (dbReader.Read())
-                    {
-                        Unavailable = false;
-                        id = dbReader.GetInt32(colКодТипаОборудования).ToString();
-                        Name = dbReader.GetString(colТипОборудования);
-                        NameLat = dbReader.GetString(colТипОборудованияЛат);
-                        IsSnRequired = dbReader.GetByte(colSNобязателен);
-                        WithoutAccuratePositioning = dbReader.GetByte(colБезТочногоРасположения);
-                        IsСharacteristicsComputer = dbReader.GetByte(colЕстьХарактеристикиКомпьютера);
-                        IsСharacteristicsMonitor = dbReader.GetByte(colЕстьХарактеристикиМонитора);
-                        IsСharacteristicsSim = dbReader.GetByte(colЕстьХарактеристикиSIM);
-                        IsСharacteristicsSoft = dbReader.GetByte(colЕстьХарактеристикиSoft);
-                        ExistPhoneNumber = dbReader.GetByte(colЕстьТелефонныйНомер);
-                        ExistMacAddress = dbReader.GetByte(colЕстьMACадрес);
-                        ExistNetworkName = dbReader.GetByte(colЕстьСетевоеИмя);
-                    }
-                }
-                else
-                {
-                    Unavailable = true;
-                }
+                Unavailable = false;
+                Id = dt.Rows[0]["КодТипаОборудования"].ToString();
+                Name = dt.Rows[0]["ТипОборудования"].ToString();
+                NameLat = dt.Rows[0]["ТипОборудованияЛат"].ToString();
+                IsSnRequired = (byte)dt.Rows[0]["SNобязателен"];
+                WithoutAccuratePositioning = (byte)dt.Rows[0]["БезТочногоРасположения"];
+                IsСharacteristicsComputer = (byte)dt.Rows[0]["ЕстьХарактеристикиКомпьютера"];
+                IsСharacteristicsMonitor = (byte)dt.Rows[0]["ЕстьХарактеристикиМонитора"];
+                IsСharacteristicsSim = (byte)dt.Rows[0]["ЕстьХарактеристикиSIM"];
+                IsСharacteristicsSoft = (byte)dt.Rows[0]["ЕстьХарактеристикиSoft"];
+                ExistPhoneNumber = (byte)dt.Rows[0]["ЕстьТелефонныйНомер"];
+                ExistMacAddress = (byte)dt.Rows[0]["ЕстьMACадрес"];
+                ExistNetworkName = (byte)dt.Rows[0]["ЕстьСетевоеИмя"];
+            }
+            else
+            {
+                Unavailable = true;
             }
         }
 

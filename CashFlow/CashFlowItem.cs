@@ -236,7 +236,7 @@ namespace Kesco.Lib.Entities.CashFlow
             {
                 {"@КодСтатьиДвиженияДенежныхСредств", Id}
             };
-            DBManager.ExecuteNonQuery(SQLQueries.Delete_СтатьиДвиженияДенежныхСредств, CommandType.Text,
+            DBManager.ExecuteNonQuery(SQLQueries.DELETE_СтатьиДвиженияДенежныхСредств, CommandType.Text,
                 Config.DS_resource, sqlParams);
         }
     }

@@ -16,8 +16,17 @@ namespace Kesco.Lib.Entities
     /// </remarks>
     [Serializable]
     [DebuggerDisplay("ID = {Id}, Name = {Name}, Unavailable = {Unavailable}")]
-    public abstract class Entity
+    public abstract class Entity: ICloneable
     {
+        /// <summary>
+        /// Реализация клонирования объекта
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
+
         private string _name;
         
         /// <summary>
@@ -47,7 +56,7 @@ namespace Kesco.Lib.Entities
         /// <summary>
         ///     Признак нового документа
         /// </summary>
-        public bool IsNew => string.IsNullOrEmpty(Id) || Id == "0";
+        public virtual bool IsNew => string.IsNullOrEmpty(Id) || Id == "0";
 
         /// <summary>
         ///     Доступность сущности. Удалось по ключу создать экземпляр объекта. false = ok
@@ -87,6 +96,11 @@ namespace Kesco.Lib.Entities
         ///     Признак изменения сущности
         /// </summary>
         public bool IsModified { get; set; }
+
+        /// <summary>
+        ///     Признак составного идентификатора у сущности
+        /// </summary>
+        public bool IsMultiId { get; set; }
 
         /// <summary>
         ///     Строка подключения к БД.

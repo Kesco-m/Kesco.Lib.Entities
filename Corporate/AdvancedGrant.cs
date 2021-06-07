@@ -53,11 +53,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// </summary>
         public string NameEn { get; set; }
 
-        /// <summary>
-        ///     Можно выбирать
-        /// </summary>
-        public bool NotAlive { get; set; }
-
+        
         /// <summary>
         ///     Порядок
         /// </summary>
@@ -67,6 +63,16 @@ namespace Kesco.Lib.Entities.Corporate
         ///     ПараметрОтноситсяК
         /// </summary>
         public int RefersTo { get; set; }
+
+        /// <summary>
+        /// Битовое значение в каких задачах можно выбирать
+        /// </summary>
+        public int TaskChoose { get; set; }
+
+        /// <summary>
+        /// Битовое значение по-умолчанию для указанных задач
+        /// </summary>
+        public int TaskDefault { get; set; }
 
         /// <summary>
         ///     Метод загрузки данных сущности "Дополнительное право"
@@ -86,7 +92,8 @@ namespace Kesco.Lib.Entities.Corporate
             var colКод = dbReader.GetOrdinal("КодДопПараметраУказанийИТ");
             var colОписание = dbReader.GetOrdinal("Описание");
             var colNameEn = dbReader.GetOrdinal("ОписаниеЛат");
-            var colNotAlive = dbReader.GetOrdinal("НельзяВыбрать");
+            var colЗадачиВыбор = dbReader.GetOrdinal("ЗадачиВыбор");
+            var colЗадачиВключено = dbReader.GetOrdinal("ЗадачиВключено");
             var colOrderOutput = dbReader.GetOrdinal("ПорядокВывода");
             var colRefersTo = dbReader.GetOrdinal("ПараметрОтноситсяК");
             Unavailable = false;
@@ -94,7 +101,8 @@ namespace Kesco.Lib.Entities.Corporate
             if (!dbReader.IsDBNull(colКод)) Id = dbReader.GetInt32(colКод).ToString();
             if (!dbReader.IsDBNull(colОписание)) Name = dbReader.GetString(colОписание);
             if (!dbReader.IsDBNull(colNameEn)) NameEn = dbReader.GetString(colNameEn);
-            if (!dbReader.IsDBNull(colNotAlive)) NotAlive = Convert.ToBoolean(dbReader.GetByte(colNotAlive));
+            if (!dbReader.IsDBNull(colЗадачиВыбор)) TaskChoose = dbReader.GetInt32(colЗадачиВыбор);
+            if (!dbReader.IsDBNull(colЗадачиВключено)) TaskDefault = dbReader.GetInt32(colЗадачиВключено);
             if (!dbReader.IsDBNull(colOrderOutput)) OrderOutput = Convert.ToInt32(dbReader.GetByte(colOrderOutput));
             if (!dbReader.IsDBNull(colRefersTo)) RefersTo = dbReader.GetInt32(colRefersTo);
         }
@@ -111,7 +119,8 @@ namespace Kesco.Lib.Entities.Corporate
                 Id = dt.Rows[0]["КодДопПараметраУказанийИТ"].ToString();
                 Name = dt.Rows[0]["Описание"].ToString();
                 NameEn = dt.Rows[0]["ОписаниеЛат"].ToString();
-                NotAlive = int.Parse(dt.Rows[0]["НельзяВыбрать"].ToString()) == 1;
+                TaskChoose = int.Parse(dt.Rows[0]["ЗадачиВыбор"].ToString());
+                TaskDefault= int.Parse(dt.Rows[0]["ЗадачиВключено"].ToString());
                 OrderOutput = int.Parse(dt.Rows[0]["ПорядокВывода"].ToString());
                 RefersTo = int.Parse(dt.Rows[0]["ПараметрОтноситсяК"].ToString());
             }

@@ -34,7 +34,7 @@ namespace Kesco.Lib.Entities.Corporate
         ///     Контакт
         /// </summary>
         public string Contact { get; set; }
-
+        
         /// <summary>
         ///     Примечание
         /// </summary>

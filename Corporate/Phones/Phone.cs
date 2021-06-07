@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Text.RegularExpressions;
-using Kesco.Lib.DALC;
-using Kesco.Lib.Web.Settings;
 
 namespace Kesco.Lib.Entities.Corporate.Phones
 {
@@ -13,95 +9,73 @@ namespace Kesco.Lib.Entities.Corporate.Phones
     public class Phone
     {
         /// <summary>
-        ///     Процедура разбора телефонного номера на части
+        ///     Разбитие телефонного номера на части
         /// </summary>
-        /// <param name="textNum">Полный телефонный номер, которвый нужно разобрать</param>
-        /// <param name="p_areaName">Название территории</param>
-        /// <param name="p_telCodeCountry">Телефонный код страны</param>
-        /// <param name="p_telCodeInCountry">Телефонный код в стране</param>
-        /// <param name="p_direction">Направление</param>
-        /// <param name="p_phone">Местный номер</param>
-        public static void GetPhoneNumberInfo(string textNum, ref string p_areaName, ref string p_telCodeCountry,
-            ref string p_telCodeInCountry,
-            ref string p_direction, ref string p_phone)
+        /// <param name="area">Информация о частях телефонного номера</param>
+        /// <param name="phone">Телефонный номер</param>
+        public static void AdjustPhoneNumber(ref AreaPhoneInfo area, ref string phone)
         {
-            var p_dlinaCoda = 0;
+            var number = Regex.Replace(area.CountryPhoneCode + area.PhoneCodeInCountry + phone, @"\D", "");
+            phone = string.Empty;
 
-            p_phone = "";
-            p_direction = "";
-            p_telCodeCountry = "";
-            p_telCodeInCountry = "";
-            p_areaName = "";
-
-            textNum = Regex.Replace(textNum, @"\D", "");
-
-            if (textNum.Length == 0) return;
-
-            if (p_telCodeCountry.Trim().Length == 0)
+            //сделаем замены в номере
+            if (area.CountryPhoneCode.Trim().Length == 0 && area.PhoneCodeInCountry.Trim().Length == 0)
             {
-                if (textNum.StartsWith("810"))
-                    textNum = "+" + textNum.Remove(0, 3);
-                if (textNum.StartsWith("00"))
-                    textNum = "+" + textNum.Remove(0, 2);
-                else if (textNum.StartsWith("8"))
-                    textNum = "+7" + textNum.Remove(0, 1);
+                if (number.StartsWith("810"))
+                    number = "+" + number.Remove(0, 3);
+                else if (number.StartsWith("00"))
+                    number = "+" + number.Remove(0, 2);
+                else if (number.StartsWith("8"))
+                    number = "+7" + number.Remove(0, 1);
 
-                if (textNum.StartsWith("+"))
-                    textNum = textNum.Remove(0, 1);
-
-                if (textNum.Length == 0) return;
+                if (number.StartsWith("+"))
+                    number = number.Remove(0, 1);
+                
             }
 
+            if (number.Length == 0) return;
 
-            var inputParameters = new Dictionary<string, object>();
-            var outpuParameters = new Dictionary<string, object>();
+            if (area.CountryPhoneCode.Trim().Length == 0 && area.PhoneCodeInCountry.Trim().Length > 0) return;
 
-            //--------------------------
+            var areaInfo2 = AreaPhoneInfo.GetAreaPhoneInfo(number);
 
-            inputParameters.Add("@Телефон", textNum);
+            if (areaInfo2 == null) return;
 
-            outpuParameters.Add("@Направление", p_direction);
-            outpuParameters.Add("@ТелКодСтраны", p_telCodeCountry);
-            outpuParameters.Add("@ТелКодВСтране", p_telCodeInCountry);
-            outpuParameters.Add("@ДлинаКодаОбласти", p_dlinaCoda);
-            outpuParameters.Add("@Территория", p_areaName);
+            area = areaInfo2;
 
+            var countryPhoneCode = area.CountryPhoneCode;
+            var codeLength = area.LengthPhoneCodeInCountry ?? 0;
 
-            DBManager.ExecuteNonQuery(SQLQueries.SELECT_ЧастиТелефонногоНомера, CommandType.Text, Config.DS_user,
-                inputParameters, outpuParameters);
+            var phoneWithoutCountry = number;
+            if (phoneWithoutCountry.StartsWith(countryPhoneCode))
+            {
+                phoneWithoutCountry = number.Remove(0, countryPhoneCode.Length);
+                area.PhoneCodeInCountry =
+                    phoneWithoutCountry.Substring(0, Math.Min(codeLength, phoneWithoutCountry.Length));
+            }
 
-            p_direction = outpuParameters["@Направление"].ToString();
-            p_telCodeCountry = outpuParameters["@ТелКодСтраны"].ToString();
-            p_telCodeInCountry = outpuParameters["@ТелКодВСтране"].ToString();
-            p_dlinaCoda =
-                outpuParameters["@ДлинаКодаОбласти"] == null ||
-                outpuParameters["@ДлинаКодаОбласти"].ToString().Length == 0
-                    ? 0
-                    : int.Parse(outpuParameters["@ДлинаКодаОбласти"].ToString());
-            p_areaName = outpuParameters["@Территория"].ToString();
-
-            //--------------------------
-
-            var phoneNum = textNum.Remove(0, string.Concat(p_telCodeCountry, p_telCodeInCountry).Length);
+            var phoneCode = string.Concat(countryPhoneCode, area.PhoneCodeInCountry);
+            var phoneNum = number;
+            if (number.StartsWith(phoneCode)) phoneNum = number.Remove(0, phoneCode.Length);
             if (phoneNum.Length > 0)
             {
-                var Phone2 = "";
+                var phone2 = "";
                 //возмьем из исходного номера столько цифр с конца пока не получится номер Phone2
-                for (var i = 0; i < textNum.Length; i++)
+                for (var i = 0; i < number.Length; i++)
                 {
-                    p_phone = textNum[textNum.Length - 1 - i] + p_phone;
+                    phone = number[number.Length - 1 - i] + phone;
 
-                    if (char.IsDigit(textNum[textNum.Length - 1 - i]))
-                        Phone2 = textNum[textNum.Length - 1 - i] + Phone2;
+                    if (char.IsDigit(number[number.Length - 1 - i]))
+                        phone2 = number[number.Length - 1 - i] + phone2;
 
-                    if (phoneNum == Phone2)
+                    if (phoneNum == phone2)
                         break;
                 }
             }
 
-            var lengthCode = Math.Min(p_dlinaCoda, p_telCodeInCountry.Length);
-            p_phone = p_telCodeInCountry.Substring(lengthCode, p_telCodeInCountry.Length - lengthCode) + p_phone;
-            p_telCodeInCountry = p_telCodeInCountry.Substring(0, lengthCode);
+            var length = Math.Min(codeLength, area.PhoneCodeInCountry.Length);
+            phone = area.PhoneCodeInCountry.Substring(length, area.PhoneCodeInCountry.Length - length) + phone;
+            area.PhoneCodeInCountry = area.PhoneCodeInCountry.Substring(0, length);
         }
     }
 }

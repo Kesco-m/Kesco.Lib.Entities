@@ -36,5 +36,10 @@ namespace Kesco.Lib.Entities
         ///     Отображать сообщение в размере Ntf
         /// </summary>
         public bool SizeIsNtf { get; set; }
+
+        /// <summary>
+        ///     Дополнительный класс CSS
+        /// </summary>
+        public string CSSClass { get; set; }
     }
 }

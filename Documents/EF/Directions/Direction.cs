@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.BaseExtention.Enums.Docs;
 using Kesco.Lib.DALC;
@@ -20,6 +22,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
     [Serializable]
     public class Direction : Document, IDocumentWithPositions
     {
+       
         private List<AdvancedGrant> _advancedGrants;
         private List<AdvancedGrant> _advancedGrantsAvailable;
         private List<CommonFolder> _commonFolders;
@@ -28,11 +31,24 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
 
         private List<Language> _languages;
         private Location _locationWorkPlace;
+        private Location _locationWorkPlaceTo;
 
         private Employee _sotrudnik;
         private Employee _sotrudnikParent;
-        private Employee _supervisor;
+        
         private DataTable _supervisorData;
+
+        private DataTable _groupInconsistencies;
+
+        /// <summary>
+        /// Акксессор к ресурсам, относящимся к данному объекту
+        /// </summary>
+        public ResourceManager Resx = Localization.Resources.ResxDocsDirection;
+
+        /// <summary>
+        /// Признак изменялся ли доступ к корпоративной сети
+        /// </summary>
+        public bool AccessEthernetChange { get; set; } = false;
 
         /// <summary>
         ///     Конструктор
@@ -42,18 +58,13 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             Type = DocTypeEnum.УказаниеВОтделИтНаОрганизациюРабочегоМеста;
 
             SotrudnikField = GetDocField("1390");
-            SotrudnikPostField = GetDocField("1391");
-            SupervisorField = GetDocField("1392");
-
+            
             RedirectNumField = GetDocField("1397");
-
-            OsnovanieField = GetDocField("1407");
-            OsnovanieBind = new BaseDocFacade(this, OsnovanieField);
-
+            
             WorkPlaceTypeField = GetDocField("1809");
             WorkPlaceField = GetDocField("1394");
-
-
+            WorkPlaceToField = GetDocField("1822");
+            
             PhoneEquipField = GetDocField("1395");
             PhoneLinkField = GetDocField("1396");
 
@@ -67,7 +78,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             SotrudnikParentField = GetDocField("1413");
             MailNameField = GetDocField("1418");
             DomainField = GetDocField("1419");
-            DisplayNameField = GetDocField("1420");
+            
             SotrudnikLanguageField = GetDocField("1426");
 
             SotrudnikPersonField = GetDocField("1470");
@@ -87,17 +98,8 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         ///     Сотрудник
         /// </summary>
         public DocField SotrudnikField { get; }
-
-        /// <summary>
-        ///     Должность
-        /// </summary>
-        public DocField SotrudnikPostField { get; }
-
-        /// <summary>
-        ///     Непосредственный руководитель
-        /// </summary>
-        public DocField SupervisorField { get; }
-
+        
+        
         /// <summary>
         ///     Мобильный телефон сотрудника
         /// </summary>
@@ -112,6 +114,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         ///     Организовать рабочее место
         /// </summary>
         public DocField WorkPlaceField { get; }
+
+        /// <summary>
+        ///     Организовать переезд на рабочее место
+        /// </summary>
+        public DocField WorkPlaceToField { get; }
 
         /// <summary>
         ///     Телефон
@@ -168,11 +175,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         public DocField DomainField { get; }
 
-        /// <summary>
-        ///     DisplayName
-        /// </summary>
-        public DocField DisplayNameField { get; }
-
+        
         /// <summary>
         ///     Предпочитаемый язык
         /// </summary>
@@ -198,11 +201,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         public DocField PersonEmployerHeadField { get; }
 
-        /// <summary>
-        ///     Документ о приеме на работу
-        /// </summary>
-        public DocField OsnovanieField { get; }
-
+       
         /// <summary>
         ///     Доступ к общим папкам
         /// </summary>
@@ -223,11 +222,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// </summary>
         public DocField PositionTypesField { get; }
 
-        /// <summary>
-        ///     Документ о приеме на работу
-        /// </summary>
-        public BaseDocFacade OsnovanieBind { get; }
-
+        
         /// <summary>
         ///     Список документов
         /// </summary>
@@ -286,30 +281,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             }
         }
 
-        /// <summary>
-        ///     Возвращает объект User по значению поля SupervisorField
-        /// </summary>
-        public Employee Supervisor
-        {
-            get
-            {
-                if (SupervisorField.ValueString.Length == 0)
-                {
-                    _supervisor = null;
-                }
-                else
-                {
-                    if (_supervisor == null || _supervisor.Unavailable ||
-                        !_supervisor.Id.Equals(SupervisorField.ValueString) ||
-                        !LoadedExternalProperties.ContainsKey(CacheKey_Supervisor))
-                        _supervisor = new Employee(SupervisorField.ValueString);
-
-                    AddLoadedExternalProperties(CacheKey_Supervisor);
-                }
-
-                return _supervisor;
-            }
-        }
+       
 
         /// <summary>
         ///     Данные руководителя сотрудника
@@ -325,7 +297,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
 
                 else
                 {
-                    if (_supervisorData != null && SupervisorField.ValueString.Length > 0 &&
+                    if (_supervisorData != null && 
                         LoadedExternalProperties.ContainsKey(CacheKey_SupervisorData))
                         return _supervisorData;
 
@@ -360,6 +332,32 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 }
 
                 return _locationWorkPlace;
+            }
+        }
+
+        /// <summary>
+        ///     Возвращает объект Location по значению поля LocationWorkPlaceField
+        /// </summary>
+        public Location LocationWorkPlaceTo
+        {
+            get
+            {
+                if (WorkPlaceToField.ValueString.Length == 0)
+                {
+                    _locationWorkPlaceTo = null;
+                }
+                else
+                {
+                    if (_locationWorkPlaceTo == null || _locationWorkPlaceTo.Unavailable ||
+                        !_locationWorkPlaceTo.Id.Equals(WorkPlaceToField.ValueString) ||
+                        !LoadedExternalProperties.ContainsKey(CacheKey_LocationWorkPlaceTo))
+                    {
+                        _locationWorkPlaceTo = new Location(WorkPlaceToField.ValueString);
+                        AddLoadedExternalProperties(CacheKey_LocationWorkPlaceTo);
+                    }
+                }
+
+                return _locationWorkPlaceTo;
             }
         }
 
@@ -500,13 +498,16 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                     var g = _advancedGrantsAvailable.FirstOrDefault(x => x.Id == grant.Id);
                     if (g != null)
                     {
-                        g.NotAlive = grant.NotAlive;
+                        g.TaskChoose = grant.TaskChoose;
+                        g.TaskDefault = grant.TaskDefault;
                         g.OrderOutput = grant.OrderOutput;
                         g.RefersTo = grant.RefersTo;
                     }
-                    else if (!grant.NotAlive)
+                    else if (grant.TaskChoose>0 && WorkPlaceTypeField.ValueInt > 0)
                     {
-                        _advancedGrantsAvailable.Add(grant);
+                        var bit = (int)Math.Pow(2, WorkPlaceTypeField.ValueInt - 1);
+                        if ((grant.TaskChoose & bit) == bit) 
+                            _advancedGrantsAvailable.Add(grant);
                     }
                 });
 
@@ -514,22 +515,7 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
                 return _advancedGrantsAvailable;
             }
         }
-
-        /// <summary>
-        ///     Сотрудник указания имеет логин
-        /// </summary>
-        public bool SotrudnikExistLogin
-        {
-            get
-            {
-                if (SotrudnikField.ValueString.Length == 0) return false;
-                if (Sotrudnik.Unavailable) return false;
-
-                return Sotrudnik.Login.Length > 0;
-            }
-        }
-
-        /// <summary>
+                        /// <summary>
         ///     Сохранение позиций документа
         /// </summary>
         /// <param name="reloadPostions"></param>
@@ -591,22 +577,20 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         /// <summary>
         ///     Форматирование номера мобильно телефона
         /// </summary>
-        /// <param name="phoneNum">Номер телефона</param>
+        /// <param name="phoneNumber">Номер телефона</param>
         /// <returns>Направление</returns>
-        public string FormatingMobilNumber(ref string phoneNum)
+        public string FormatingMobilNumber(ref string phoneNumber)
         {
-            if (phoneNum.Length == 0) return "";
-            var areaName = "";
-            var telCodeCountry = "";
-            var telCodeInCountry = "";
-            var direction = "";
-            var phone = "";
+            if (phoneNumber.Length == 0) return "";
+           
+            var area = new AreaPhoneInfo();
+            Phone.AdjustPhoneNumber(ref area, ref phoneNumber);
 
-            Phone.GetPhoneNumberInfo(phoneNum, ref areaName, ref telCodeCountry,
-                ref telCodeInCountry, ref direction, ref phone);
-            phoneNum = Contact.FormatingContact(22, telCodeCountry, telCodeInCountry, phone, "");
+            if (area == null) return "";
 
-            return direction;
+            phoneNumber = Contact.FormatingContact(22, area.CountryPhoneCode, area.PhoneCodeInCountry, phoneNumber, "");
+
+            return area.Direction;
         }
 
         /// <summary>
@@ -627,7 +611,38 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
             return dt;
         }
 
+        /// <summary>
+        /// Получение несоответствий в правах в группе посмненной работы
+        /// </summary>
+        public DataTable GetAccessGroupInconsistencies
+        {
+            get
+            {
+
+                if (LoadedExternalProperties.ContainsKey("direction._groupInconsistencies"))
+                    return _groupInconsistencies;
+                _groupInconsistencies = new DataTable();
+
+                var sqlParams = new Dictionary<string, object>();
+                sqlParams.Add("@КодСотрудника", SotrudnikField.Value);
+                sqlParams.Add("@КодДокумента", int.Parse(Id));
+
+                var personServer = new SqlConnection(Config.DS_person).DataSource;
+
+                _groupInconsistencies = DBManager.GetData(string.Format(SQLQueries.SELECT_НесоотвествиеПравСотрудниковВГруппе,personServer), Config.DS_user,
+                    CommandType.Text, sqlParams);
+
+                LoadedExternalProperties.Add("direction._groupInconsistencies", DateTime.UtcNow);
+                return _groupInconsistencies;
+            }
+        }
+
         #region Cache Keys
+
+        /// <summary>
+        ///     Ключ кэширования объекта Сотрудник
+        /// </summary>
+        public const string CacheKey_GroupInconsistencies = "direction._groupInconsistencies";
 
         /// <summary>
         ///     Ключ кэширования объекта Сотрудник
@@ -653,6 +668,11 @@ namespace Kesco.Lib.Entities.Documents.EF.Directions
         ///     Ключ кэширования объекта Рабочее место
         /// </summary>
         public const string CacheKey_LocationWorkPlace = "direction._locationWorkPlace";
+
+        /// <summary>
+        ///     Ключ кэширования объекта Рабочее место на
+        /// </summary>
+        public const string CacheKey_LocationWorkPlaceTo = "direction._locationWorkPlaceTo";
 
         /// <summary>
         ///     Ключ кэширования объекта Языки

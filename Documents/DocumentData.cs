@@ -99,6 +99,7 @@ namespace Kesco.Lib.Entities.Documents
                     var colКодСотрудника2 = dbReader.GetOrdinal("КодСотрудника2");
                     var colКодСотрудника3 = dbReader.GetOrdinal("КодСотрудника3");
                     var colКодРасположения1 = dbReader.GetOrdinal("КодРасположения1");
+                    var colКодРасположения2 = dbReader.GetOrdinal("КодРасположения2");
                     var colКодБазисаПоставки = dbReader.GetOrdinal("КодБазисаПоставки");
                     var colКодВидаТранспорта = dbReader.GetOrdinal("КодВидаТранспорта");
                     var colКодМестаХранения = dbReader.GetOrdinal("КодМестаХранения");
@@ -190,6 +191,8 @@ namespace Kesco.Lib.Entities.Documents
                         if (!dbReader.IsDBNull(colКодСотрудника3)) EmployeeId3 = dbReader.GetInt32(colКодСотрудника3);
                         if (!dbReader.IsDBNull(colКодРасположения1))
                             LocationId1 = dbReader.GetInt32(colКодРасположения1);
+                        if (!dbReader.IsDBNull(colКодРасположения2))
+                            LocationId2 = dbReader.GetInt32(colКодРасположения2);
                         if (!dbReader.IsDBNull(colКодБазисаПоставки))
                             BaseDeliveryId = dbReader.GetInt32(colКодБазисаПоставки);
                         if (!dbReader.IsDBNull(colКодВидаТранспорта))
@@ -327,6 +330,9 @@ namespace Kesco.Lib.Entities.Documents
 
             if (original.LocationId1 != LocationId1)
                 return true;
+
+            //if (original.LocationId2 != LocationId2)
+            //    return true;
 
             if (original.BaseDeliveryId != BaseDeliveryId)
                 return true;
@@ -622,6 +628,11 @@ namespace Kesco.Lib.Entities.Documents
         ///     Поле КодРасположения1[int] NULL
         /// </summary>
         public int? LocationId1 { get; set; }
+
+        /// <summary>
+        ///     Поле КодРасположения2[int] NULL
+        /// </summary>
+        public int? LocationId2 { get; set; }
 
         /// <summary>
         ///     Поле КодБазисаПоставки [int] NULL

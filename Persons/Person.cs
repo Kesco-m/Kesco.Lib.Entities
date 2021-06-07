@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
@@ -16,6 +17,7 @@ namespace Kesco.Lib.Entities.Persons
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
         private static string _connectionString;
+        private List<PersonLogo> _logos;
 
         /// <summary>
         ///     Конструктор
@@ -144,7 +146,7 @@ namespace Kesco.Lib.Entities.Persons
         /// </summary>
         public override void Load()
         {
-            var sqlParams = new Dictionary<string, object> {{"@id", new object[] {Id, DBManager.ParameterTypes.Int32}}};
+            var sqlParams = new Dictionary<string, object> { { "@id", new object[] { Id, DBManager.ParameterTypes.Int32 } } };
             FillData(DBManager.GetData(SQLQueries.SELECT_ID_Лицо, CN, CommandType.Text, sqlParams));
         }
 
@@ -241,5 +243,105 @@ namespace Kesco.Lib.Entities.Persons
         public char Sex { get; set; }
 
         #endregion
+
+
+        /// <summary>
+        /// Получение списка контактов лица
+        /// </summary>        
+        /// <returns>Список контактов</returns>
+        public List<PersonContact> GetPersonContacts()
+        {
+            var sqlParams = new Dictionary<string, object> { { "@КодЛица", int.Parse(Id) } };
+            var dt = DALC.DBManager.GetData(SQLQueries.SP_Лица_Контакты, Config.DS_person, CommandType.StoredProcedure, sqlParams);
+
+            var result = dt.AsEnumerable().Select(dr => new PersonContact
+            {
+                ContactId = dr.Field<int>("КодКонтакта"),
+                TypeContactId = dr.Field<int>("КодТипаКонтакта"),
+                Icon = dr.Field<string>("icon"),
+                TypeContact = dr.Field<string>("ТипКонтакта"),
+                Contact = dr.Field<string>("Контакт"),
+                Description = dr.Field<string>("Примечание"),
+                InternationalNumber = dr.Field<string>("НомерМеждународный"),
+                Order = dr.Field<int>("Порядок")
+            }).ToList();
+
+            return result;
+
+        }
+
+
+        /// <summary>
+        ///     Список логотипов лица
+        /// </summary>
+        public List<PersonLogo> Logos
+        {
+            get
+            {
+                if (LoadedExternalProperties.ContainsKey("person._logos")) return _logos;
+
+                _logos = new List<PersonLogo>();
+                var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) } };
+                using (
+                    var dbReader = new DBReader(SQLQueries.SELECT_ЛоготипыЛица, CommandType.Text, CN,
+                        sqlParams))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var ph = new PersonLogo();
+                            ph.LoadFromDbReader(dbReader);
+                            _logos.Add(ph);
+                        }
+                }
+
+                LoadedExternalProperties.Add("person._logos", DateTime.UtcNow);
+
+                return _logos;
+            }
+        }
+
+        /// <summary>
+        /// Является ли лицо сотрудником
+        /// </summary>
+        public int EmployeeId
+        {
+
+            get
+            {
+                var sqlParams = new Dictionary<string, object> { { "@КодЛица", new object[] { Id, DBManager.ParameterTypes.Int32 } } };
+                var emplId = DBManager.ExecuteScalar(SQLQueries.SELECT_PERSON_ID_Сотрудник, CommandType.Text, Config.DS_user, sqlParams);
+                if (emplId == null || emplId.Equals(System.DBNull.Value))
+                    return 0;
+
+                return int.Parse(emplId.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Существуют ли действующие на текущую дату реквизиты
+        /// </summary>
+        /// <returns></returns>
+        public bool ExistsActualData()
+        {
+            if (IsNew) return false;
+            var sqlParams = new Dictionary<string, object>() { { "@КодЛица", int.Parse(Id) }, { "@Дата", DateTime.Now } };
+            var ret = false;
+            if (Type == 1)
+            {
+                var sqlQuery = SQLQueries.SELECT_КарточкаЮрЛица_ДействующаяНаДату;
+
+                using (var dr = new DBReader(sqlQuery, CommandType.Text, Config.DS_person, sqlParams))
+                {
+                    if (dr.HasRows)
+                        ret = true;
+                }
+
+            }
+
+            return ret;
+        }
+         
     }
+
 }

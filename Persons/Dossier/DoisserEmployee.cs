@@ -61,16 +61,15 @@ namespace Kesco.Lib.Entities.Persons.Dossier
 
             if (Employee.Status != 3)
             {
-                Contacts = GetEmployeeContacts(Employee.Id);
+                Contacts = Employee.GetEmployeeContacts();
 
-                if (Employee.OrganizationId.HasValue) EmployeeCustomer = new Corporate.PersonCustomer(Employee.Id);
+                if (Employee.OrganizationId.HasValue) EmployeeCustomer = new Corporate.PersonCustomer(Employee.OrganizationId.Value.ToString());
 
                 Roles = GetAllEmployeRoles(Employee.Id);
                 Positions = GetEmployeePositions(Employee.Id);
 
                 WorkPlaces = GetEmployeeWorkPlaces(Employee.Id);
 
-                WorkPlaces.ForEach(wp => { wp.CoWorkers = GetEmployeeCoWorkersByWorkPlace(Employee.Id, wp.Id); });
             }
 
             ContactGroups = Contacts
@@ -95,28 +94,7 @@ namespace Kesco.Lib.Entities.Persons.Dossier
 
             CanChangeWorkPlace = BelongsToPersonAdministators(Employee.Id);
         }
-
-
-        private List<Employee> GetEmployeeCoWorkersByWorkPlace(string userID, string workPlaceID)
-        {
-            var userUserCoWorkerList = new List<Employee>();
-            var sqlParams = new Dictionary<string, object>
-                {{"@КодСотрудника", userID}, {"@КодРасположения", workPlaceID}};
-            using (var dbReader = new DBReader(SQLQueries.SELECT_СовместнаяРаботаНаРабочемМесте, CommandType.Text, CN,
-                sqlParams))
-            {
-                if (dbReader.HasRows)
-                    while (dbReader.Read())
-                    {
-                        var tempUserCoWorker = new Employee();
-                        tempUserCoWorker.LoadFromDbReader(dbReader);
-                        userUserCoWorkerList.Add(tempUserCoWorker);
-                    }
-            }
-
-            return userUserCoWorkerList;
-        }
-
+        
         private List<Location> GetEmployeeWorkPlaces(string userID)
         {
             var userUserWorkPlacesList = new List<Location>();

@@ -94,7 +94,7 @@ namespace Kesco.Lib.Entities.Corporate
             if (!dbReader.IsDBNull(colКодСотрудника)) EmployeeId = dbReader.GetInt32(colКодСотрудника);
             if (!dbReader.IsDBNull(colКодЛица)) PersonId = dbReader.GetInt32(colКодЛица);
             if (!dbReader.IsDBNull(colНазваниеЛица)) PersonName = dbReader.GetString(colНазваниеЛица);
-            if (!dbReader.IsDBNull(colРоль)) RoleName = dbReader.GetString(colРоль);
+            if (!dbReader.IsDBNull(colРоль)) {RoleName = dbReader.GetString(colРоль);}
             if (!dbReader.IsDBNull(colОписание)) RoleDescription = dbReader.GetString(colОписание);
         }
     }

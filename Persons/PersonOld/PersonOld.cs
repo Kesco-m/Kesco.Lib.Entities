@@ -222,8 +222,9 @@ namespace Kesco.Lib.Entities.Persons.PersonOld
         ///     Получение краткого названия лица на дату
         /// </summary>
         /// <param name="d">На какую дату получать имя</param>
+        /// <param name="isRusLocal">Какое название возвращать</param>
         /// <returns>Краткое название лица</returns>
-        public string GetName(DateTime d)
+        public string GetName(DateTime d, bool isRusLocal= true)
         {
             var name = Name;
 

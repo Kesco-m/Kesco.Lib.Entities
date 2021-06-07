@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
 using Kesco.Lib.Web.Settings;
 
@@ -57,24 +58,39 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
             if (dt.Rows.Count == 1)
             {
                 Unavailable = false;
-                Id = (string) dt.Rows[0]["colКодОборудования"];
-                SN = (string) dt.Rows[0]["colSN"];
-                ModelId = (int) dt.Rows[0]["colКодМоделиОборудования"];
-                MacAddress = (string) dt.Rows[0]["colMACадрес"];
-                MacAddress2 = (string) dt.Rows[0]["colMACадрес2"];
-                MacAddressIlo = (string) dt.Rows[0]["colMACадресILO"];
-                NetworkName = (string) dt.Rows[0]["colСетевоеИмя"];
-                CameraIsConnected = (byte) dt.Rows[0]["colПодключенаКамера"];
-                Description = (string) dt.Rows[0]["colПримечания"];
+                Id = dt.Rows[0]["КодОборудования"].ToString();
+                SN = (string) dt.Rows[0]["SN"];
+                ModelId = (int) dt.Rows[0]["КодМоделиОборудования"];
+                MacAddress = (string) dt.Rows[0]["MACадрес"];
+                MacAddress2 = (string) dt.Rows[0]["MACадрес2"];
+                MacAddressIlo = (string) dt.Rows[0]["MACадресILO"];
+                NetworkName = (string) dt.Rows[0]["СетевоеИмя"];
+                CameraIsConnected = (byte) dt.Rows[0]["ПодключенаКамера"];
+                Description = (string) dt.Rows[0]["Примечания"];
 
-                WriteOff = (DateTime?) dt.Rows[0]["Списано"];
-                DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"];
-                PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"];
-                PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"];
-                PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"];
+                WriteOff = dt.Rows[0]["Списано"] == DBNull.Value
+                    ? DateTime.MinValue
+                    : Convert.ToDateTime(dt.Rows[0]["Списано"]);
 
-                ChangeEmployeeId = (int) dt.Rows[0]["colИзменил"];
-                ChangedDate = (DateTime) dt.Rows[0]["colИзменено"];
+                DocumentWriteOffId = dt.Rows[0]["КодДокументаСписания"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодДокументаСписания"]);
+
+                PersonOwnerId = dt.Rows[0]["КодЛицаВладельца"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодЛицаВладельца"]);
+
+                PersonTenantId = dt.Rows[0]["КодЛицаАрендатора"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодЛицаАрендатора"]);
+
+                PersonShipperId = dt.Rows[0]["КодЛицаПоставщика"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодЛицаПоставщика"]);
+
+                ChangeEmployeeId = (int) dt.Rows[0]["Изменил"];
+                ChangedDate = (DateTime) dt.Rows[0]["Изменено"];
+                Name = NetworkName.IsNullEmptyOrZero() ? dt.Rows[0]["МодельОборудования"] + " SN " + SN : NetworkName;
             }
             else
             {
@@ -92,7 +108,7 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                 select new Equipment
                 {
                     Unavailable = false,
-                    Id = (string) dt.Rows[0]["КодОборудования"],
+                    Id = dt.Rows[0]["КодОборудования"].ToString(),
                     SN = (string) dt.Rows[0]["SN"],
                     ModelId = (int) dt.Rows[0]["КодМоделиОборудования"],
                     MacAddress = (string) dt.Rows[0]["MACадрес"],
@@ -101,11 +117,27 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
                     NetworkName = (string) dt.Rows[0]["СетевоеИмя"],
                     CameraIsConnected = (byte) dt.Rows[0]["ПодключенаКамера"],
                     Description = (string) dt.Rows[0]["Примечания"],
-                    WriteOff = (DateTime?) dt.Rows[0]["Списано"],
-                    DocumentWriteOffId = (int?) dt.Rows[0]["КодДокументаСписания"],
-                    PersonOwnerId = (int?) dt.Rows[0]["КодЛицаВладельца"],
-                    PersonTenantId = (int?) dt.Rows[0]["КодЛицаАрендатора"],
-                    PersonShipperId = (int?) dt.Rows[0]["КодЛицаПоставщика"],
+
+                    WriteOff = dt.Rows[0]["Списано"] == DBNull.Value
+                        ? DateTime.MinValue
+                        : Convert.ToDateTime(dt.Rows[0]["Списано"]),
+
+                    DocumentWriteOffId = dt.Rows[0]["КодДокументаСписания"] == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(dt.Rows[0]["КодДокументаСписания"]),
+
+                    PersonOwnerId = dt.Rows[0]["КодЛицаВладельца"] == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(dt.Rows[0]["КодЛицаВладельца"]),
+
+                    PersonTenantId = dt.Rows[0]["КодЛицаАрендатора"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодЛицаАрендатора"]),
+
+                    PersonShipperId = dt.Rows[0]["КодЛицаПоставщика"] == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(dt.Rows[0]["КодЛицаПоставщика"]),
+
                     ChangeEmployeeId = (int) dt.Rows[0]["Изменил"],
                     ChangedDate = (DateTime) dt.Rows[0]["Изменено"]
                 }).ToList();
@@ -316,6 +348,12 @@ namespace Kesco.Lib.Entities.Corporate.Equipments
         ///     Полный путь к последнему расположению оборудования
         /// </summary>
         public string LocationName { get; set; }
+
+        /// <summary>
+        /// Полный путь к расположению с добавлением пробелов после /
+        /// </summary>
+        public string LocationName_WhiteSpace =>
+            string.IsNullOrEmpty(LocationName) ? LocationName : LocationName.Replace("/", "/ ");
 
         /// <summary>
         ///     Код ответственного за оборудования

@@ -24,7 +24,14 @@ namespace Kesco.Lib.Entities
 
         private List<Equipment> _equipmentsIt;
 
+        /// <summary>
+        ///     Сотрудники на расположении
+        /// </summary>
+        private List<Employee> _coWorkers { get; set; }
+
         private bool? _isOffice;
+
+        private bool? _isGroupWorkplace;
 
         private bool? _isOrganized;
 
@@ -61,20 +68,17 @@ namespace Kesco.Lib.Entities
             }
         }
 
-        /// <summary>
-        ///     Сотрудники на расположении
-        /// </summary>
-        public List<Employee> CoWorkers { get; set; }
+      
 
         /// <summary>
         ///     Компьютеризированное рабочее место
         /// </summary>
-        public bool IsComputeredWorkPlace => WorkPlace.Equals((int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто);
+        public bool IsComputeredWorkPlace =>  WorkPlace.Equals((int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто);
 
         /// <summary>
         ///     Гостевое рабочее место
         /// </summary>
-        public bool IsGuestWorkPlace => WorkPlace.Equals((int) ТипыРабочихМест.ГостевоеРабочееМесто);
+        public bool IsGuestWorkPlace =>  WorkPlace.Equals((int) ТипыРабочихМест.ГостевоеРабочееМесто);
 
         /// <summary>
         ///     Расположение находится в офисе
@@ -97,6 +101,30 @@ namespace Kesco.Lib.Entities
 
                 AddLoadedExternalProperties(cacheKey);
                 return _isOffice.Value;
+            }
+        }
+
+        /// <summary>
+        ///     На расположении работает группа совместной работы
+        /// </summary>
+        public bool IsGroupWorkplace
+        {
+            get
+            {
+                var cacheKey = "location._isGroupWorkplace";
+                if (_isGroupWorkplace.HasValue && LoadedExternalProperties.ContainsKey(cacheKey))
+                    return _isGroupWorkplace.Value;
+
+                _isGroupWorkplace = false;
+                var sqlParams = new Dictionary<string, object> { { "@КодРасположения", Id.ToInt() } };
+                using (var dbReader =
+                    new DBReader(SQLQueries.SELECT_РасположениеГруппы, CommandType.Text, CN, sqlParams))
+                {
+                    if (dbReader.HasRows) _isGroupWorkplace = true; 
+                }
+
+                AddLoadedExternalProperties(cacheKey);
+                return _isGroupWorkplace.Value;
             }
         }
 
@@ -127,6 +155,35 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
+        /// Сотрудники на расположении
+        /// </summary>
+        public List<Employee> CoWorkers
+        {
+            get
+            {
+                var cacheKey = "location._coWorkers";
+                if (LoadedExternalProperties.ContainsKey(cacheKey)) return _coWorkers;
+
+                _coWorkers = new List<Employee>();
+                var sqlParams = new Dictionary<string, object>
+                    {{"@КодСотрудника", 0}, {"@КодРасположения", int.Parse(Id)}};
+                using (var dbReader = new DBReader(SQLQueries.SELECT_СовместнаяРаботаНаРабочемМесте, CommandType.Text, CN,
+                    sqlParams))
+                {
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            var tempUserCoWorker = new Employee();
+                            tempUserCoWorker.LoadFromDbReader(dbReader, true);
+                            _coWorkers.Add(tempUserCoWorker);
+                        }
+                }
+                
+                return _coWorkers;
+            }
+        }
+
+        /// <summary>
         ///     Существует ли It-оборудование на данном расположении
         /// </summary>
         public bool ExistEquipmentsIt
@@ -144,6 +201,23 @@ namespace Kesco.Lib.Entities
         }
 
         /// <summary>
+        ///  Существует ли  на данном расположении It-оборудование указанного сотрудника
+        /// </summary>
+        /// <param name="idEmpl">КодСотрудника</param>
+        /// <returns></returns>
+        public bool ExistEquipmentsItByEmployee(string idEmpl)
+        {
+            var sqlParams = new Dictionary<string, object> { { "@Id", int.Parse(Id) }, { "@КодСотрудника", int.Parse(idEmpl) } };
+            using (
+                var dbReader = new DBReader(SQLQueries.SELECT_ID_ОборудованиеITСотрудникаНаРасположении, CommandType.Text, CN,
+                    sqlParams))
+            {
+                return dbReader.HasRows;
+            }
+        
+        }
+
+        /// <summary>
         ///     Оганизовано рабочее место
         /// </summary>
         public bool IsOrganized
@@ -155,14 +229,38 @@ namespace Kesco.Lib.Entities
                 
                 _isOrganized = false;
                 var sqlParams = new Dictionary<string, object> {{"@КодРасположения", Id.ToInt()}};
-                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста,
-                    CommandType.Text, CN, sqlParams))
+                using (var dbReader = new DBReader(SQLQueries.SELECT_РасположенияОрганизованыРабочиеМеста, CommandType.Text, CN, sqlParams))
                 {
                     if (dbReader.HasRows) _isOrganized = true;
                 }
 
                 AddLoadedExternalProperties(cacheKey);
                 return _isOrganized.Value;
+            }
+        }
+
+        private Location _locationOffice = null;
+        /// <summary>
+        /// В расположении содержится расположение с типом офис
+        /// </summary>
+        public Location LocationOffice
+        {
+            get
+            {
+                if (_locationOffice == null)
+                {
+                    var sqlParams = new Dictionary<string, object> {
+                        { "@LeftId", new object[] { L, DBManager.ParameterTypes.Int32 } },
+                        { "@RightId", new object[] { R, DBManager.ParameterTypes.Int32 } } };
+
+                    var dt = (DBManager.GetData(SQLQueries.SELECT_РасположениеОфис, CN, CommandType.Text, sqlParams));
+                    if (dt.Rows.Count > 0)
+                    {
+                        _locationOffice = new Location(dt.Rows[0]["КодРасположения"].ToString());
+                    }
+                }
+
+                return _locationOffice;
             }
         }
 
@@ -183,9 +281,12 @@ namespace Kesco.Lib.Entities
                 LocationClose = Convert.ToInt16(dt.Rows[0]["Закрыто"]);
                 NamePath0 = dt.Rows[0]["РасположениеPath0"].ToString();
                 NamePath1 = dt.Rows[0]["РасположениеPath1"].ToString();
+                TerritoryId = (dt.Rows[0]["КодТерритории"]== DBNull.Value) ? (int?)null : Convert.ToInt32(dt.Rows[0]["КодТерритории"]);
                 Parent = dt.Rows[0]["Parent"] == DBNull.Value ? string.Empty : dt.Rows[0]["Parent"].ToString();
                 L = Convert.ToInt32(dt.Rows[0]["L"]);
                 R = Convert.ToInt32(dt.Rows[0]["R"]);
+                ChangedId = Convert.ToInt32(dt.Rows[0]["Изменил"]);
+                ChangedTime = Convert.ToDateTime(dt.Rows[0]["Изменено"]);
             }
             else
             {
@@ -207,6 +308,7 @@ namespace Kesco.Lib.Entities
             var colLocationClose = dbReader.GetOrdinal("Закрыто");
             var colNamePath0 = dbReader.GetOrdinal("РасположениеPath0");
             var colNamePath1 = dbReader.GetOrdinal("РасположениеPath1");
+            //var colTerritory = dbReader.GetOrdinal("КодТерритории");
             var colL = dbReader.GetOrdinal("L");
             var colR = dbReader.GetOrdinal("R");
 
@@ -218,6 +320,7 @@ namespace Kesco.Lib.Entities
             if (!dbReader.IsDBNull(colLocationClose)) LocationClose = dbReader.GetByte(colLocationClose);
             if (!dbReader.IsDBNull(colNamePath0)) NamePath0 = dbReader.GetString(colNamePath0);
             if (!dbReader.IsDBNull(colNamePath1)) NamePath1 = dbReader.GetString(colNamePath1);
+            //if (!dbReader.IsDBNull(colTerritory)) TerritoryId = dbReader.GetInt32(colTerritory);
             if (!dbReader.IsDBNull(colL)) L = dbReader.GetInt32(colL);
             if (!dbReader.IsDBNull(colR)) R = dbReader.GetInt32(colR);
 
@@ -245,6 +348,7 @@ namespace Kesco.Lib.Entities
                         LocationClose = Convert.ToInt16(dt.Rows[i]["Закрыто"]),
                         NamePath0 = dt.Rows[i]["РасположениеPath0"].ToString(),
                         NamePath1 = dt.Rows[i]["РасположениеPath1"].ToString(),
+                        TerritoryId = Convert.ToInt32(dt.Rows[0]["КодТерритории"]),
                         Parent = dt.Rows[i]["Parent"] == DBNull.Value ? string.Empty : dt.Rows[0]["Parent"].ToString(),
                         L = Convert.ToInt16(dt.Rows[i]["L"]),
                         R = Convert.ToInt16(dt.Rows[i]["R"])
@@ -288,29 +392,29 @@ namespace Kesco.Lib.Entities
                 case (int) ТипыРабочихМест.КомпьютеризированноеРабочееМесто:
                     if (IsOrganized)
                         icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
-                            .GetAttribute<ТипыРабочихМестSpecifications>().Icon;
+                            .GetAttribute<Specifications.InventoryWorkPlaceType>().Icon;
                     else
                         icon = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
-                            .GetAttribute<ТипыРабочихМестSpecifications>().IconGrayed;
+                            .GetAttribute<Specifications.InventoryWorkPlaceType>().IconGrayed;
                     title = ТипыРабочихМест.КомпьютеризированноеРабочееМесто
-                        .GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                        .GetAttribute<Specifications.InventoryWorkPlaceType>().Name;
 
                     break;
                 case (int) ТипыРабочихМест.НомерГостиницы:
-                    icon = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
-                    title = ТипыРабочихМест.НомерГостиницы.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    icon = ТипыРабочихМест.НомерГостиницы.GetAttribute<Specifications.InventoryWorkPlaceType>().Icon;
+                    title = ТипыРабочихМест.НомерГостиницы.GetAttribute<Specifications.InventoryWorkPlaceType>().Name;
                     break;
                 case (int) ТипыРабочихМест.Оборудование:
-                    icon = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
-                    title = ТипыРабочихМест.Оборудование.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    icon = ТипыРабочихМест.Оборудование.GetAttribute<Specifications.InventoryWorkPlaceType>().Icon;
+                    title = ТипыРабочихМест.Оборудование.GetAttribute<Specifications.InventoryWorkPlaceType>().Name;
                     break;
                 case (int) ТипыРабочихМест.CкладОборудования:
-                    icon = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
-                    title = ТипыРабочихМест.CкладОборудования.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    icon = ТипыРабочихМест.CкладОборудования.GetAttribute<Specifications.InventoryWorkPlaceType>().Icon;
+                    title = ТипыРабочихМест.CкладОборудования.GetAttribute<Specifications.InventoryWorkPlaceType>().Name;
                     break;
                 case (int) ТипыРабочихМест.ГостевоеРабочееМесто:
-                    icon = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Icon;
-                    title = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<ТипыРабочихМестSpecifications>().Name;
+                    icon = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<Specifications.InventoryWorkPlaceType>().Icon;
+                    title = ТипыРабочихМест.ГостевоеРабочееМесто.GetAttribute<Specifications.InventoryWorkPlaceType>().Name;
                     break;
                 default:
                     icon = "";
@@ -343,6 +447,11 @@ namespace Kesco.Lib.Entities
         public string ShortName { get; set; }
 
         /// <summary>
+        ///     КодТерритории
+        /// </summary>
+        public int? TerritoryId { get; set; }
+
+        /// <summary>
         ///     РасположениеPath0
         /// </summary>
         public string NamePath0 { get; set; }
@@ -351,6 +460,11 @@ namespace Kesco.Lib.Entities
         ///     РасположениеPath1
         /// </summary>
         public string NamePath1 { get; set; }
+
+        /// <summary>
+        ///     РасположениеPath1 с пробелами для переноса
+        /// </summary>
+        public string NamePath1_WhiteSpace => string.IsNullOrEmpty(NamePath1) ? NamePath1 : NamePath1.Replace("/", "/ ");
 
         /// <summary>
         ///     Родительский ID
@@ -366,6 +480,17 @@ namespace Kesco.Lib.Entities
         ///     Правый ключ
         /// </summary>
         public int R { get; set; }
+
+        /// <summary>
+        ///     Изменил
+        /// </summary>
+        public int ChangedId { get; set; }
+
+        /// <summary>
+        ///     Изменено
+        /// </summary>
+        public DateTime ChangedTime { get; set; }
+
 
         #endregion
     }

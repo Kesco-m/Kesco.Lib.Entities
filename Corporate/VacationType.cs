@@ -7,7 +7,7 @@ using Kesco.Lib.Web.Settings;
 namespace Kesco.Lib.Entities.Corporate
 {
     /// <summary>
-    ///     Класс сущности "Роли"
+    ///     Класс сущности "ВидОтпуска"
     /// </summary>
     [Serializable]
     public class VacationType : Entity
@@ -21,7 +21,7 @@ namespace Kesco.Lib.Entities.Corporate
         /// <summary>
         ///     Конструктор
         /// </summary>
-        /// <param name="id">КодРоли</param>
+        /// <param name="id">ВидОтпуска</param>
         public VacationType(string id)
             : base(id)
         {

@@ -28,6 +28,7 @@ namespace Kesco.Lib.Entities.Documents
     [DebuggerDisplay("ID = {Id}, Number = {Number}, Desc = {Description}")]
     public class Document : Entity, ICloneable<Document>
     {
+        
         /// <summary>
         ///     Инкапсулирует и сохраняет в себе строку подключения
         /// </summary>
@@ -479,7 +480,7 @@ namespace Kesco.Lib.Entities.Documents
             {
                 // возвращаем в первоначальнее состояние
                 if (IsNew)
-                    DeleteDocument(cmds);
+                    DeleteEForm(cmds);
 
                 var dex = new DetailedException(ex.Message, ex);
                 Logger.WriteEx(dex);
@@ -544,7 +545,7 @@ namespace Kesco.Lib.Entities.Documents
         ///     Метод удаление документа
         /// </summary>
         /// <remarks>Удаляется электронная форма, если отсутствуют картинки, то запускается делитер и удаляет сам документ</remarks>
-        private void DeleteDocument(ICollection<DBCommand> cmds = null)
+        public void DeleteEForm(ICollection<DBCommand> cmds = null)
         {
             if (cmds != null)
             {
@@ -637,6 +638,7 @@ namespace Kesco.Lib.Entities.Documents
                 sqlParams.Add("@КодСотрудника2", DocumentData.EmployeeId2);
                 sqlParams.Add("@КодСотрудника3", DocumentData.EmployeeId3);
                 sqlParams.Add("@КодРасположения1", DocumentData.LocationId1);
+                sqlParams.Add("@КодРасположения2", DocumentData.LocationId2);
                 sqlParams.Add("@КодБазисаПоставки", DocumentData.BaseDeliveryId);
                 sqlParams.Add("@КодВидаТранспорта", DocumentData.TransportTypeId);
                 sqlParams.Add("@КодМестаХранения", DocumentData.StorageLocationId);
@@ -835,11 +837,7 @@ namespace Kesco.Lib.Entities.Documents
         ///     Типизированный псевданим для ID
         /// </remarks>
         public int DocId => Id.ToInt();
-
-        /// <summary>
-        ///     Признак нового документа
-        /// </summary>
-        public bool IsNew => string.IsNullOrEmpty(Id) || Id == "0";
+        
 
         /// <summary>
         ///     Код типа документа

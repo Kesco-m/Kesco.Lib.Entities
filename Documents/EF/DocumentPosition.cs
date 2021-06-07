@@ -94,7 +94,8 @@ namespace Kesco.Lib.Entities.Documents.EF
         {
             var dbProps = GetDbProperties();
             var sqlSelectId = GetSqlSelect(dbProps);
-
+            sqlSelectId =
+                $"{Environment.NewLine}/*автоматически сформированный запрос для загрузки информации о позиции документа по идентификатору*/{Environment.NewLine}{sqlSelectId}";
             using (var dbReader = new DBReader(sqlSelectId, int.Parse(Id), CommandType.Text, ConnString))
             {
                 if (dbReader.HasRows)
@@ -136,7 +137,8 @@ namespace Kesco.Lib.Entities.Documents.EF
             var list = new List<T>();
             var dbProps = GetDbProperties();
             var sql = GetSqlSelectByDocId(dbProps);
-
+            sql =
+                $"{Environment.NewLine}/*автоматически сформированный запрос для загрузки информации о позициях документа по коду документа*/{Environment.NewLine}{sql}";
             using (var dbReader = new DBReader(sql, docId, CommandType.Text, ConnString))
             {
                 if (dbReader.HasRows)
@@ -198,7 +200,8 @@ namespace Kesco.Lib.Entities.Documents.EF
                 var paramOut = new Dictionary<string, object>();
                 var pkParamName = "";
                 sqlSave = GetSqlInsert(dbProps, param, paramOut, out pkParamName);
-
+                sqlSave =
+                    $"{Environment.NewLine}/*автоматически сформированный запрос для сохранения информации о новой позиции документа*/{Environment.NewLine}{sqlSave}";
                 if (cmds != null)
                 {
                     cmds.Add(new DBCommand
@@ -221,6 +224,9 @@ namespace Kesco.Lib.Entities.Documents.EF
                 sqlSave = GetSqlUpdate(dbProps, param);
                 if (sqlSave != string.Empty)
                 {
+                    sqlSave =
+                        $"{Environment.NewLine}/*автоматически сформированный запрос для сохранения информации о позиции документа*/{Environment.NewLine}{sqlSave}";
+
                     if (cmds != null)
                     {
                         cmds.Add(new DBCommand
@@ -254,6 +260,9 @@ namespace Kesco.Lib.Entities.Documents.EF
             var sql = GetSqlDelete(dbProps, param);
             if (!string.IsNullOrEmpty(sql))
             {
+                sql =
+                    $"{Environment.NewLine}/*автоматически сформированный запрос для удаления позиции документа*/{Environment.NewLine}{sql}";
+
                 if (cmds != null)
                 {
                     cmds.Add(new DBCommand

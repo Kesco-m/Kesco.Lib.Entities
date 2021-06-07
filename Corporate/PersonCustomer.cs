@@ -59,7 +59,7 @@ namespace Kesco.Lib.Entities.Corporate
         {
             var sqlParams = new Dictionary<string, object> {{"@Id", Id.ToInt()}};
             using (var dbReader =
-                new DBReader(SQLQueries.SELECT_ЛицоЗаказчикаСотрудника, CommandType.Text, CN, sqlParams))
+                new DBReader(SQLQueries.SELECT_ID_ЛицоЗаказчика, CommandType.Text, CN, sqlParams))
             {
                 if (dbReader.HasRows)
                 {

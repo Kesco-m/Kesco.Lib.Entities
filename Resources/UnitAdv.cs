@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using Kesco.Lib.BaseExtention;
 using Kesco.Lib.DALC;
@@ -33,6 +34,16 @@ namespace Kesco.Lib.Entities.Resources
         }
 
         /// <summary>
+        ///  Конструктор с загрузкой данных
+        /// </summary>
+        /// <param name="id">Код единицы измерения</param>
+        /// <param name="resourceId">Код ресурса</param>
+        public UnitAdv(string id, string resourceId)
+        {
+            FillData(id, resourceId);
+        }
+
+        /// <summary>
         ///     Дополнительная ед. изм.
         /// </summary>
         public Unit Unit => new Unit(КодЕдиницыИзмерения.ToString());
@@ -61,12 +72,13 @@ namespace Kesco.Lib.Entities.Resources
         /// <summary>
         ///     Заполнить данные текущего
         /// </summary>
-        public void FillData(string id)
+        public void FillData(string id, string resourceId = "")
         {
             if (id.IsNullEmptyOrZero()) return;
 
-            using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ЕдиницаИзмеренияДополнительные, id.ToInt(),
-                CommandType.Text, CN))
+            var sqlParams = new Dictionary<string, object> { { "@id", id }, { "@КодРесурса", resourceId } };
+
+            using (var dbReader = new DBReader(SQLQueries.SELECT_ID_ЕдиницаИзмеренияДополнительные, CommandType.Text, CN, sqlParams))
             {
                 if (dbReader.HasRows)
                 {
@@ -74,12 +86,10 @@ namespace Kesco.Lib.Entities.Resources
 
                     var colКодЕдиницыИзмеренияДополнительной = dbReader.GetOrdinal("КодЕдиницыИзмеренияДополнительной");
                     var colКодРесурса = dbReader.GetOrdinal("КодРесурса");
+                    var colЕдиницаРус = dbReader.GetOrdinal("ЕдиницаРус");
+                    var colЕдиницаЛат = dbReader.GetOrdinal("ЕдиницаЛат");
                     var colКодЕдиницыИзмерения = dbReader.GetOrdinal("КодЕдиницыИзмерения");
-                    var colТочность = dbReader.GetOrdinal("Точность");
-                    var colКоличествоЕдиниц = dbReader.GetOrdinal("КоличествоЕдиниц");
-                    var colКоличествоЕдиницОсновных = dbReader.GetOrdinal("КоличествоЕдиницОсновных");
                     var colКоэффициент = dbReader.GetOrdinal("Коэффициент");
-                    var colМассаБрутто = dbReader.GetOrdinal("МассаБрутто");
 
                     #endregion
 
@@ -87,13 +97,11 @@ namespace Kesco.Lib.Entities.Resources
                     {
                         Unavailable = false;
                         КодЕдиницыИзмеренияДополнительной = dbReader.GetInt32(colКодЕдиницыИзмеренияДополнительной);
+                        Id = КодЕдиницыИзмеренияДополнительной.ToString();
+                        Name = ЕдиницаРус = dbReader.GetString(colЕдиницаРус);
                         КодРесурса = dbReader.GetInt32(colКодРесурса);
                         КодЕдиницыИзмерения = dbReader.GetInt32(colКодЕдиницыИзмерения);
-                        Точность = dbReader.GetByte(colТочность);
-                        КоличествоЕдиниц = dbReader.GetDecimal(colКоличествоЕдиниц);
-                        КоличествоЕдиницОсновных = dbReader.GetDecimal(colКоличествоЕдиницОсновных);
                         Коэффициент = dbReader.GetDouble(colКоэффициент);
-                        if (!dbReader.IsDBNull(colМассаБрутто)) МассаБрутто = dbReader.GetDecimal(colМассаБрутто);
                     }
                 }
                 else
@@ -118,6 +126,20 @@ namespace Kesco.Lib.Entities.Resources
         ///     КодРесурса (int, not null)
         /// </value>
         public int КодРесурса { get; set; }
+
+        /// <summary>
+        /// </summary>
+        /// <value>
+        ///     ЕдиницаРус (nvarchar(10), not null)
+        /// </value>
+        public string ЕдиницаРус { get; set; }
+
+        /// <summary>
+        /// </summary>
+        /// <value>
+        ///     ЕдиницаЛат (nvarchar(10), not null)
+        /// </value>
+        public string ЕдиницаЛат { get; set; }
 
         /// <summary>
         /// </summary>

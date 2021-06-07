@@ -158,10 +158,8 @@ namespace Kesco.Lib.Entities.Documents
                             return true;
                         break;
                     case "Int32":
-                        var i = (int?) val;
-                        if (i == 0)
-                            return true;
-                        break;
+                        //var i = (int?) val;
+                        return false;
                     case "Decimal":
                         var m = (decimal?) val;
                         if (m == 0)
@@ -793,6 +791,9 @@ namespace Kesco.Lib.Entities.Documents
                     case "КодРасположения1":
                         DocDataMapping.LocationId1 = int.TryParse(value, out i) ? i : (int?) null;
                         break;
+                    case "КодРасположения2":
+                        DocDataMapping.LocationId2 = int.TryParse(value, out i) ? i : (int?)null;
+                        break;
                     case "КодБазисаПоставки":
                         DocDataMapping.BaseDeliveryId = int.TryParse(value, out i) ? i : (int?) null;
                         break;
@@ -1050,6 +1051,8 @@ namespace Kesco.Lib.Entities.Documents
                         return DocDataMapping.EmployeeId3;
                     case "КодРасположения1":
                         return DocDataMapping.LocationId1;
+                    case "КодРасположения2":
+                        return DocDataMapping.LocationId2;
                     case "КодБазисаПоставки":
                         return DocDataMapping.BaseDeliveryId;
                     case "КодВидаТранспорта":
